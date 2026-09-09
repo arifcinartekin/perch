@@ -1,0 +1,12 @@
+node_modules
+.output
+.wxt
+stats.html
+stats-*.json
+*.zip
+.DS_Store
+*.log
+.idea
+.vscode/*
+!.vscode/extensions.json
+web-ext.config.ts.local

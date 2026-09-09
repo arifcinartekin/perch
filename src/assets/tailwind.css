@@ -1,0 +1,183 @@
+@import 'tailwindcss';
+
+/* Perch design tokens. Light values on :root; dark overrides in the media query
+   and under [data-theme="dark"] so the in-app toggle wins both ways. */
+@theme {
+  --font-sans: 'Inter var', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-serif: 'Iowan Old Style', 'Palatino Linotype', 'Source Serif 4', Georgia, serif;
+
+  --radius-card: 14px;
+
+  --color-brand-50: #eef2ff;
+  --color-brand-100: #e0e7ff;
+  --color-brand-300: #a5b4fc;
+  --color-brand-500: #6366f1;
+  --color-brand-600: #4f46e5;
+  --color-brand-700: #4338ca;
+}
+
+:root {
+  color-scheme: light;
+  --bg: #f6f6f8;
+  --bg-elevated: rgba(255, 255, 255, 0.72);
+  --bg-solid: #ffffff;
+  --border: rgba(15, 23, 42, 0.1);
+  --border-strong: rgba(15, 23, 42, 0.16);
+  --text: #0f172a;
+  --text-muted: #64748b;
+  --text-faint: #94a3b8;
+  --accent: #4f46e5;
+  --accent-contrast: #ffffff;
+  --shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 12px 32px -12px rgba(15, 23, 42, 0.18);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --bg: #0b0c10;
+    --bg-elevated: rgba(24, 26, 33, 0.72);
+    --bg-solid: #14161c;
+    --border: rgba(255, 255, 255, 0.08);
+    --border-strong: rgba(255, 255, 255, 0.14);
+    --text: #e6e8ee;
+    --text-muted: #9aa3b2;
+    --text-faint: #6b7482;
+    --accent: #818cf8;
+    --accent-contrast: #0b0c10;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 20px 48px -16px rgba(0, 0, 0, 0.6);
+  }
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #0b0c10;
+  --bg-elevated: rgba(24, 26, 33, 0.72);
+  --bg-solid: #14161c;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.14);
+  --text: #e6e8ee;
+  --text-muted: #9aa3b2;
+  --text-faint: #6b7482;
+  --accent: #818cf8;
+  --accent-contrast: #0b0c10;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 20px 48px -16px rgba(0, 0, 0, 0.6);
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  border-color: var(--border);
+}
+
+::selection {
+  background: color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
+/* Scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 999px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Rendered feed/article HTML. */
+.prose-perch {
+  line-height: 1.7;
+  font-size: 1.02rem;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+.prose-perch p,
+.prose-perch ul,
+.prose-perch ol,
+.prose-perch blockquote,
+.prose-perch pre,
+.prose-perch figure {
+  margin: 0 0 1.1em;
+}
+.prose-perch h1,
+.prose-perch h2,
+.prose-perch h3 {
+  margin: 1.6em 0 0.6em;
+  line-height: 1.25;
+  font-weight: 650;
+}
+.prose-perch a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.prose-perch img,
+.prose-perch video,
+.prose-perch iframe {
+  max-width: 100%;
+  height: auto;
+  border-radius: 10px;
+}
+.prose-perch iframe {
+  aspect-ratio: 16 / 9;
+  width: 100%;
+}
+.prose-perch pre {
+  padding: 1em;
+  border-radius: 10px;
+  overflow-x: auto;
+  background: color-mix(in srgb, var(--text) 6%, transparent);
+  font-size: 0.9em;
+}
+.prose-perch blockquote {
+  padding-left: 1em;
+  border-left: 3px solid var(--border-strong);
+  color: var(--text-muted);
+}
+.prose-perch :where(code):not(pre code) {
+  background: color-mix(in srgb, var(--text) 8%, transparent);
+  padding: 0.15em 0.4em;
+  border-radius: 6px;
+  font-size: 0.9em;
+}
