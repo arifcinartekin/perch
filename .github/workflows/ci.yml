@@ -40,3 +40,5 @@ jobs:
           name: perch-extension
           path: .output/*.zip
           if-no-files-found: error
+          # WXT writes to `.output/`; upload-artifact@v4 skips dot-folders unless told otherwise.
+          include-hidden-files: true
