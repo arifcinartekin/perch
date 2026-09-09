@@ -417,18 +417,17 @@ function Segmented({
 function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
   return (
     <button
+      type="button"
       role="switch"
       aria-checked={checked}
       onClick={() => onChange(!checked)}
-      className={`relative h-6 w-10 rounded-full border transition-colors ${
-        checked
-          ? 'border-transparent bg-[var(--accent)]'
-          : 'border-[var(--border-strong)] bg-transparent'
+      className={`inline-flex h-[22px] w-[38px] shrink-0 items-center rounded-full px-[3px] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] ${
+        checked ? 'bg-[var(--accent)]' : 'bg-[color-mix(in_srgb,var(--text)_28%,transparent)]'
       }`}
     >
       <span
-        className={`absolute top-[3px] h-4 w-4 rounded-full bg-[var(--bg-solid)] shadow transition-transform ${
-          checked ? 'translate-x-[19px]' : 'translate-x-[3px]'
+        className={`h-4 w-4 rounded-full bg-[var(--accent-contrast)] shadow transition-transform duration-150 ${
+          checked ? 'translate-x-[16px]' : 'translate-x-0'
         }`}
       />
     </button>

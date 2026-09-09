@@ -11,7 +11,7 @@ import { dirname, resolve } from 'node:path';
 const OUT_DIR = resolve(dirname(fileURLToPath(import.meta.url)), '../public/icon');
 const SIZES = [16, 32, 48, 128];
 
-const BG = [79, 70, 229]; // indigo-600
+const BG = [24, 24, 27]; // zinc-900 — monochrome, no brand colour
 const FG = [255, 255, 255];
 
 function crc32(buf) {

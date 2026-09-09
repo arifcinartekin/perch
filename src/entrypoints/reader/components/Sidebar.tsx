@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { Favicon } from '@/components/Favicon';
+import { IconButton } from '@/components/IconButton';
 import {
   IconChevronDown,
   IconChevronRight,
@@ -25,6 +26,7 @@ import { FeedEditDialog } from './FeedEditDialog';
 export function Sidebar() {
   const { grouped, totalUnread, unreadForFeeds, loading, refreshCounts } = useLibrary();
   const toast = useToast();
+  const navigate = useNavigate();
   const [refreshing, setRefreshing] = useState(false);
   const [adding, setAdding] = useState(false);
   const [editingFeed, setEditingFeed] = useState<Feed | null>(null);
@@ -47,29 +49,15 @@ export function Sidebar() {
 
   return (
     <aside className="flex h-full w-[264px] shrink-0 flex-col border-r border-[var(--border)] bg-[var(--bg-elevated)] backdrop-blur-xl">
-      <div className="flex items-center gap-1 border-b border-[var(--border)] px-3 py-2.5">
+      <div className="flex h-14 shrink-0 items-center gap-1 border-b border-[var(--border)] px-3">
         <IconRss size={17} className="mr-1.5 shrink-0 text-[var(--text)]" />
         <span className="flex-1 text-[14px] font-semibold tracking-tight">Perch</span>
-        <button
-          type="button"
-          onClick={refreshAll}
-          disabled={refreshing}
-          title="Refresh all feeds"
-          className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-[var(--text-faint)] transition-colors hover:bg-[var(--accent-soft)] hover:text-[var(--text)] disabled:opacity-50"
-        >
+        <IconButton label="Refresh all feeds" onClick={refreshAll} disabled={refreshing}>
           {refreshing ? <Spinner size={15} /> : <IconRefresh size={16} />}
-        </button>
-        <NavLink
-          to="/settings"
-          title="Settings"
-          className={({ isActive }) =>
-            `inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md transition-colors hover:bg-[var(--accent-soft)] hover:text-[var(--text)] ${
-              isActive ? 'bg-[var(--accent-soft)] text-[var(--text)]' : 'text-[var(--text-faint)]'
-            }`
-          }
-        >
+        </IconButton>
+        <IconButton label="Settings" onClick={() => navigate('/settings')}>
           <IconSettings size={16} />
-        </NavLink>
+        </IconButton>
       </div>
 
       <nav className="flex flex-col gap-0.5 px-2 pb-1">

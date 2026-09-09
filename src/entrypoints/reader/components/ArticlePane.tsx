@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { Button } from '@/components/Button';
+import { IconButton } from '@/components/IconButton';
 import { Spinner } from '@/components/Spinner';
 import { IconArrowLeft, IconExternal, IconRefresh, IconStar, IconCheck } from '@/components/icons';
 import { sanitizeHtml } from '@/lib/sanitize';
@@ -46,40 +47,41 @@ export function ArticlePane({
 
   return (
     <article className="flex h-full flex-1 flex-col bg-[var(--bg)]">
-      <header className="flex items-center gap-1 border-b border-[var(--border)] bg-[var(--bg-elevated)] px-3 py-2 backdrop-blur-xl">
-        <IconBtn className="lg:hidden" title="Back to list" onClick={onBack}>
+      <header className="flex h-14 shrink-0 items-center gap-1 border-b border-[var(--border)] bg-[var(--bg-elevated)] px-3 backdrop-blur-xl">
+        <IconButton className="lg:hidden" label="Back to list" onClick={onBack}>
           <IconArrowLeft size={16} />
-        </IconBtn>
+        </IconButton>
         <span className="flex-1" />
         {showReload && (
-          <IconBtn
-            title={extracted ? 'Re-fetch full article' : 'Fetch full article text'}
+          <IconButton
+            label={extracted ? 'Re-fetch full article' : 'Fetch full article text'}
             onClick={() => void reload()}
           >
             <IconRefresh size={15} />
-          </IconBtn>
+          </IconButton>
         )}
-        <IconBtn
-          title={article.read ? 'Mark unread' : 'Mark read'}
+        <IconButton
+          label={article.read ? 'Mark unread' : 'Mark read'}
           active={article.read === 0}
           onClick={onToggleRead}
         >
           <IconCheck size={16} />
-        </IconBtn>
-        <IconBtn
-          title={article.starred ? 'Unstar' : 'Star'}
+        </IconButton>
+        <IconButton
+          label={article.starred ? 'Unstar' : 'Star'}
           active={article.starred === 1}
           onClick={onToggleStar}
         >
           <IconStar size={16} fill={article.starred ? 'currentColor' : 'none'} />
-        </IconBtn>
+        </IconButton>
         {article.url && (
           <a
             href={article.url}
             target="_blank"
             rel="noopener noreferrer"
             title="Open original"
-            className="rounded-md p-1.5 text-[var(--text-faint)] hover:bg-[var(--accent-soft)] hover:text-[var(--text)]"
+            aria-label="Open original"
+            className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-[var(--text-faint)] transition-colors hover:bg-[var(--accent-soft)] hover:text-[var(--text)]"
           >
             <IconExternal size={16} />
           </a>
@@ -238,32 +240,5 @@ function Notice({ children }: { children: React.ReactNode }) {
     <div className="mb-5 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-[10px] border border-[var(--border)] bg-[var(--bg-solid)] px-3.5 py-2.5 text-[12.5px]">
       {children}
     </div>
-  );
-}
-
-function IconBtn({
-  children,
-  title,
-  onClick,
-  active,
-  className = '',
-}: {
-  children: React.ReactNode;
-  title: string;
-  onClick: () => void;
-  active?: boolean;
-  className?: string;
-}) {
-  return (
-    <button
-      type="button"
-      title={title}
-      onClick={onClick}
-      className={`inline-flex items-center justify-center rounded-md p-1.5 transition-colors hover:bg-[var(--accent-soft)] ${
-        active ? 'text-[var(--text)]' : 'text-[var(--text-faint)] hover:text-[var(--text)]'
-      } ${className}`}
-    >
-      {children}
-    </button>
   );
 }

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
+import { IconButton } from '@/components/IconButton';
 import { IconCheck, IconRefresh } from '@/components/icons';
 import { Spinner } from '@/components/Spinner';
 import { useLibrary } from '@/hooks/useLibrary';
@@ -174,37 +175,29 @@ function StreamView({ scope }: { scope: Scope }) {
           hasSelection ? 'hidden lg:flex' : 'flex'
         }`}
       >
-        <header className="flex items-center gap-2 border-b border-[var(--border)] bg-[var(--bg-elevated)] px-4 py-3 backdrop-blur-xl">
-          <div className="min-w-0 flex-1">
-            <h1 className="truncate text-[15px] font-semibold tracking-tight">{title}</h1>
-            <p className="truncate text-[11.5px] text-[var(--text-faint)]">{subtitle}</p>
+        <header className="flex h-14 shrink-0 items-center gap-1 border-b border-[var(--border)] bg-[var(--bg-elevated)] px-3 backdrop-blur-xl">
+          <div className="mr-1 min-w-0 flex-1">
+            <h1 className="truncate text-[14px] font-semibold tracking-tight">{title}</h1>
+            <p className="truncate text-[11px] text-[var(--text-faint)]">{subtitle}</p>
           </div>
           <button
+            type="button"
             onClick={() => setUnreadOnly((v) => !v)}
-            className={`rounded-md px-2 py-1 text-[11px] font-medium ${
+            className={`h-7 shrink-0 rounded-md px-2 text-[11px] font-medium transition-colors ${
               unreadOnly
-                ? 'bg-[color-mix(in_srgb,var(--accent)_18%,transparent)] text-[var(--text)]'
-                : 'text-[var(--text-faint)] hover:text-[var(--text-muted)]'
+                ? 'bg-[var(--accent)] text-[var(--accent-contrast)]'
+                : 'text-[var(--text-faint)] hover:bg-[var(--accent-soft)] hover:text-[var(--text)]'
             }`}
             title="Show unread only"
           >
             Unread
           </button>
-          <button
-            onClick={markAllRead}
-            title="Mark all as read"
-            className="rounded-md p-1.5 text-[var(--text-faint)] hover:bg-[color-mix(in_srgb,var(--text)_8%,transparent)] hover:text-[var(--text)]"
-          >
+          <IconButton label="Mark all as read" onClick={markAllRead}>
             <IconCheck size={16} />
-          </button>
-          <button
-            onClick={refresh}
-            disabled={refreshing}
-            title="Refresh"
-            className="rounded-md p-1.5 text-[var(--text-faint)] hover:bg-[color-mix(in_srgb,var(--text)_8%,transparent)] hover:text-[var(--text)]"
-          >
+          </IconButton>
+          <IconButton label="Refresh" onClick={refresh} disabled={refreshing}>
             {refreshing ? <Spinner size={15} /> : <IconRefresh size={16} />}
-          </button>
+          </IconButton>
         </header>
 
         <ArticleList
