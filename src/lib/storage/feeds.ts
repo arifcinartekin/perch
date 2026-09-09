@@ -69,6 +69,34 @@ export async function moveFeedToCategory(id: string, categoryId: string): Promis
   await updateFeed(id, { categoryId });
 }
 
+/**
+ * Point an existing feed at a different URL. The feed keeps its id (so cached
+ * articles and read state are preserved) — only the fetch target changes. The
+ * conditional-GET validators and error state are cleared so the next refresh
+ * starts clean. Returns false if the URL is unchanged or already used by
+ * another feed.
+ */
+export async function changeFeedUrl(id: string, rawUrl: string): Promise<boolean> {
+  const url = normalizeFeedUrl(rawUrl);
+  const feeds = await getFeeds();
+  const feed = feeds.find((f) => f.id === id);
+  if (!feed || normalizeFeedUrl(feed.url) === url) return false;
+  if (feeds.some((f) => f.id !== id && normalizeFeedUrl(f.url) === url)) return false;
+  await updateFeed(id, {
+    url,
+    etag: undefined,
+    lastModified: undefined,
+    lastError: undefined,
+    needsPermission: true,
+  });
+  return true;
+}
+
+export async function feedByUrl(rawUrl: string): Promise<Feed | undefined> {
+  const url = normalizeFeedUrl(rawUrl);
+  return (await getFeeds()).find((f) => normalizeFeedUrl(f.url) === url);
+}
+
 /** Feeds are re-homed to "Uncategorized" when their category is deleted. */
 export async function reassignFeedsFromCategory(categoryId: string): Promise<void> {
   const feeds = await getFeeds();

@@ -3,7 +3,6 @@
 
 export type FeedFormat = 'rss' | 'atom' | 'json';
 
-export type ArticleViewMode = 'summary' | 'fulltext';
 export type ThemePreference = 'system' | 'light' | 'dark';
 export type ReaderOpenMode = 'tab' | 'window';
 
@@ -13,8 +12,6 @@ export interface Settings {
   openMode: ReaderOpenMode;
   /** Background refresh interval in minutes. Clamped to >= MIN_REFRESH_MINUTES. */
   refreshIntervalMinutes: number;
-  /** Default article rendering mode when opening an article. */
-  defaultViewMode: ArticleViewMode;
   /** Light / dark / follow the OS. */
   theme: ThemePreference;
   /**
@@ -25,12 +22,18 @@ export interface Settings {
   autoDiscovery: boolean;
   /** Reading typeface in the article pane. */
   readingFont: 'sans' | 'serif';
+  /**
+   * Optional 6-digit PIN gate for the reader. This is a convenience lock, NOT
+   * real security — the data is still in local storage in the clear. We store a
+   * salted SHA-256 of the PIN so the PIN itself isn't sitting in settings.
+   */
+  pinSalt?: string;
+  pinHash?: string;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
   openMode: 'tab',
   refreshIntervalMinutes: 30,
-  defaultViewMode: 'summary',
   theme: 'system',
   autoDiscovery: false,
   readingFont: 'sans',

@@ -11,8 +11,13 @@ articles, and favicons **you** have added.
 It has two surfaces:
 
 - **A toolbar popup** for discovering feeds on the page you're looking at and adding/removing them.
-- **A full-screen reader** — a modern, FreshRSS/Feedly-style reading experience with a sidebar,
-  categories, unread counts, and per-article summary / full-text modes.
+- **A full-screen reader** — a clean, greyscale, FreshRSS/Feedly-style reading experience with a
+  sidebar, collapsible categories, unread counts, and one-column article reading. Articles load
+  their full text automatically (via Mozilla Readability) with the feed's own content as a
+  fallback; there's no mode switch and no button to press.
+
+It also does the things a local-first tool should: **export / import** your subscriptions (OPML
+or a full JSON backup), and an optional **6-digit PIN** to keep a passer-by out of your reader.
 
 <!-- SCREENSHOT: docs/screenshots/reader.png — the full-screen reader, dark mode -->
 <!-- SCREENSHOT: docs/screenshots/popup.png — the toolbar popup showing a discovered feed -->
@@ -26,14 +31,14 @@ Most "RSS reader" extensions ask for **"Read and change all your data on all web
 moment you install them. Perch does not. It ships with **zero host permissions**. The scary
 install warning never appears.
 
-| What Perch asks for | When | Why |
-| --- | --- | --- |
-| `storage` | install | Store your feed list, categories, and settings. |
-| `activeTab` | install | Read the current tab's `<head>` for feed `<link>` tags — but **only** when you open the Perch popup, and **only** for that one tab. |
-| `scripting` | install | Inject the one-shot "find `<link rel=alternate>`" reader into the active tab (paired with `activeTab`). |
-| `alarms` | install | Refresh your feeds on a schedule in the background. |
-| `*://*/*` (optional) | only if you turn on **"Auto-discover feeds on every site"** in Settings | Scan pages for feeds as you browse and show a red dot on the toolbar icon. Toggling the setting off **immediately revokes** this. |
-| a single origin, e.g. `https://example.com/*` (optional) | when you add a feed, or open **Full text** for an article from a new domain | Fetch that one site's feed / article HTML. Access grows only for sites you actually use. |
+| What Perch asks for                                      | When                                                                        | Why                                                                                                                                 |
+| -------------------------------------------------------- | --------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `storage`                                                | install                                                                     | Store your feed list, categories, and settings.                                                                                     |
+| `activeTab`                                              | install                                                                     | Read the current tab's `<head>` for feed `<link>` tags — but **only** when you open the Perch popup, and **only** for that one tab. |
+| `scripting`                                              | install                                                                     | Inject the one-shot "find `<link rel=alternate>`" reader into the active tab (paired with `activeTab`).                             |
+| `alarms`                                                 | install                                                                     | Refresh your feeds on a schedule in the background.                                                                                 |
+| `*://*/*` (optional)                                     | only if you turn on **"Auto-discover feeds on every site"** in Settings     | Scan pages for feeds as you browse and show a red dot on the toolbar icon. Toggling the setting off **immediately revokes** this.   |
+| a single origin, e.g. `https://example.com/*` (optional) | when you add a feed, or open **Full text** for an article from a new domain | Fetch that one site's feed / article HTML. Access grows only for sites you actually use.                                            |
 
 Everything is auditable: it's a small codebase, the dependency list is short and boring, and the
 build is reproducible with `npm ci && npm run build`.
@@ -162,9 +167,9 @@ npm run zip:firefox    # packaged .zip for AMO
 
 **Load it manually:**
 
-- **Chrome / Edge / Brave:** `chrome://extensions` → enable *Developer mode* → *Load unpacked*
+- **Chrome / Edge / Brave:** `chrome://extensions` → enable _Developer mode_ → _Load unpacked_
   → pick `.output/chrome-mv3/`.
-- **Firefox:** `about:debugging#/runtime/this-firefox` → *Load Temporary Add-on* → pick
+- **Firefox:** `about:debugging#/runtime/this-firefox` → _Load Temporary Add-on_ → pick
   `.output/firefox-mv3/manifest.json`.
 
 ### Store links

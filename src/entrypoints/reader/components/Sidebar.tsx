@@ -47,21 +47,26 @@ export function Sidebar() {
 
   return (
     <aside className="flex h-full w-[264px] shrink-0 flex-col border-r border-[var(--border)] bg-[var(--bg-elevated)] backdrop-blur-xl">
-      <div className="flex items-center gap-2 px-3.5 py-3">
-        <IconRss size={18} className="text-[var(--accent)]" />
+      <div className="flex items-center gap-1 border-b border-[var(--border)] px-3 py-2.5">
+        <IconRss size={17} className="mr-1.5 shrink-0 text-[var(--text)]" />
         <span className="flex-1 text-[14px] font-semibold tracking-tight">Perch</span>
         <button
+          type="button"
           onClick={refreshAll}
           disabled={refreshing}
           title="Refresh all feeds"
-          className="rounded-md p-1.5 text-[var(--text-faint)] hover:bg-[color-mix(in_srgb,var(--text)_8%,transparent)] hover:text-[var(--text)]"
+          className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-[var(--text-faint)] transition-colors hover:bg-[var(--accent-soft)] hover:text-[var(--text)] disabled:opacity-50"
         >
           {refreshing ? <Spinner size={15} /> : <IconRefresh size={16} />}
         </button>
         <NavLink
           to="/settings"
           title="Settings"
-          className="rounded-md p-1.5 text-[var(--text-faint)] hover:bg-[color-mix(in_srgb,var(--text)_8%,transparent)] hover:text-[var(--text)]"
+          className={({ isActive }) =>
+            `inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md transition-colors hover:bg-[var(--accent-soft)] hover:text-[var(--text)] ${
+              isActive ? 'bg-[var(--accent-soft)] text-[var(--text)]' : 'text-[var(--text-faint)]'
+            }`
+          }
         >
           <IconSettings size={16} />
         </NavLink>
@@ -223,7 +228,10 @@ function FeedRow({ feed, unread, onEdit }: { feed: Feed; unread: number; onEdit:
           {displayTitle(feed)}
         </span>
         {feed.needsPermission && (
-          <span title="Needs site access" className="text-[#f59e0b]">
+          <span
+            title="Needs site access — open Edit to grant it"
+            className="font-bold text-[var(--text-muted)]"
+          >
             !
           </span>
         )}
@@ -244,7 +252,7 @@ function FeedRow({ feed, unread, onEdit }: { feed: Feed; unread: number; onEdit:
 
 function UnreadPill({ n }: { n: number }) {
   return (
-    <span className="min-w-[18px] rounded-full bg-[color-mix(in_srgb,var(--accent)_22%,transparent)] px-1.5 text-center text-[11px] font-semibold text-[var(--text)]">
+    <span className="min-w-[18px] rounded-full bg-[var(--accent)] px-1.5 text-center text-[11px] font-semibold text-[var(--accent-contrast)]">
       {n > 999 ? '999+' : n}
     </span>
   );

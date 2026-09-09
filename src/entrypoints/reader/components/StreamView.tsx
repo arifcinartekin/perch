@@ -8,7 +8,7 @@ import { useArticleStream } from '@/hooks/useArticleStream';
 import { sendMessage } from '@/lib/messaging';
 import { getArticle, setStarred } from '@/lib/storage/articles';
 import { UNCATEGORIZED_ID } from '@/lib/types';
-import type { Article, ArticleViewMode } from '@/lib/types';
+import type { Article } from '@/lib/types';
 import { ArticleList } from './ArticleList';
 import { ArticlePane } from './ArticlePane';
 import { useToast } from './Toasts';
@@ -36,7 +36,7 @@ export function CategoryStream() {
 
 function StreamView({ scope }: { scope: Scope }) {
   const { feeds, grouped, feedById, refreshCounts } = useLibrary();
-  const { settings, update } = useSettings();
+  const { settings } = useSettings();
   const toast = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
   const [unreadOnly, setUnreadOnly] = useState(false);
@@ -165,13 +165,6 @@ function StreamView({ scope }: { scope: Scope }) {
     }
   }, [feedIds, stream, refreshCounts, toast]);
 
-  const setViewMode = useCallback(
-    (mode: ArticleViewMode) => {
-      void update({ defaultViewMode: mode });
-    },
-    [update],
-  );
-
   const hasSelection = !!selected;
 
   return (
@@ -234,10 +227,8 @@ function StreamView({ scope }: { scope: Scope }) {
             key={selected.id}
             article={selected}
             feed={feedById(selected.feedId)}
-            viewMode={settings.defaultViewMode}
             readingFont={settings.readingFont}
             onBack={closeArticle}
-            onSetViewMode={setViewMode}
             onToggleStar={() => void toggleStar(selected)}
             onToggleRead={() => void toggleRead(selected)}
           />

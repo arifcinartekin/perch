@@ -110,12 +110,12 @@ export function ArticleList({
                     }}
                     className={`rounded p-0.5 ${
                       article.starred
-                        ? 'text-[#f59e0b]'
+                        ? 'text-[var(--text)]'
                         : 'text-transparent group-hover:text-[var(--text-faint)] hover:!text-[var(--text-muted)]'
                     }`}
                     title={article.starred ? 'Unstar' : 'Star'}
                   >
-                    <IconStar size={13} />
+                    <IconStar size={13} fill={article.starred ? 'currentColor' : 'none'} />
                   </span>
                 </div>
                 <h3

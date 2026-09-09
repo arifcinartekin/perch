@@ -11,7 +11,7 @@ import {
   IconX,
 } from '@/components/icons';
 import { sendMessage } from '@/lib/messaging';
-import { feedIdFor } from '@/lib/storage/feeds';
+import { feedByUrl } from '@/lib/storage/feeds';
 import { getCategories } from '@/lib/storage/categories';
 import { requestHostPermission } from '@/lib/permissions/host';
 import { useSettings } from '@/hooks/useSettings';
@@ -102,7 +102,8 @@ export function App() {
     async (df: Pick<DiscoveredFeed, 'url'>) => {
       setBusy((b) => ({ ...b, [df.url]: true }));
       try {
-        await sendMessage('feed:remove', { feedId: feedIdFor(df.url) });
+        const existing = await feedByUrl(df.url);
+        if (existing) await sendMessage('feed:remove', { feedId: existing.id });
         await refreshDiscovery();
       } finally {
         setBusy((b) => ({ ...b, [df.url]: false }));

@@ -1,16 +1,42 @@
+import { useEffect, useState } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { LibraryProvider, useLibrary } from '@/hooks/useLibrary';
 import { useSettings } from '@/hooks/useSettings';
 import { useApplyTheme } from '@/hooks/useTheme';
+import { isPinEnabled, isUnlockedThisSession, markUnlocked } from '@/lib/lock';
 import { Sidebar } from './components/Sidebar';
 import { ToastProvider } from './components/Toasts';
 import { AllStream, CategoryStream, FeedStream, StarredStream } from './components/StreamView';
 import { Settings } from './pages/Settings';
 import { Onboarding } from './components/Onboarding';
+import { PinGate } from './components/PinGate';
 
 export function App() {
   const { settings } = useSettings();
   useApplyTheme(settings.theme);
+
+  // null = still deciding, true = show the PIN gate, false = unlocked.
+  const [locked, setLocked] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    if (isUnlockedThisSession()) {
+      setLocked(false);
+      return;
+    }
+    void isPinEnabled().then((on) => setLocked(on));
+  }, [settings.pinHash, settings.pinSalt]);
+
+  if (locked === null) return <div className="h-screen w-screen bg-[var(--bg)]" />;
+  if (locked) {
+    return (
+      <PinGate
+        onUnlock={() => {
+          markUnlocked();
+          setLocked(false);
+        }}
+      />
+    );
+  }
 
   return (
     <LibraryProvider>

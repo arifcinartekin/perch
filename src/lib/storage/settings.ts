@@ -26,7 +26,6 @@ function normalizeSettings(s: Settings): Settings {
       Math.round(Number(s.refreshIntervalMinutes) || DEFAULT_SETTINGS.refreshIntervalMinutes),
     ),
     openMode: s.openMode === 'window' ? 'window' : 'tab',
-    defaultViewMode: s.defaultViewMode === 'fulltext' ? 'fulltext' : 'summary',
     theme: ['light', 'dark', 'system'].includes(s.theme) ? s.theme : 'system',
     readingFont: s.readingFont === 'serif' ? 'serif' : 'sans',
     autoDiscovery: Boolean(s.autoDiscovery),
