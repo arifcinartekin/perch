@@ -1,4 +1,5 @@
 import type { ParsedArticle, ParsedFeed, Enclosure } from '../types';
+import { htmlToText } from './text';
 import { resolveUrl } from '../url';
 import { resolvePublishedAt } from './dates';
 import { asArray, attr, text, type XmlDoc } from './xml';
@@ -40,7 +41,7 @@ function parseEntry(
 ): ParsedArticle | null {
   const url = pickLink(entry.link, base, ['alternate', '']);
 
-  const title = stripToText(text(entry.title)) ?? '(untitled)';
+  const title = htmlToText(text(entry.title)) ?? '(untitled)';
 
   const contentHtml = richText(entry.content);
   const summaryHtml = richText(entry.summary);
@@ -144,14 +145,4 @@ function flatten(node: unknown): string | undefined {
     return parts.join(' ').trim() || undefined;
   }
   return undefined;
-}
-
-function stripToText(html: string | undefined): string | undefined {
-  if (!html) return undefined;
-  return (
-    html
-      .replace(/<[^>]+>/g, '')
-      .replace(/\s+/g, ' ')
-      .trim() || undefined
-  );
 }

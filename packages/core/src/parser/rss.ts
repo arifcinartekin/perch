@@ -1,4 +1,5 @@
 import type { ParsedArticle, ParsedFeed, Enclosure } from '../types';
+import { htmlToText } from './text';
 import { resolveUrl } from '../url';
 import { resolvePublishedAt } from './dates';
 import { asArray, attr, text, type XmlDoc } from './xml';
@@ -45,7 +46,7 @@ function parseItem(item: Record<string, unknown>, base: string): ParsedArticle |
     resolveUrl(text(item.link), base) ??
     resolveUrl(guidIfLink(item.guid), base);
 
-  const title = stripToText(text(item.title)) ?? '(untitled)';
+  const title = htmlToText(text(item.title)) ?? '(untitled)';
 
   const contentHtml = text(item['content:encoded']) ?? undefined;
   const summaryHtml = text(item.description) ?? text(item['dc:description']) ?? undefined;
@@ -115,14 +116,4 @@ function guidIfLink(guid: unknown): string | undefined {
   const value = text(guid);
   if (value && isPermalink !== 'false' && /^https?:\/\//i.test(value)) return value;
   return undefined;
-}
-
-function stripToText(html: string | undefined): string | undefined {
-  if (!html) return undefined;
-  return (
-    html
-      .replace(/<[^>]+>/g, '')
-      .replace(/\s+/g, ' ')
-      .trim() || undefined
-  );
 }

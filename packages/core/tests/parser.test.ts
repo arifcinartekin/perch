@@ -134,3 +134,17 @@ describe('sniffIsFeed', () => {
     expect(sniffIsFeed('<!doctype html><html><head><title>404</title>', 'text/html')).toBe(false);
   });
 });
+
+describe('titles with entities', () => {
+  it('decodes HTML entities in Atom type="html" and RSS titles', () => {
+    const atom = `<?xml version="1.0"?><feed xmlns="http://www.w3.org/2005/Atom"><title>X</title>
+      <entry><id>1</id><title type="html"><![CDATA[Android&#8217;s buttons &amp; <b>more</b>&hellip;]]></title><updated>2026-10-07T00:00:00Z</updated></entry></feed>`;
+    expect(parseFeed(atom, 'application/atom+xml', 'https://x.test/feed').articles[0]!.title).toBe(
+      'Android’s buttons & more…',
+    );
+    const rss = `<rss version="2.0"><channel><title>X</title><item><title>Caf&amp;#233; &amp;#x2014; news</title><guid>a</guid></item></channel></rss>`;
+    expect(parseFeed(rss, 'application/rss+xml', 'https://x.test/rss').articles[0]!.title).toBe(
+      'Café — news',
+    );
+  });
+});
