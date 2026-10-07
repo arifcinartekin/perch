@@ -39,6 +39,12 @@ export default defineConfig({
       // - Per-origin patterns (e.g. "https://example.com/*") are requested when
       //   the user adds a feed or opens full-text for a new domain.
       optional_host_permissions: ['*://*/*'],
+      // Signing in to a Perch Server stretches the password with Argon2id, which
+      // runs as WebAssembly. This allows compiling Perch's own bundled WASM only;
+      // remote code is still blocked.
+      content_security_policy: {
+        extension_pages: "script-src 'self' 'wasm-unsafe-eval'; object-src 'self';",
+      },
       // Note: `action` (title/popup) and `options_ui` are derived by WXT from the
       // popup/options entrypoints — see their <title> and <meta> tags.
       ...(isFirefox

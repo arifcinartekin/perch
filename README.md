@@ -1,12 +1,13 @@
 # Perch
 
-**A privacy-first, local-only RSS reader that lives in your browser.**
+**A privacy-first RSS reader that lives in your browser — local by default, synced if you want.**
 
 Perch is a cross-browser extension (Chrome, Edge, Brave, Firefox) for discovering and reading
-RSS, Atom, and JSON feeds. There is no account, no cloud sync, no telemetry, and no third-party
-backend. Every feed, every category, every read/unread flag, and every cached article stays in
-your browser's local storage. The only network requests Perch ever makes are to the feeds,
-articles, and favicons **you** have added.
+RSS, Atom, and JSON feeds. It needs no account, has no telemetry and no third-party backend.
+Every feed, every category, every read/unread flag, and every cached article stays in your
+browser's local storage. The only network requests Perch makes are to the feeds, articles, and
+favicons **you** have added — and, only if you turn on sync, to a
+[Perch Server](./apps/server/README.md) you choose.
 
 It has two surfaces:
 
@@ -20,6 +21,11 @@ It has two surfaces:
 Power users can make it their own under **Settings → Appearance**: pick the background, accent and
 button colours (separately for the light and dark theme — text contrast adjusts automatically),
 and set a background image for the full-screen reader with dim and blur controls.
+
+**Sync (optional).** Connect a self-hosted Perch Server under **Settings → Sync** and your
+subscriptions, categories, read and starred articles, and settings follow you across browsers
+(and, soon, the mobile app). Your password never leaves the device — Perch derives a key from it
+with Argon2id and sends only that. The PIN and background image stay per device.
 
 It also does the things a local-first tool should: **export / import** your subscriptions (OPML
 or a full JSON backup), and an optional **6-digit PIN** to keep a passer-by out of your reader.
@@ -44,6 +50,11 @@ install warning never appears.
 | `alarms`                                                 | install                                                                     | Refresh your feeds on a schedule in the background.                                                                                 |
 | `*://*/*` (optional)                                     | only if you turn on **"Auto-discover feeds on every site"** in Settings     | Scan pages for feeds as you browse and show a red dot on the toolbar icon. Toggling the setting off **immediately revokes** this.   |
 | a single origin, e.g. `https://example.com/*` (optional) | when you add a feed, or open **Full text** for an article from a new domain | Fetch that one site's feed / article HTML. Access grows only for sites you actually use.                                            |
+| your Perch Server's origin (optional)                    | when you connect sync in Settings                                           | Talk to the sync server you chose. Signing out keeps your data on the device.                                                       |
+
+The extension pages also allow `'wasm-unsafe-eval'` in their content security policy. That lets
+Perch run its own bundled Argon2id (WebAssembly) when you sign in to a sync server; it does not
+allow loading code from anywhere.
 
 Everything is auditable: it's a small codebase, the dependency list is short and boring, and the
 build is reproducible with `npm ci && npm run build`.
@@ -106,6 +117,7 @@ packages/
    ├─ src/auth.ts          client-side Argon2id key derivation.
    ├─ src/api.ts           Perch Server request / response types.
    ├─ src/username.ts      username rules and look-alike folding.
+   ├─ src/sync.ts          sync records, protocol types, hybrid logical clock.
    ├─ src/opml.ts          OPML import / export.
    ├─ src/search.ts        accent-insensitive article search.
    ├─ src/theme.ts         custom colour palettes.
@@ -126,6 +138,7 @@ apps/
 │  │  ├─ feeds/            refresh orchestration (conditional GET, upsert, prune).
 │  │  ├─ readability/      reader-page-only full-text fetch + @mozilla/readability + sanitise.
 │  │  ├─ permissions/      runtime host-permission helpers.
+│  │  ├─ sync/             Perch Server sign-in, sync engine (pull → merge → push), triggers.
 │  │  └─ backup.ts …       JSON backup, messaging, badge, PIN lock.
 │  ├─ src/components/ hooks/ assets/
 │  └─ tests/              Vitest: storage (fake-indexeddb), backup, and a jsdom smoke test.
@@ -133,6 +146,7 @@ apps/
    ├─ src/auth/            accounts, sessions, devices, invites.
    ├─ src/feeds/           SSRF-safe fetcher, background worker, subscribe-from-any-URL.
    ├─ src/reader/          reader API: articles, search, read state, OPML, settings.
+   ├─ src/sync/            sync records (last writer wins), change feed, Server-Sent Events.
    ├─ src/db/              Drizzle schema (SQLite); migrations in drizzle/.
    └─ tests/               Vitest against an in-memory database and a local feed server.
 ```

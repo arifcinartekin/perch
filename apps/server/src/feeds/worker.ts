@@ -2,6 +2,7 @@ import { and, asc, exists, inArray, lt, lte, notExists, notInArray, sql } from '
 import type { DB } from '../db';
 import { articleStates, feeds, subscriptions } from '../db/schema';
 import { purgeExpiredSessions } from '../auth/sessions';
+import { pruneSyncRecords } from '../sync/service';
 import type { SafeFetch } from '../lib/safe-fetch';
 import { refreshFeed, type RefreshResult } from './fetcher';
 
@@ -152,6 +153,7 @@ export function maintenance(db: DB, now = Date.now()) {
     )
     .run();
   purgeExpiredSessions(db, now);
+  pruneSyncRecords(db, now);
 }
 
 function hostOf(url: string): string {

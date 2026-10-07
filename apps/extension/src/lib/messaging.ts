@@ -40,6 +40,10 @@ export interface MessageMap {
     request: { tabId: number };
     response: { ok: true };
   };
+  'sync:now': {
+    request: Record<string, never>;
+    response: { pulled: number; pushed: number };
+  };
   'alarms:reschedule': {
     request: Record<string, never>;
     response: { ok: true };

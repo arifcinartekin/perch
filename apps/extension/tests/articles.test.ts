@@ -1,5 +1,10 @@
 import 'fake-indexeddb/auto';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+// Read/starred changes check whether sync is on; here it never is.
+vi.mock('wxt/browser', () => ({
+  browser: { storage: { local: { get: async () => ({}), set: async () => {} } } },
+}));
 import { IDBFactory } from 'fake-indexeddb';
 import {
   deleteArticlesForFeed,

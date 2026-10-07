@@ -20,6 +20,7 @@ import {
 } from '@/lib/background/discovery-manager';
 import { clearDiscoveryDot } from '@/lib/badge';
 import { onPermissionsChanged } from '@/lib/permissions/host';
+import { scheduleSyncAlarm, startSyncTriggers, syncAndFetch } from '@/lib/sync/background';
 
 export default defineBackground(() => {
   registerMessageHandlers({
@@ -87,6 +88,11 @@ export default defineBackground(() => {
       return { ok: true as const };
     },
 
+    'sync:now': async () => {
+      const result = await syncAndFetch();
+      return { pulled: result?.pulled ?? 0, pushed: result?.pushed ?? 0 };
+    },
+
     'alarms:reschedule': async () => {
       await scheduleRefreshAlarm();
       return { ok: true as const };
@@ -95,14 +101,19 @@ export default defineBackground(() => {
 
   // --- lifecycle ------------------------------------------------------------
 
+  startSyncTriggers();
+
   browser.runtime.onInstalled.addListener(async () => {
     await scheduleRefreshAlarm();
+    await scheduleSyncAlarm();
     const settings = await getSettings();
     await setAutoScan(settings.autoDiscovery);
   });
 
   browser.runtime.onStartup.addListener(async () => {
     await scheduleRefreshAlarm();
+    await scheduleSyncAlarm();
+    void syncAndFetch().catch(() => undefined);
     const settings = await getSettings();
     await setAutoScan(settings.autoDiscovery);
     if (await refreshIsStale()) {

@@ -4,6 +4,11 @@ import { toArticle } from '@perch/core/parser/normalize';
 import type { ParsedArticle } from '@perch/core/types';
 import { matchesTerms, searchTerms } from '@perch/core/search';
 import { getDB, type PerchDB } from './db';
+import { stateRecordId, type StateRecordData } from '@perch/core/sync';
+import { queueStateChanges } from '../sync/state';
+
+/** IndexedDB meta key for synced states of articles not fetched yet (see sync/engine). */
+export const PENDING_STATES_KEY = 'sync:pendingStates';
 
 export { foldText, matchesTerms, searchTerms } from '@perch/core/search';
 
@@ -27,15 +32,28 @@ export async function upsertArticles(
   now = Date.now(),
 ): Promise<UpsertResult> {
   const db = await getDB();
-  const tx = db.transaction('articles', 'readwrite');
+  const tx = db.transaction(['articles', 'meta'], 'readwrite');
+  const store = tx.objectStore('articles');
+  const meta = tx.objectStore('meta');
+  // Read/starred that another device synced before this one fetched the item.
+  const pending = (await meta.get(PENDING_STATES_KEY)) as
+    Record<string, StateRecordData> | undefined;
+  let pendingUsed = false;
   let inserted = 0;
   let updated = 0;
 
   for (const p of parsed) {
     const article = toArticle(p, feedId, now);
-    const existing = await tx.store.get(article.id);
+    const existing = await store.get(article.id);
     if (!existing) {
-      await tx.store.put(article);
+      const synced = pending?.[stateRecordId(feedId, article.id)];
+      if (synced) {
+        article.read = synced.read ? 1 : 0;
+        article.starred = synced.starred ? 1 : 0;
+        delete pending![stateRecordId(feedId, article.id)];
+        pendingUsed = true;
+      }
+      await store.put(article);
       inserted++;
     } else {
       const merged: Article = {
@@ -50,11 +68,12 @@ export async function upsertArticles(
         // Only move publishedAt forward if the feed genuinely revised it.
         publishedAt: article.publishedAt || existing.publishedAt,
       };
-      await tx.store.put(merged);
+      await store.put(merged);
       updated++;
     }
   }
 
+  if (pendingUsed) await meta.put(pending, PENDING_STATES_KEY);
   await tx.done;
   return { inserted, updated };
 }
@@ -132,17 +151,26 @@ export async function setRead(ids: string[], read: boolean): Promise<void> {
   const db = await getDB();
   const tx = db.transaction('articles', 'readwrite');
   const value: 0 | 1 = read ? 1 : 0;
+  const changed: Article[] = [];
   for (const id of ids) {
     const a = await tx.store.get(id);
-    if (a && a.read !== value) await tx.store.put({ ...a, read: value });
+    if (a && a.read !== value) {
+      const next = { ...a, read: value };
+      await tx.store.put(next);
+      changed.push(next);
+    }
   }
   await tx.done;
+  await queueStateChanges(changed);
 }
 
 export async function setStarred(id: string, starred: boolean): Promise<void> {
   const db = await getDB();
   const a = await db.get('articles', id);
-  if (a) await db.put('articles', { ...a, starred: starred ? 1 : 0 });
+  if (!a) return;
+  const next = { ...a, starred: starred ? (1 as const) : (0 as const) };
+  await db.put('articles', next);
+  await queueStateChanges([next]);
 }
 
 /** Mark every article of the given feeds (or all feeds) as read. */
@@ -150,14 +178,18 @@ export async function markAllRead(feedIds?: string[]): Promise<void> {
   const db = await getDB();
   const feedSet = feedIds ? new Set(feedIds) : null;
   const tx = db.transaction('articles', 'readwrite');
+  const changed: Article[] = [];
   let cursor = await tx.store.index('by-read').openCursor(0);
   while (cursor) {
     if (!feedSet || feedSet.has(cursor.value.feedId)) {
-      await cursor.update({ ...cursor.value, read: 1 });
+      const next = { ...cursor.value, read: 1 as const };
+      await cursor.update(next);
+      changed.push(next);
     }
     cursor = await cursor.continue();
   }
   await tx.done;
+  await queueStateChanges(changed);
 }
 
 // ---------------------------------------------------------------------------

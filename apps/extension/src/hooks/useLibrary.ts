@@ -66,11 +66,15 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
       displayTitle(a).localeCompare(displayTitle(b), undefined, { sensitivity: 'base' }),
     );
 
+    // A feed can point at a category deleted on another device; show it ungrouped.
+    const known = new Set(categories.map((c) => c.id));
+    const groupOf = (f: (typeof feeds)[number]) =>
+      f.categoryId && known.has(f.categoryId) ? f.categoryId : UNCATEGORIZED_ID;
     const grouped = [...categories]
       .sort((a, b) => a.order - b.order || a.name.localeCompare(b.name))
       .map((category) => ({
         category,
-        feeds: sortedFeeds.filter((f) => (f.categoryId || UNCATEGORIZED_ID) === category.id),
+        feeds: sortedFeeds.filter((f) => groupOf(f) === category.id),
       }))
       // Hide empty categories except "Uncategorized" (keeps the sidebar tidy).
       .filter((g) => g.feeds.length > 0 || g.category.id === UNCATEGORIZED_ID);

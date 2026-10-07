@@ -179,3 +179,33 @@ export const userSettings = sqliteTable('user_settings', {
   data: text('data', { mode: 'json' }).$type<Partial<Settings>>().notNull(),
   updatedAt: integer('updated_at').notNull(),
 });
+
+// ---------------------------------------------------------------------------
+// Sync
+// ---------------------------------------------------------------------------
+
+/**
+ * The latest write for every synced key of an account. In personal mode the
+ * reader tables above are kept in step with these; `version` is what clients
+ * page through with `/sync/changes?since=`.
+ */
+export const syncRecords = sqliteTable(
+  'sync_records',
+  {
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    /** "<type>:<id>" */
+    key: text('key').notNull(),
+    type: text('type', { enum: ['feed', 'category', 'setting', 'state'] }).notNull(),
+    recordId: text('record_id').notNull(),
+    data: text('data', { mode: 'json' }),
+    hlc: text('hlc').notNull(),
+    deleted: integer('deleted', { mode: 'boolean' }).notNull().default(false),
+    version: integer('version').notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.userId, t.key] }),
+    uniqueIndex('sync_records_version').on(t.userId, t.version),
+  ],
+);

@@ -7,11 +7,13 @@ import type {
   LibraryResponse,
   OpmlImportResponse,
   ServerFeed,
-  SyncedSettings,
 } from '@perch/core/api';
+import { feedIdFor } from '@perch/core/feeds';
 import { buildOpml, parseOpml } from '@perch/core/opml';
 import { searchTerms } from '@perch/core/search';
+import { isSyncedSettingKey, stateRecordId, type FeedRecordData } from '@perch/core/sync';
 import { UNCATEGORIZED_ID, type Article, type Category, type Feed } from '@perch/core/types';
+import { isHttpUrl, normalizeFeedUrl } from '@perch/core/url';
 import type { DB } from '../db';
 import {
   articleStates,
@@ -24,7 +26,8 @@ import {
 import { badRequest, jsonBody, notFound, str, type AppContext, type Env } from '../http';
 import { randomToken } from '../lib/crypto';
 import { requireUser } from '../auth/sessions';
-import { ensureFeed, resolveFeed } from '../feeds/resolve';
+import { resolveFeed } from '../feeds/resolve';
+import type { LocalChange } from '../sync/service';
 
 // The personal-mode reader API: what the web reader and native clients use to
 // list feeds, page through articles and mark them read.
@@ -44,70 +47,65 @@ export function readerRoutes(ctx: AppContext) {
 
   app.get('/library', (c) => {
     const userId = c.get('user').id;
+    const cats = listCategories(db, userId);
+    const known = new Set(cats.map((cat) => cat.id));
     return c.json<LibraryResponse>({
-      feeds: listFeeds(db, userId),
-      categories: listCategories(db, userId),
+      // A device may have deleted a category before its feeds' moves arrived.
+      feeds: listFeeds(db, userId).map((f) =>
+        known.has(f.categoryId) ? f : { ...f, categoryId: UNCATEGORIZED_ID },
+      ),
+      categories: cats,
     });
   });
+
+  // Every change below is written as sync records, so other devices pick it up.
 
   app.post('/feeds', async (c) => {
     const userId = c.get('user').id;
     const body = await jsonBody(c);
     const feed = await resolveFeed(db, ctx.fetch, str(body, 'url'), config.fetchIntervalMin);
-    const title = str(body, 'title', { max: 200, optional: true }).trim();
-    db.insert(subscriptions)
-      .values({
-        userId,
-        feedId: feed.id,
-        categoryId: validCategory(db, userId, str(body, 'categoryId', { max: 64, optional: true })),
-        customTitle: title && title !== feed.title ? title : null,
-        addedAt: Date.now(),
-      })
-      .onConflictDoNothing()
-      .run();
+    if (!feedData(db, userId, feed.id)) {
+      const title = str(body, 'title', { max: 200, optional: true }).trim();
+      const categoryId = str(body, 'categoryId', { max: 64, optional: true });
+      ctx.sync.local(userId, [
+        {
+          type: 'feed',
+          id: feed.id,
+          data: {
+            url: feed.url,
+            title: feed.title,
+            ...(title && title !== feed.title && { customTitle: title }),
+            ...(feed.siteUrl && { siteUrl: feed.siteUrl }),
+            categoryId: validCategory(db, userId, categoryId),
+            addedAt: Date.now(),
+          },
+        },
+      ]);
+    }
     return c.json({ feed: listFeeds(db, userId, feed.id)[0]! });
   });
 
   app.patch('/feeds/:id', async (c) => {
     const userId = c.get('user').id;
+    const feedId = c.req.param('id');
     const body = await jsonBody(c);
-    const patch: Partial<typeof subscriptions.$inferInsert> = {};
+    const current = feedData(db, userId, feedId);
+    if (!current) throw notFound('No such subscription');
+    const next = { ...current };
     if ('categoryId' in body) {
-      patch.categoryId = validCategory(db, userId, str(body, 'categoryId', { max: 64 }));
+      next.categoryId = validCategory(db, userId, str(body, 'categoryId', { max: 64 }));
     }
     if ('customTitle' in body) {
-      patch.customTitle =
-        body.customTitle == null ? null : str(body, 'customTitle', { max: 200 }).trim() || null;
+      const title = body.customTitle == null ? '' : str(body, 'customTitle', { max: 200 }).trim();
+      if (title) next.customTitle = title;
+      else delete next.customTitle;
     }
-    if (Object.keys(patch).length === 0) throw badRequest('Nothing to update');
-    const updated = db
-      .update(subscriptions)
-      .set(patch)
-      .where(and(eq(subscriptions.userId, userId), eq(subscriptions.feedId, c.req.param('id'))))
-      .returning({ feedId: subscriptions.feedId })
-      .get();
-    if (!updated) throw notFound('No such subscription');
-    return c.json({ feed: listFeeds(db, userId, updated.feedId)[0]! });
+    ctx.sync.local(userId, [{ type: 'feed', id: feedId, data: next }]);
+    return c.json({ feed: listFeeds(db, userId, feedId)[0]! });
   });
 
   app.delete('/feeds/:id', (c) => {
-    const userId = c.get('user').id;
-    const feedId = c.req.param('id');
-    db.transaction((tx) => {
-      tx.delete(subscriptions)
-        .where(and(eq(subscriptions.userId, userId), eq(subscriptions.feedId, feedId)))
-        .run();
-      // Starred articles outlive the subscription; everything else goes.
-      tx.delete(articleStates)
-        .where(
-          and(
-            eq(articleStates.userId, userId),
-            eq(articleStates.feedId, feedId),
-            eq(articleStates.starred, false),
-          ),
-        )
-        .run();
-    });
+    ctx.sync.local(c.get('user').id, [{ type: 'feed', id: c.req.param('id'), deleted: true }]);
     return c.json({ ok: true });
   });
 
@@ -130,9 +128,9 @@ export function readerRoutes(ctx: AppContext) {
       name,
       order: Math.max(0, top?.order ?? 0) + 10,
     };
-    db.insert(categories)
-      .values({ userId, ...category })
-      .run();
+    ctx.sync.local(userId, [
+      { type: 'category', id: category.id, data: { name, order: category.order } },
+    ]);
     return c.json({ category });
   });
 
@@ -154,13 +152,13 @@ export function readerRoutes(ctx: AppContext) {
     if ('collapsed' in body) next.collapsed = Boolean(body.collapsed);
 
     // "Uncategorized" is implicit until the user changes it.
-    db.insert(categories)
-      .values({ userId, ...next, collapsed: next.collapsed ?? false })
-      .onConflictDoUpdate({
-        target: [categories.userId, categories.id],
-        set: { name: next.name, order: next.order, collapsed: next.collapsed ?? false },
-      })
-      .run();
+    ctx.sync.local(userId, [
+      {
+        type: 'category',
+        id,
+        data: { name: next.name, order: next.order, collapsed: next.collapsed ?? false },
+      },
+    ]);
     return c.json({ category: next });
   });
 
@@ -168,15 +166,15 @@ export function readerRoutes(ctx: AppContext) {
     const userId = c.get('user').id;
     const id = c.req.param('id');
     if (id === UNCATEGORIZED_ID) throw badRequest('The Uncategorized group cannot be deleted');
-    db.transaction((tx) => {
-      tx.update(subscriptions)
-        .set({ categoryId: UNCATEGORIZED_ID })
-        .where(and(eq(subscriptions.userId, userId), eq(subscriptions.categoryId, id)))
-        .run();
-      tx.delete(categories)
-        .where(and(eq(categories.userId, userId), eq(categories.id, id)))
-        .run();
-    });
+    const moved = listFeedData(db, userId).filter(([, d]) => d.categoryId === id);
+    ctx.sync.local(userId, [
+      ...moved.map(([feedId, d]) => ({
+        type: 'feed' as const,
+        id: feedId,
+        data: { ...d, categoryId: UNCATEGORIZED_ID },
+      })),
+      { type: 'category', id, deleted: true },
+    ]);
     return c.json({ ok: true });
   });
 
@@ -269,43 +267,36 @@ export function readerRoutes(ctx: AppContext) {
     }
     const read = typeof body.read === 'boolean' ? body.read : undefined;
     const starred = typeof body.starred === 'boolean' ? body.starred : undefined;
-    if (read === undefined && starred === undefined)
+    if (read === undefined && starred === undefined) {
       throw badRequest('Set "read" and/or "starred"');
+    }
 
-    const now = Date.now();
-    let changed = 0;
-    db.transaction((tx) => {
-      for (const item of body.items as unknown[]) {
-        const { feedId, id } = (item ?? {}) as Record<string, unknown>;
-        if (typeof feedId !== 'string' || typeof id !== 'string') continue;
-        const exists = tx
-          .select({ id: articles.id })
-          .from(articles)
-          .where(and(eq(articles.feedId, feedId), eq(articles.id, id)))
-          .get();
-        if (!exists) continue;
-        tx.insert(articleStates)
-          .values({
-            userId,
-            feedId,
-            articleId: id,
-            read: read ?? false,
-            starred: starred ?? false,
-            updatedAt: now,
-          })
-          .onConflictDoUpdate({
-            target: [articleStates.userId, articleStates.feedId, articleStates.articleId],
-            set: {
-              ...(read !== undefined && { read }),
-              ...(starred !== undefined && { starred }),
-              updatedAt: now,
-            },
-          })
-          .run();
-        changed++;
-      }
-    });
-    return c.json({ changed });
+    const changes: LocalChange[] = [];
+    for (const item of body.items as unknown[]) {
+      const { feedId, id } = (item ?? {}) as Record<string, unknown>;
+      if (typeof feedId !== 'string' || typeof id !== 'string') continue;
+      const row = db
+        .select({ read: articleStates.read, starred: articleStates.starred })
+        .from(articles)
+        .leftJoin(
+          articleStates,
+          and(
+            eq(articleStates.userId, userId),
+            eq(articleStates.feedId, articles.feedId),
+            eq(articleStates.articleId, articles.id),
+          ),
+        )
+        .where(and(eq(articles.feedId, feedId), eq(articles.id, id)))
+        .get();
+      if (!row) continue;
+      changes.push({
+        type: 'state',
+        id: stateRecordId(feedId, id),
+        data: { read: read ?? row.read ?? false, starred: starred ?? row.starred ?? false },
+      });
+    }
+    ctx.sync.local(userId, changes);
+    return c.json({ changed: changes.length });
   });
 
   app.post('/articles/read-all', async (c) => {
@@ -314,10 +305,8 @@ export function readerRoutes(ctx: AppContext) {
     const upTo = typeof body.upTo === 'number' ? body.upTo : Date.now();
     const feed = str(body, 'feed', { max: 64, optional: true });
     const category = str(body, 'category', { max: 64, optional: true });
-    const now = Date.now();
-    const result = db.run(sql`
-      insert into article_states (user_id, feed_id, article_id, read, starred, updated_at)
-      select ${userId}, a.feed_id, a.id, 1, 0, ${now}
+    const unread = db.all<{ feedId: string; id: string; starred: number | null }>(sql`
+      select a.feed_id as feedId, a.id as id, s.starred as starred
       from articles a
       join subscriptions sub on sub.feed_id = a.feed_id and sub.user_id = ${userId}
       left join article_states s
@@ -325,9 +314,16 @@ export function readerRoutes(ctx: AppContext) {
       where coalesce(s.read, 0) = 0 and a.published_at <= ${upTo}
         ${feed ? sql`and a.feed_id = ${feed}` : sql``}
         ${category ? sql`and sub.category_id = ${category}` : sql``}
-      on conflict (user_id, feed_id, article_id) do update set read = 1, updated_at = ${now}
     `);
-    return c.json({ marked: result.changes });
+    ctx.sync.local(
+      userId,
+      unread.map((a) => ({
+        type: 'state' as const,
+        id: stateRecordId(a.feedId, a.id),
+        data: { read: true, starred: Boolean(a.starred) },
+      })),
+    );
+    return c.json({ marked: unread.length });
   });
 
   app.post('/refresh', async (c) => {
@@ -371,51 +367,49 @@ export function readerRoutes(ctx: AppContext) {
     }
 
     const byName = new Map(listCategories(db, userId).map((cat) => [cat.name.toLowerCase(), cat]));
+    const subscribed = new Set(listFeedData(db, userId).map(([id]) => id));
+    const changes: LocalChange[] = [];
+    let order = Math.max(
+      0,
+      ...[...byName.values()].map((cat) => cat.order).filter((o) => o < 1000),
+    );
     let createdCategories = 0;
+    for (const name of parsed.categories) {
+      if (byName.has(name.toLowerCase())) continue;
+      const cat: Category = { id: randomToken(8), name, order: (order += 10) };
+      changes.push({ type: 'category', id: cat.id, data: { name, order: cat.order } });
+      byName.set(name.toLowerCase(), cat);
+      createdCategories++;
+    }
+
     let added = 0;
     let existing = 0;
-    const newFeeds: string[] = [];
-
-    db.transaction((tx) => {
-      let order = Math.max(
-        0,
-        ...[...byName.values()].map((cat) => cat.order).filter((o) => o < 1000),
-      );
-      for (const name of parsed.categories) {
-        if (byName.has(name.toLowerCase())) continue;
-        const cat: Category = { id: randomToken(8), name, order: (order += 10) };
-        tx.insert(categories)
-          .values({ userId, ...cat })
-          .run();
-        byName.set(name.toLowerCase(), cat);
-        createdCategories++;
+    for (const item of parsed.feeds.slice(0, 5000)) {
+      if (!isHttpUrl(item.url)) continue;
+      const id = feedIdFor(item.url);
+      if (subscribed.has(id)) {
+        existing++;
+        continue;
       }
-      for (const item of parsed.feeds.slice(0, 5000)) {
-        const feed = ensureFeed(tx as unknown as DB, item.url, item.title);
-        const inserted = tx
-          .insert(subscriptions)
-          .values({
-            userId,
-            feedId: feed.id,
-            categoryId: item.categoryName
-              ? (byName.get(item.categoryName.toLowerCase())?.id ?? UNCATEGORIZED_ID)
-              : UNCATEGORIZED_ID,
-            addedAt: Date.now(),
-          })
-          .onConflictDoNothing()
-          .returning({ feedId: subscriptions.feedId })
-          .get();
-        if (inserted) {
-          added++;
-          if (!feed.lastFetchedAt) newFeeds.push(feed.id);
-        } else {
-          existing++;
-        }
-      }
-    });
+      subscribed.add(id);
+      added++;
+      changes.push({
+        type: 'feed',
+        id,
+        data: {
+          url: normalizeFeedUrl(item.url),
+          ...(item.title && { title: item.title }),
+          ...(item.siteUrl && { siteUrl: item.siteUrl }),
+          categoryId: item.categoryName
+            ? (byName.get(item.categoryName.toLowerCase())?.id ?? UNCATEGORIZED_ID)
+            : UNCATEGORIZED_ID,
+          addedAt: Date.now(),
+        },
+      });
+    }
 
-    // Fetch the new feeds in the background; the response shouldn't wait on 200 sites.
-    void ctx.worker.refresh(newFeeds);
+    // New feeds are fetched in the background; the response doesn't wait on 200 sites.
+    ctx.sync.local(userId, changes);
     return c.json<OpmlImportResponse>({ added, existing, categories: createdCategories });
   });
 
@@ -429,17 +423,25 @@ export function readerRoutes(ctx: AppContext) {
   });
 
   app.put('/settings', bodyLimit({ maxSize: 32 * 1024 }), async (c) => {
+    const userId = c.get('user').id;
     const body = await jsonBody(c);
-    // Device-local settings never leave the device.
-    const { pinSalt, pinHash, wallpaper, ...synced } = body as Record<string, unknown>;
-    (void pinSalt, void pinHash, void wallpaper);
-    const data = synced as Partial<SyncedSettings>;
-    const now = Date.now();
-    db.insert(userSettings)
-      .values({ userId: c.get('user').id, data, updatedAt: now })
-      .onConflictDoUpdate({ target: userSettings.userId, set: { data, updatedAt: now } })
-      .run();
-    return c.json({ settings: data });
+    // Only account-wide fields; the PIN, wallpaper and the like stay on each device.
+    ctx.sync.local(
+      userId,
+      Object.entries(body)
+        .filter(([key]) => isSyncedSettingKey(key))
+        .map(([key, value]) =>
+          value === null || value === undefined
+            ? { type: 'setting' as const, id: key, deleted: true as const }
+            : { type: 'setting' as const, id: key, data: { value } },
+        ),
+    );
+    const row = db
+      .select({ data: userSettings.data })
+      .from(userSettings)
+      .where(eq(userSettings.userId, userId))
+      .get();
+    return c.json({ settings: row?.data ?? {} });
   });
 
   return app;
@@ -477,6 +479,25 @@ function listFeeds(db: DB, userId: string, feedId?: string): ServerFeed[] {
       lastFetchedAt: f.lastFetchedAt ?? undefined,
       lastError: f.lastError ?? undefined,
     }));
+}
+
+/** The sync record for a subscription, rebuilt from the tables. */
+function feedData(db: DB, userId: string, feedId: string): FeedRecordData | undefined {
+  return listFeedData(db, userId, feedId)[0]?.[1];
+}
+
+function listFeedData(db: DB, userId: string, feedId?: string): [string, FeedRecordData][] {
+  return listFeeds(db, userId, feedId).map((f) => [
+    f.id,
+    {
+      url: f.url,
+      ...(f.title && { title: f.title }),
+      ...(f.customTitle && { customTitle: f.customTitle }),
+      ...(f.siteUrl && { siteUrl: f.siteUrl }),
+      categoryId: f.categoryId,
+      addedAt: f.addedAt,
+    },
+  ]);
 }
 
 function listCategories(db: DB, userId: string): Category[] {

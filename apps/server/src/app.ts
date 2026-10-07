@@ -11,6 +11,8 @@ import { randomToken } from './lib/crypto';
 import { createSafeFetch } from './lib/safe-fetch';
 import { adminRoutes, authRoutes, deviceRoutes } from './auth/routes';
 import { readerRoutes } from './reader/routes';
+import { SyncService } from './sync/service';
+import { syncRoutes } from './sync/routes';
 
 export const VERSION = '0.1.0';
 
@@ -28,12 +30,15 @@ export function createContext(config: Config): AppContext & { close: () => void 
     allowPrivate: config.fetchAllowPrivate,
     allowHosts: config.fetchAllowHosts,
   });
+  const worker = new FeedWorker(db, fetch, config.fetchIntervalMin);
   return {
     config,
     db,
     secret: instanceSecret(db),
     fetch,
-    worker: new FeedWorker(db, fetch, config.fetchIntervalMin),
+    worker,
+    // Feeds a client subscribes to are fetched right away, not at the next tick.
+    sync: new SyncService(db, (ids) => void worker.refresh(ids)),
     close,
   };
 }
@@ -60,6 +65,7 @@ export function createApp(ctx: AppContext) {
   api.route('/devices', deviceRoutes(ctx));
   api.route('/admin', adminRoutes(ctx));
   api.route('/reader', readerRoutes(ctx));
+  api.route('/sync', syncRoutes(ctx));
 
   app.route(API_PREFIX, api);
   app.get('/healthz', (c) => c.text('ok'));

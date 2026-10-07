@@ -19,6 +19,7 @@ import { downloadText, pickTextFile } from '@/lib/util/download';
 import { clearPin, isPinEnabled, isValidPin, setPin } from '@/lib/lock';
 import { Row, Section, Segmented, Toggle } from './settings-ui';
 import { AppearanceSection } from './Appearance';
+import { SyncSection } from './Sync';
 
 export function Settings() {
   const { settings, loaded, update } = useSettings();
@@ -66,7 +67,7 @@ export function Settings() {
         </Link>
         <h1 className="text-[22px] font-bold tracking-tight">Settings</h1>
         <p className="mt-1 text-[13px] text-[var(--text-faint)]">
-          Everything is stored locally in your browser. Nothing is sent anywhere.
+          Everything is stored in your browser. Nothing leaves it unless you turn on sync.
         </p>
 
         <Section title="Reading">
@@ -134,6 +135,8 @@ export function Settings() {
             </p>
           )}
         </Section>
+
+        <SyncSection />
 
         <BackupSection />
 

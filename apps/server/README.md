@@ -4,8 +4,8 @@ A self-hostable server for Perch. In **personal mode** it fetches your feeds in 
 background, keeps your read and starred state, and serves it to every device you sign in on.
 One process, one SQLite file, no external services.
 
-> Status: early. Accounts, feed fetching and the reader API work and are tested. The sync API
-> for the extension, the web reader and E2E mode (for the official server) come next.
+> Status: early. Accounts, feed fetching, the reader API and sync with the browser extension
+> work and are tested. The web reader and E2E mode (for the official server) come next.
 
 ## Run it
 
@@ -54,6 +54,11 @@ DATABASE_URL=./perch.db node apps/server/dist/main.js
 - **SSRF protection.** Every outbound request resolves DNS through a filter that refuses
   loopback, private, link-local (cloud metadata), CGNAT and multicast ranges, on every redirect
   hop. Responses are capped at 5 MB.
+- **Sync.** Subscriptions, categories, settings (one record per field) and read/starred state
+  are small records keyed `type:id`. The server keeps the write with the latest hybrid logical
+  clock for each key and numbers changes per account, so a client asks for "everything after
+  version N". Changes made through the reader API become records too, so every device sees
+  them. Read state older than 60 days and tombstones older than 90 are forgotten.
 - **Retention.** Each feed keeps its newest 200 articles plus anything from the last 90 days.
   Starred articles are never pruned, even after you unsubscribe.
 
@@ -79,6 +84,8 @@ All endpoints live under `/api/v1` and speak JSON. The request and response type
 | `POST /reader/refresh`                                               | Refresh now                                |
 | `GET/POST /reader/opml`                                              | Export / import subscriptions              |
 | `GET/PUT /reader/settings`                                           | Settings that follow the account           |
+| `GET /sync/changes?since=&limit=` · `POST /sync/push`                | Sync records after a version, send changes |
+| `GET /sync/events`                                                   | Server-Sent Events: the account changed    |
 
 ## Development
 
