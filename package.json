@@ -16,6 +16,8 @@
     "build:firefox": "npm run build:firefox -w @perch/extension",
     "zip": "npm run zip -w @perch/extension",
     "zip:firefox": "npm run zip:firefox -w @perch/extension",
+    "dev:server": "npm run dev -w @perch/server",
+    "build:server": "npm run build -w @perch/server",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
     "format": "prettier --write .",

@@ -10,3 +10,8 @@ stats-*.json
 .vscode/*
 !.vscode/extensions.json
 web-ext.config.ts.local
+dist
+*.db
+*.db-shm
+*.db-wal
+apps/server/data

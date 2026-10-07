@@ -1,0 +1,35 @@
+# Perch Server behind Caddy with automatic HTTPS.
+# 1. Point your domain's DNS at this machine.
+# 2. Replace reader.example.com below (twice).
+# 3. docker compose -f docker-compose.example.yml up -d
+# 4. Open https://reader.example.com and create the first (admin) account.
+
+services:
+  perch:
+    image: perch/server
+    build:
+      context: ../..
+      dockerfile: apps/server/Dockerfile
+    restart: unless-stopped
+    environment:
+      PERCH_PUBLIC_URL: https://reader.example.com
+      PERCH_SIGNUP: invite # open | invite | closed
+      PERCH_FETCH_INTERVAL_MIN: 30
+      PERCH_TRUST_PROXY: 'true' # Caddy sets X-Forwarded-For
+      # PERCH_FETCH_ALLOW_HOSTS: nas.local  # feeds on your home network
+    volumes:
+      - perch-data:/data
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '443:443'
+    command: caddy reverse-proxy --from reader.example.com --to perch:8080
+    volumes:
+      - caddy-data:/data
+
+volumes:
+  perch-data:
+  caddy-data:

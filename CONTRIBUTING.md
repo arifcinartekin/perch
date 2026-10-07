@@ -5,8 +5,10 @@ everyone time.
 
 ## Principles (please don't regress these)
 
-1. **Local only.** No servers, no analytics, no telemetry, no third-party APIs. The only network
-   requests are to feeds/articles/favicons the user has explicitly added.
+1. **Local by default.** The extension works with no account and no server. Syncing is opt-in,
+   to a server the user picks (their own Perch Server or the official one). No analytics, no
+   telemetry, no third-party APIs. Otherwise the only network requests are to the
+   feeds/articles/favicons the user has explicitly added.
 2. **Minimal permissions.** No host permissions at install. Anything broader is optional,
    requested at runtime from a user gesture, clearly explained, and revocable. If a feature
    needs a new permission, that needs discussion first.
@@ -52,6 +54,9 @@ All of these run in CI too.
   `src/hooks/`.
 - **Anything platform-independent** (ids, OPML, search, theming, types) belongs in
   `packages/core` so the server and mobile app can reuse it.
+- **Server** — `apps/server/` (see its [README](./apps/server/README.md)). Every outbound
+  request goes through `src/lib/safe-fetch.ts`; never call `fetch` directly there. Schema
+  changes need a migration: edit `src/db/schema.ts`, then `npm run db:generate -w @perch/server`.
 
 ## Commit / PR style
 
