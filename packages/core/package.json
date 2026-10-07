@@ -1,0 +1,25 @@
+{
+  "name": "@perch/core",
+  "version": "0.1.0",
+  "description": "Platform-independent Perch logic: feed parsing, discovery, ids, OPML, search, theming.",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./parser": "./src/parser/index.ts",
+    "./*": "./src/*.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "fast-xml-parser": "^5.11.1"
+  },
+  "devDependencies": {
+    "@types/node": "^26.5.0",
+    "typescript": "^5.9.0",
+    "vitest": "^3.2.0"
+  }
+}

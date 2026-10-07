@@ -1,0 +1,32 @@
+{
+  "version": "https://jsonfeed.org/version/1.1",
+  "title": "JSON Feed Example",
+  "home_page_url": "https://json.example.net/",
+  "feed_url": "https://json.example.net/feed.json",
+  "icon": "https://json.example.net/icon.png",
+  "authors": [{ "name": "Katherine Johnson" }],
+  "items": [
+    {
+      "id": "100",
+      "url": "https://json.example.net/100",
+      "title": "A JSON item",
+      "content_html": "<p>Rich <b>HTML</b> content.</p>",
+      "summary": "Short summary.",
+      "date_published": "2024-06-10T15:00:00-04:00",
+      "attachments": [
+        {
+          "url": "https://json.example.net/audio/100.mp3",
+          "mime_type": "audio/mpeg",
+          "size_in_bytes": 999
+        }
+      ]
+    },
+    {
+      "id": 101,
+      "url": "https://json.example.net/101",
+      "title": "Text only",
+      "content_text": "Line one.\nLine two.",
+      "date_published": "not a date"
+    }
+  ]
+}

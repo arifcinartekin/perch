@@ -14,7 +14,12 @@ It has two surfaces:
 - **A full-screen reader** — a clean, greyscale, FreshRSS/Feedly-style reading experience with a
   sidebar, collapsible categories, unread counts, and one-column article reading. Articles load
   their full text automatically (via Mozilla Readability) with the feed's own content as a
-  fallback; there's no mode switch and no button to press.
+  fallback; there's no mode switch and no button to press. A search bar across the top
+  searches the open feed, category or everything (<kbd>/</kbd> or <kbd>⌘K</kbd> to focus).
+
+Power users can make it their own under **Settings → Appearance**: pick the background, accent and
+button colours (separately for the light and dark theme — text contrast adjusts automatically),
+and set a background image for the full-screen reader with dim and blur controls.
 
 It also does the things a local-first tool should: **export / import** your subscriptions (OPML
 or a full JSON backup), and an optional **6-digit PIN** to keep a passer-by out of your reader.
@@ -87,32 +92,40 @@ background refresher can fetch it. If you decline, the feed is still added but f
 
 ## Architecture
 
+Perch is an npm-workspaces monorepo. Everything that doesn't depend on a browser lives in
+`packages/core`, so the upcoming server and mobile app share the exact same parsing, ids and
+search as the extension.
+
 ```
-src/
-├─ entrypoints/
-│  ├─ background.ts        Service worker: alarm-driven refresh, message router,
-│  │                       toolbar badge, optional auto-discovery listener.
-│  ├─ popup/               React. Discover / add / remove feeds for the current site.
-│  ├─ reader/              React + HashRouter. The full-screen reading app:
-│  │  ├─ components/       Sidebar, StreamView, ArticleList, ArticlePane, dialogs, toasts.
-│  │  └─ pages/Settings    All user settings (also the extension's options page).
-│  └─ options/             Thin redirect to reader.html#/settings.
-├─ lib/
-│  ├─ parser/              RSS 2.0 / RDF, Atom, JSON Feed → one normalised shape.
-│  │                       XML via fast-xml-parser (no DOM → runs in the worker).
-│  ├─ discovery/           link-tag collector, candidate URL builder, bounded prober.
-│  ├─ storage/             storage.local (settings, feeds, categories) +
-│  │                       IndexedDB via idb (articles, full-text cache).
-│  ├─ feeds/               refresh orchestration (conditional GET, upsert, prune), favicons.
-│  ├─ readability/         reader-page-only full-text fetch + @mozilla/readability + sanitise.
-│  ├─ permissions/         runtime host-permission helpers.
-│  ├─ sanitize.ts          DOMPurify wrapper (render-time only).
-│  ├─ messaging.ts         tiny typed wrapper over runtime.sendMessage.
-│  └─ badge.ts             the red discovery dot.
-├─ components/ hooks/      shared React primitives and hooks.
-└─ assets/                 Tailwind entry + design tokens.
-tests/                     Vitest: parser, dates, discovery, storage (fake-indexeddb),
-                           and a jsdom smoke test that mounts the whole reader.
+packages/
+└─ core/                   Platform-independent, no DOM, no browser APIs.
+   ├─ src/parser/          RSS 2.0 / RDF, Atom, JSON Feed → one normalised shape
+   │                       (fast-xml-parser, so it runs in a service worker or on Node).
+   ├─ src/discovery/       candidate URL builder + bounded prober.
+   ├─ src/feeds.ts         stable feed ids, display titles.
+   ├─ src/opml.ts          OPML import / export.
+   ├─ src/search.ts        accent-insensitive article search.
+   ├─ src/theme.ts         custom colour palettes.
+   ├─ src/types.ts         shared domain types.
+   └─ tests/               Vitest: parser, dates, normalisation, discovery, colours.
+apps/
+└─ extension/              The WXT browser extension.
+   ├─ src/entrypoints/
+   │  ├─ background.ts     Service worker: alarm-driven refresh, message router,
+   │  │                    toolbar badge, optional auto-discovery listener.
+   │  ├─ popup/            React. Discover / add / remove feeds for the current site.
+   │  ├─ reader/           React + HashRouter. The full-screen reading app.
+   │  └─ options/          Thin redirect to reader.html#/settings.
+   ├─ src/lib/
+   │  ├─ discovery/        link-tag collector (scripting API) + orchestration.
+   │  ├─ storage/          storage.local (settings, feeds, categories) +
+   │  │                    IndexedDB via idb (articles, full-text cache, wallpaper).
+   │  ├─ feeds/            refresh orchestration (conditional GET, upsert, prune).
+   │  ├─ readability/      reader-page-only full-text fetch + @mozilla/readability + sanitise.
+   │  ├─ permissions/      runtime host-permission helpers.
+   │  └─ backup.ts …       JSON backup, messaging, badge, PIN lock.
+   ├─ src/components/ hooks/ assets/
+   └─ tests/              Vitest: storage (fake-indexeddb), backup, and a jsdom smoke test.
 ```
 
 ### Stack
@@ -187,7 +200,7 @@ npm run typecheck     # wxt prepare + tsc --noEmit
 npm test              # vitest
 npm run test:watch
 npm run format        # prettier
-node scripts/gen-icons.mjs   # regenerate the PNG icons from code
+node apps/extension/scripts/gen-icons.mjs   # regenerate the PNG icons from code
 ```
 
 CI (`.github/workflows/ci.yml`) runs typecheck, tests, and both production builds on every push

@@ -37,17 +37,21 @@ All of these run in CI too.
 
 ## Where things live
 
-- **Feed parsing** — `src/lib/parser/`. Pure functions, no DOM (must run in the service worker).
-  If you fix a real-world feed quirk, add a fixture in `tests/fixtures/` and a case in
-  `tests/parser.test.ts`.
-- **Discovery** — `src/lib/discovery/`. Keep the candidate list capped; keep probing bounded and
+- **Feed parsing** — `packages/core/src/parser/`. Pure functions, no DOM (must run in the service
+  worker and on the server). If you fix a real-world feed quirk, add a fixture in
+  `packages/core/tests/fixtures/` and a case in `packages/core/tests/parser.test.ts`.
+- **Discovery** — `packages/core/src/discovery/` (candidates, probing) and
+  `apps/extension/src/lib/discovery/` (link tags via the scripting API). Keep the candidate list capped; keep probing bounded and
   polite (short timeout, small read, stop early).
-- **Storage** — `src/lib/storage/`. `storage.local` for small records, IndexedDB (`idb`) for
+- **Storage** — `apps/extension/src/lib/storage/`. `storage.local` for small records, IndexedDB (`idb`) for
   articles/full-text. Never overwrite a user's read/starred state on refresh.
-- **Background** — `src/entrypoints/background.ts` + `src/lib/background/`. Assume the worker can
+- **Background** — `apps/extension/src/entrypoints/background.ts` + `apps/extension/src/lib/background/`. Assume the worker can
   restart at any time.
-- **UI** — `src/entrypoints/popup/` (small, fast) and `src/entrypoints/reader/` (the main app).
-  Shared bits in `src/components/` and `src/hooks/`.
+- **UI** — `apps/extension/src/entrypoints/popup/` (small, fast) and
+  `apps/extension/src/entrypoints/reader/` (the main app). Shared bits in `src/components/` and
+  `src/hooks/`.
+- **Anything platform-independent** (ids, OPML, search, theming, types) belongs in
+  `packages/core` so the server and mobile app can reuse it.
 
 ## Commit / PR style
 
