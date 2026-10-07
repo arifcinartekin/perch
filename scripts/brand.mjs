@@ -2,7 +2,8 @@
 //   - the extension's toolbar and store icons (apps/extension/public/icon)
 //   - the web reader's favicon, PWA and Apple touch icons (apps/web/public)
 //   - iOS: an asset-catalog AppIcon (light, dark, tinted) and the separate
-//     layers for Icon Composer (brand/ios)
+//     layers for Icon Composer (brand/ios); the app's catalog with the icon,
+//     logo, mark and accent colour (apps/ios/Perch/Assets.xcassets)
 //
 // Run after changing anything in brand/src:  npm run brand
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -64,46 +65,106 @@ png(appIconFullBleed, 512, 'apps/web/public/icon-maskable-512.png');
 png(appIconFullBleed, 180, 'apps/web/public/apple-touch-icon.png');
 
 // --- iOS: asset catalog ------------------------------------------------------
-// Light: the full-bleed icon (iOS applies the mask).
-png(appIconFullBleed, 1024, 'brand/ios/AppIcon.appiconset/AppIcon.png');
-// Dark: the mark on transparency; iOS puts it on its own dark background.
-const darkIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+// Written to brand/ios and into the app's own catalog (apps/ios).
+const ICONSETS = [
+  'brand/ios/AppIcon.appiconset',
+  'apps/ios/Perch/Assets.xcassets/AppIcon.appiconset',
+];
+for (const dir of ICONSETS) {
+  // Light: the full-bleed icon (iOS applies the mask).
+  png(appIconFullBleed, 1024, `${dir}/AppIcon.png`);
+  // Dark: the mark on transparency; iOS puts it on its own dark background.
+  const darkIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
 <g transform="translate(128 112) scale(1.5)">${inner(markFull)}</g>
 </svg>`;
-png(darkIcon, 1024, 'brand/ios/AppIcon.appiconset/AppIcon-Dark.png');
-// Tinted: greyscale; iOS maps luminance onto the user's tint colour.
-const tintedIcon = darkIcon
-  .replace(/#F4F1EA/gi, '#FFFFFF')
-  .replace(/#FF7A1A/gi, '#8C8C8C')
-  .replace(/#12151C/gi, '#000000')
-  .replace('<g ', '<rect width="1024" height="1024" fill="#000"/><g ');
-png(tintedIcon, 1024, 'brand/ios/AppIcon.appiconset/AppIcon-Tinted.png');
-text(
-  `${JSON.stringify(
-    {
+  png(darkIcon, 1024, `${dir}/AppIcon-Dark.png`);
+  // Tinted: greyscale; iOS maps luminance onto the user's tint colour.
+  const tintedIcon = darkIcon
+    .replace(/#F4F1EA/gi, '#FFFFFF')
+    .replace(/#FF7A1A/gi, '#8C8C8C')
+    .replace(/#12151C/gi, '#000000')
+    .replace('<g ', '<rect width="1024" height="1024" fill="#000"/><g ');
+  png(tintedIcon, 1024, `${dir}/AppIcon-Tinted.png`);
+  text(
+    `${JSON.stringify(
+      {
+        images: [
+          { filename: 'AppIcon.png', idiom: 'universal', platform: 'ios', size: '1024x1024' },
+          {
+            appearances: [{ appearance: 'luminosity', value: 'dark' }],
+            filename: 'AppIcon-Dark.png',
+            idiom: 'universal',
+            platform: 'ios',
+            size: '1024x1024',
+          },
+          {
+            appearances: [{ appearance: 'luminosity', value: 'tinted' }],
+            filename: 'AppIcon-Tinted.png',
+            idiom: 'universal',
+            platform: 'ios',
+            size: '1024x1024',
+          },
+        ],
+        info: { author: 'xcode', version: 1 },
+      },
+      null,
+      2,
+    )}\n`,
+    `${dir}/Contents.json`,
+  );
+}
+
+// The app's other assets: the logo and the mark as vector images with a dark
+// variant, and the accent colour.
+const CATALOG = 'apps/ios/Perch/Assets.xcassets';
+const json = (value) => `${JSON.stringify(value, null, 2)}\n`;
+const INFO = { author: 'xcode', version: 1 };
+text(json({ info: INFO }), `${CATALOG}/Contents.json`);
+// The horizontal logo cropped to its drawing (same box as PerchLogo in packages/reader).
+const cropLogo = (svg) =>
+  svg.replace(
+    /viewBox="[^"]*" width="\d+" height="\d+"/,
+    'viewBox="88 106 1548 473" width="1548" height="473"',
+  );
+function vectorImage(name, light, dark) {
+  text(light, `${CATALOG}/${name}.imageset/${name}.svg`);
+  text(dark, `${CATALOG}/${name}.imageset/${name}-Dark.svg`);
+  text(
+    json({
       images: [
-        { filename: 'AppIcon.png', idiom: 'universal', platform: 'ios', size: '1024x1024' },
+        { filename: `${name}.svg`, idiom: 'universal' },
         {
           appearances: [{ appearance: 'luminosity', value: 'dark' }],
-          filename: 'AppIcon-Dark.png',
+          filename: `${name}-Dark.svg`,
           idiom: 'universal',
-          platform: 'ios',
-          size: '1024x1024',
-        },
-        {
-          appearances: [{ appearance: 'luminosity', value: 'tinted' }],
-          filename: 'AppIcon-Tinted.png',
-          idiom: 'universal',
-          platform: 'ios',
-          size: '1024x1024',
         },
       ],
-      info: { author: 'xcode', version: 1 },
-    },
-    null,
-    2,
-  )}\n`,
-  'brand/ios/AppIcon.appiconset/Contents.json',
+      info: INFO,
+      properties: { 'preserves-vector-representation': true },
+    }),
+    `${CATALOG}/${name}.imageset/Contents.json`,
+  );
+}
+vectorImage(
+  'PerchLogo',
+  cropLogo(src('perch-logo-horizontal-on-light.svg')),
+  cropLogo(src('perch-logo-horizontal-on-dark.svg')),
+);
+vectorImage('PerchMark', src('perch-mark-dark.svg'), src('perch-mark-light.svg'));
+text(
+  json({
+    colors: [
+      {
+        color: {
+          'color-space': 'srgb',
+          components: { red: '0xFF', green: '0x7A', blue: '0x1A', alpha: '1.000' },
+        },
+        idiom: 'universal',
+      },
+    ],
+    info: INFO,
+  }),
+  `${CATALOG}/AccentColor.colorset/Contents.json`,
 );
 
 // --- iOS 26: layers for Icon Composer --------------------------------------

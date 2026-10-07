@@ -104,8 +104,9 @@ background refresher can fetch it. If you decline, the feed is still added but f
 ## Architecture
 
 Perch is an npm-workspaces monorepo. Everything that doesn't depend on a browser lives in
-`packages/core`, so the server and the upcoming mobile app share the exact same parsing, ids
-and search as the extension. The reading app itself lives in `packages/reader` and runs twice:
+`packages/core`, so the server shares the exact same parsing, ids and search as the
+extension. The iPhone app is Swift and talks to the server; its Swift port of the protocol
+(key derivation included) is tested against the TypeScript one. The reading app itself lives in `packages/reader` and runs twice:
 in the extension over local storage, and on the web over the Perch Server API — one UI, two
 data layers behind the same `ReaderBackend` interface.
 
@@ -147,6 +148,10 @@ apps/
 │  │  ├─ backend.ts        the reader's data layer (ReaderBackend over local storage).
 │  │  └─ backup.ts …       JSON backup, messaging, badge, PIN lock.
 │  └─ tests/              Vitest: storage (fake-indexeddb), backup, and a jsdom smoke test.
+├─ ios/                    The iPhone app (SwiftUI, iOS 26+, Liquid Glass). See apps/ios/README.md.
+│  ├─ Perch/               screens, session (Keychain), live updates over Server-Sent Events.
+│  └─ PerchKit/            Swift package: API client and types, Argon2id + HKDF key derivation
+│                          (reference C Argon2), feed-HTML helpers; `swift test` on the Mac.
 ├─ web/                    The web reader (Vite PWA): sign-in, @perch/reader over the server
 │                          API, account / devices / invites / OPML settings. Served by the server.
 └─ server/                 Perch Server: self-hostable, fetches feeds, serves every device.

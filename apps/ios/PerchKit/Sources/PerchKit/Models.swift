@@ -1,0 +1,228 @@
+import Foundation
+
+// The Perch Server API's types, mirroring packages/core/src/api.ts and
+// types.ts. Times are epoch milliseconds on the wire.
+
+public enum ServerMode: String, Codable, Sendable { case personal, e2e }
+public enum SignupPolicy: String, Codable, Sendable { case open, invite, closed }
+
+/// `GET /server`, read first when connecting.
+public struct ServerInfo: Codable, Sendable, Equatable {
+  public var software: String
+  public var version: String
+  public var mode: ServerMode
+  public var signup: SignupPolicy
+  public var community: Bool
+  /// No accounts yet: the first one to register becomes the admin.
+  public var needsSetup: Bool
+}
+
+public struct KdfParams: Codable, Sendable, Equatable {
+  public var algorithm: String
+  /// Memory in KiB.
+  public var memory: Int
+  public var iterations: Int
+  public var parallelism: Int
+
+  public init(algorithm: String = "argon2id", memory: Int, iterations: Int, parallelism: Int) {
+    self.algorithm = algorithm
+    self.memory = memory
+    self.iterations = iterations
+    self.parallelism = parallelism
+  }
+
+  /// Same as DEFAULT_KDF in packages/core/src/auth.ts.
+  public static let `default` = KdfParams(memory: 64 * 1024, iterations: 3, parallelism: 1)
+
+  /// The bounds a server accepts (KDF_LIMITS); anything else is refused before running.
+  public var isValid: Bool {
+    algorithm == "argon2id" && (8 * 1024...1024 * 1024).contains(memory)
+      && (1...10).contains(iterations) && (1...4).contains(parallelism)
+  }
+}
+
+public struct PublicUser: Codable, Sendable, Equatable {
+  public var id: String
+  public var username: String
+  public var displayName: String
+  public var role: String
+  public var createdAt: Double
+}
+
+public struct AuthResponse: Codable, Sendable {
+  public var token: String
+  public var user: PublicUser
+}
+
+public struct Feed: Codable, Sendable, Identifiable, Hashable {
+  public var id: String
+  public var url: String
+  public var title: String
+  public var customTitle: String?
+  public var siteUrl: String?
+  public var iconUrl: String?
+  public var categoryId: String
+  public var addedAt: Double
+  public var lastFetchedAt: Double?
+  public var lastError: String?
+
+  /// The custom title when set, else the feed's own.
+  public var displayTitle: String {
+    if let custom = customTitle, !custom.isEmpty { return custom }
+    return title.isEmpty ? (URL(string: url)?.host() ?? url) : title
+  }
+}
+
+public struct Category: Codable, Sendable, Identifiable, Hashable {
+  public var id: String
+  public var name: String
+  public var order: Double
+  public var collapsed: Bool?
+
+  public init(id: String, name: String, order: Double, collapsed: Bool? = nil) {
+    self.id = id
+    self.name = name
+    self.order = order
+    self.collapsed = collapsed
+  }
+}
+
+/// The category every feed falls back to (UNCATEGORIZED_ID in core).
+public let uncategorizedId = "uncategorized"
+
+public struct Enclosure: Codable, Sendable, Hashable {
+  public var url: String
+  public var type: String?
+  public var length: Double?
+}
+
+public struct Article: Codable, Sendable, Identifiable, Hashable {
+  /// The article's own id; unique only within its feed.
+  public var articleId: String
+  public var feedId: String
+  public var url: String?
+  public var title: String
+  public var author: String?
+  public var publishedAt: Double
+  public var summaryHtml: String?
+  public var contentHtml: String?
+  public var enclosures: [Enclosure]
+  public var read: Bool
+  public var starred: Bool
+
+  /// Unique across feeds: `feedId:id`, the form sync and the web reader use.
+  public var id: String { "\(feedId):\(articleId)" }
+  public var ref: ArticleRef { ArticleRef(feedId: feedId, id: articleId) }
+  public var published: Date { Date(timeIntervalSince1970: publishedAt / 1000) }
+  /// The title as text. Older servers stored some titles with HTML entities.
+  public var displayTitle: String {
+    title.isEmpty ? "Untitled" : HTMLText.decodeEntities(title)
+  }
+
+  enum CodingKeys: String, CodingKey {
+    case articleId = "id"
+    case feedId, url, title, author, publishedAt, summaryHtml, contentHtml, enclosures, read,
+      starred
+  }
+
+  public init(from decoder: Decoder) throws {
+    let c = try decoder.container(keyedBy: CodingKeys.self)
+    articleId = try c.decode(String.self, forKey: .articleId)
+    feedId = try c.decode(String.self, forKey: .feedId)
+    url = try c.decodeIfPresent(String.self, forKey: .url)
+    title = try c.decodeIfPresent(String.self, forKey: .title) ?? ""
+    author = try c.decodeIfPresent(String.self, forKey: .author)
+    publishedAt = try c.decode(Double.self, forKey: .publishedAt)
+    summaryHtml = try c.decodeIfPresent(String.self, forKey: .summaryHtml)
+    contentHtml = try c.decodeIfPresent(String.self, forKey: .contentHtml)
+    enclosures = try c.decodeIfPresent([Enclosure].self, forKey: .enclosures) ?? []
+    // 0 | 1 on the wire.
+    read = try c.decode(Int.self, forKey: .read) != 0
+    starred = try c.decode(Int.self, forKey: .starred) != 0
+  }
+
+  public func encode(to encoder: Encoder) throws {
+    var c = encoder.container(keyedBy: CodingKeys.self)
+    try c.encode(articleId, forKey: .articleId)
+    try c.encode(feedId, forKey: .feedId)
+    try c.encodeIfPresent(url, forKey: .url)
+    try c.encode(title, forKey: .title)
+    try c.encodeIfPresent(author, forKey: .author)
+    try c.encode(publishedAt, forKey: .publishedAt)
+    try c.encodeIfPresent(summaryHtml, forKey: .summaryHtml)
+    try c.encodeIfPresent(contentHtml, forKey: .contentHtml)
+    try c.encode(enclosures, forKey: .enclosures)
+    try c.encode(read ? 1 : 0, forKey: .read)
+    try c.encode(starred ? 1 : 0, forKey: .starred)
+  }
+}
+
+public struct ArticleRef: Codable, Sendable, Hashable {
+  public var feedId: String
+  public var id: String
+  public init(feedId: String, id: String) {
+    self.feedId = feedId
+    self.id = id
+  }
+}
+
+public struct FullText: Codable, Sendable, Hashable {
+  /// Sanitised by the server.
+  public var html: String
+  public var title: String?
+  public var byline: String?
+}
+
+public struct Library: Codable, Sendable {
+  public var feeds: [Feed]
+  public var categories: [Category]
+  public init(feeds: [Feed] = [], categories: [Category] = []) {
+    self.feeds = feeds
+    self.categories = categories
+  }
+}
+
+public struct Counts: Codable, Sendable {
+  public var unread: [String: Int]
+  public var starred: Int
+  public init(unread: [String: Int] = [:], starred: Int = 0) {
+    self.unread = unread
+    self.starred = starred
+  }
+}
+
+public struct ArticlePage: Codable, Sendable {
+  public var items: [Article]
+  /// Pass as `before` for the next page; nil at the end.
+  public var next: String?
+}
+
+/// The synced settings the app reads. Unknown keys are ignored.
+public struct SyncedSettings: Codable, Sendable, Equatable {
+  public enum Theme: String, Codable, Sendable { case system, light, dark }
+  public enum ReadingFont: String, Codable, Sendable { case sans, serif }
+
+  public struct Glass: Codable, Sendable, Equatable {
+    public var enabled: Bool
+    public var transparency: Double
+    public var blur: Double
+  }
+
+  public var theme: Theme?
+  public var readingFont: ReadingFont?
+  public var glass: Glass?
+
+  public init(theme: Theme? = nil, readingFont: ReadingFont? = nil, glass: Glass? = nil) {
+    self.theme = theme
+    self.readingFont = readingFont
+    self.glass = glass
+  }
+
+  public init(from decoder: Decoder) throws {
+    // Lenient: a value from a newer client shouldn't break the whole settings object.
+    let c = try decoder.container(keyedBy: CodingKeys.self)
+    theme = try? c.decodeIfPresent(Theme.self, forKey: .theme)
+    readingFont = try? c.decodeIfPresent(ReadingFont.self, forKey: .readingFont)
+    glass = try? c.decodeIfPresent(Glass.self, forKey: .glass)
+  }
+}

@@ -1,0 +1,7 @@
+# Swift package and Xcode build state
+PerchKit/.build/
+.swiftpm/
+PerchKit/.swiftpm/
+xcuserdata/
+*.xcuserstate
+DerivedData/

@@ -45,7 +45,9 @@ and the eye ink, as in the files.
   48/128 px the app icon.
 - `apps/web/public/` — `favicon.svg`, `favicon-32.png`, `icon-192/512.png`,
   `icon-maskable-512.png`, `apple-touch-icon.png`.
-- `ios/AppIcon.appiconset/` — drop into the Xcode asset catalog. Light, dark
+- `apps/ios/Perch/Assets.xcassets/` — the iPhone app's icon, `PerchLogo` and
+  `PerchMark` (vector, with dark variants) and `AccentColor`.
+- `ios/AppIcon.appiconset/` — the same icon set, to drop into another asset catalog. Light, dark
   (mark on transparency; iOS draws its own dark background) and tinted
   (greyscale; iOS maps luminance to the user's tint).
 - `ios/IconComposer/` — the icon as three flat layers for iOS 26's Liquid

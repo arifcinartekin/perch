@@ -1,0 +1,50 @@
+# The Xcode project is generated from this file: `xcodegen` in apps/ios (the
+# generated Perch.xcodeproj is committed too, so Xcode opens it directly).
+name: Perch
+options:
+  bundleIdPrefix: app.perch
+  deploymentTarget:
+    iOS: '26.0'
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: '6.0'
+    MARKETING_VERSION: '0.1.0'
+    CURRENT_PROJECT_VERSION: '1'
+    # Set your team to run on a device (Signing & Capabilities in Xcode).
+    DEVELOPMENT_TEAM: ''
+    CODE_SIGN_STYLE: Automatic
+packages:
+  PerchKit:
+    path: PerchKit
+targets:
+  Perch:
+    type: application
+    platform: iOS
+    sources:
+      - path: Perch
+    dependencies:
+      - package: PerchKit
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: app.perch.ios
+        PRODUCT_NAME: Perch
+        TARGETED_DEVICE_FAMILY: '1'
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: Perch
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight
+        INFOPLIST_KEY_NSLocalNetworkUsageDescription: Perch connects to your Perch Server when it runs on your local network.
+        INFOPLIST_FILE: Perch/Support/Info.plist
+        ENABLE_PREVIEWS: YES
+schemes:
+  Perch:
+    build:
+      targets:
+        Perch: all
+    run:
+      config: Debug
+    test:
+      config: Debug

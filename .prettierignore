@@ -5,3 +5,5 @@ package-lock.json
 tests/fixtures
 dist
 apps/server/drizzle
+.build
+.swiftpm
