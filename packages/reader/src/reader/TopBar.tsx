@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { matchPath, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { IconButton } from '../components/IconButton';
-import { IconRefresh, IconRss, IconSearch, IconSettings, IconX } from '../components/icons';
+import { IconRefresh, IconSearch, IconSettings, IconX } from '../components/icons';
+import { PerchLogo } from '../components/PerchMark';
 import { Spinner } from '../components/Spinner';
 import { useLibrary } from '../hooks/useLibrary';
 import { displayTitle } from '@perch/core/feeds';
@@ -112,10 +113,9 @@ export function TopBar() {
   })();
 
   return (
-    <header className="relative z-10 flex h-12 shrink-0 items-center border-b border-[var(--border)] bg-[var(--bg-elevated)] backdrop-blur-xl">
-      <div className="flex w-[264px] shrink-0 items-center gap-2 px-4">
-        <IconRss size={17} className="shrink-0 text-[var(--accent)]" />
-        <span className="text-[14px] font-semibold tracking-tight">Perch</span>
+    <header className="glass relative z-10 flex h-12 shrink-0 items-center rounded-[16px]">
+      <div className="flex w-[264px] shrink-0 items-center px-4">
+        <PerchLogo height={28} className="shrink-0" />
       </div>
 
       <div className="flex min-w-0 flex-1 justify-center px-3">

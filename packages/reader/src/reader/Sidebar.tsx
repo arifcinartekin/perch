@@ -25,7 +25,7 @@ export function Sidebar() {
 
   // Brand, search, refresh-all and settings live in the TopBar above.
   return (
-    <aside className="flex h-full w-[264px] shrink-0 flex-col border-r border-[var(--border)] bg-[var(--bg-elevated)] backdrop-blur-xl">
+    <aside className="glass flex h-full w-[264px] shrink-0 flex-col overflow-hidden rounded-[18px]">
       <nav className="flex flex-col gap-0.5 px-2 pb-1 pt-2">
         <SidebarLink to="/" icon={<IconInbox size={16} />} label="All Feeds" count={totalUnread} />
         <SidebarLink to="/starred" icon={<IconStar size={16} />} label="Starred" />

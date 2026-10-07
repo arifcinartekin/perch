@@ -178,7 +178,7 @@ function StreamView({ scope }: { scope: Scope }) {
           hasSelection ? 'hidden lg:flex' : 'flex'
         }`}
       >
-        <header className="flex h-14 shrink-0 items-center gap-1 border-b border-[var(--border)] bg-[var(--bg-elevated)] px-3 backdrop-blur-xl">
+        <header className="flex h-14 shrink-0 items-center gap-1 border-b border-[var(--border)] px-3">
           <div className="mr-1 min-w-0 flex-1">
             <h1 className="truncate text-[14px] font-semibold tracking-tight">{title}</h1>
             <p className="truncate text-[11px] text-[var(--text-faint)]">

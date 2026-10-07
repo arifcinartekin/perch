@@ -2,7 +2,7 @@
 // reader opens without a network round trip, and so the code that runs is the
 // code that was installed. API calls are never cached or touched.
 
-const CACHE = 'perch-shell-v1';
+const CACHE = 'perch-shell-v2';
 const SHELL = ['/', '/manifest.webmanifest', '/icon-192.png'];
 
 self.addEventListener('install', (event) => {

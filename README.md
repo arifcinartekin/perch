@@ -12,7 +12,7 @@ favicons **you** have added — and, only if you turn on sync, to a
 It has two surfaces:
 
 - **A toolbar popup** for discovering feeds on the page you're looking at and adding/removing them.
-- **A full-screen reader** — a clean, greyscale, FreshRSS/Feedly-style reading experience with a
+- **A full-screen reader** — a calm, FreshRSS/Feedly-style reading experience in ink, cream and ember, on frosted glass, with a
   sidebar, collapsible categories, unread counts, and one-column article reading. Articles load
   their full text automatically (via Mozilla Readability) with the feed's own content as a
   fallback; there's no mode switch and no button to press. A search bar across the top
@@ -32,7 +32,7 @@ or a full JSON backup), and an optional **6-digit PIN** to keep a passer-by out 
 
 <!-- SCREENSHOT: docs/screenshots/reader.png — the full-screen reader, dark mode -->
 <!-- SCREENSHOT: docs/screenshots/popup.png — the toolbar popup showing a discovered feed -->
-<!-- GIF: docs/screenshots/discovery.gif — visiting a blog, red dot appears, add from popup -->
+<!-- GIF: docs/screenshots/discovery.gif — visiting a blog, orange dot appears, add from popup -->
 
 ---
 
@@ -42,15 +42,15 @@ Most "RSS reader" extensions ask for **"Read and change all your data on all web
 moment you install them. Perch does not. It ships with **zero host permissions**. The scary
 install warning never appears.
 
-| What Perch asks for                                      | When                                                                        | Why                                                                                                                                 |
-| -------------------------------------------------------- | --------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| `storage`                                                | install                                                                     | Store your feed list, categories, and settings.                                                                                     |
-| `activeTab`                                              | install                                                                     | Read the current tab's `<head>` for feed `<link>` tags — but **only** when you open the Perch popup, and **only** for that one tab. |
-| `scripting`                                              | install                                                                     | Inject the one-shot "find `<link rel=alternate>`" reader into the active tab (paired with `activeTab`).                             |
-| `alarms`                                                 | install                                                                     | Refresh your feeds on a schedule in the background.                                                                                 |
-| `*://*/*` (optional)                                     | only if you turn on **"Auto-discover feeds on every site"** in Settings     | Scan pages for feeds as you browse and show a red dot on the toolbar icon. Toggling the setting off **immediately revokes** this.   |
-| a single origin, e.g. `https://example.com/*` (optional) | when you add a feed, or open **Full text** for an article from a new domain | Fetch that one site's feed / article HTML. Access grows only for sites you actually use.                                            |
-| your Perch Server's origin (optional)                    | when you connect sync in Settings                                           | Talk to the sync server you chose. Signing out keeps your data on the device.                                                       |
+| What Perch asks for                                      | When                                                                        | Why                                                                                                                                   |
+| -------------------------------------------------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `storage`                                                | install                                                                     | Store your feed list, categories, and settings.                                                                                       |
+| `activeTab`                                              | install                                                                     | Read the current tab's `<head>` for feed `<link>` tags — but **only** when you open the Perch popup, and **only** for that one tab.   |
+| `scripting`                                              | install                                                                     | Inject the one-shot "find `<link rel=alternate>`" reader into the active tab (paired with `activeTab`).                               |
+| `alarms`                                                 | install                                                                     | Refresh your feeds on a schedule in the background.                                                                                   |
+| `*://*/*` (optional)                                     | only if you turn on **"Auto-discover feeds on every site"** in Settings     | Scan pages for feeds as you browse and show an orange dot on the toolbar icon. Toggling the setting off **immediately revokes** this. |
+| a single origin, e.g. `https://example.com/*` (optional) | when you add a feed, or open **Full text** for an article from a new domain | Fetch that one site's feed / article HTML. Access grows only for sites you actually use.                                              |
+| your Perch Server's origin (optional)                    | when you connect sync in Settings                                           | Talk to the sync server you chose. Signing out keeps your data on the device.                                                         |
 
 The extension pages also allow `'wasm-unsafe-eval'` in their content security policy. That lets
 Perch run its own bundled Argon2id (WebAssembly) when you sign in to a sync server; it does not
@@ -76,7 +76,7 @@ build is reproducible with `npm ci && npm run build`.
    `<?xml`, `jsonfeed.org`). It stops early once it has found enough, and never makes more than
    the capped number of requests.
 
-3. **The red dot.** If Perch finds one or more feeds you haven't added, it puts a small red dot
+3. **The orange dot.** If Perch finds one or more feeds you haven't added, it puts a small orange dot
    on the toolbar icon.
    - By default this happens when you **open the popup** (via `activeTab`).
    - If you opt in to **auto-discovery** (Settings → Feed discovery), Perch also scans pages in
@@ -91,8 +91,8 @@ browser to let the extension see which sites you're on. There is no way around t
 answer is to make it **opt-in and instantly revocable** instead of demanded at install:
 
 - **Default (no host permission):** discovery runs on the active tab, on demand, when you click
-  the Perch icon. No background scanning. No red dot until you open the popup.
-- **Opt in (`*://*/*` granted):** background scanning + a live red dot as you browse. Turn the
+  the Perch icon. No background scanning. No orange dot until you open the popup.
+- **Opt in (`*://*/*` granted):** background scanning + a live orange dot as you browse. Turn the
   setting off and Perch calls `permissions.remove` — the access is gone immediately.
 
 Adding a feed always requests just that feed's origin (e.g. `https://blog.example.com/*`) so the
@@ -233,7 +233,7 @@ npm run typecheck     # wxt prepare + tsc --noEmit
 npm test              # vitest
 npm run test:watch
 npm run format        # prettier
-node apps/extension/scripts/gen-icons.mjs   # regenerate the PNG icons from code
+npm run brand          # regenerate every icon (extension, web, iOS) from brand/src
 ```
 
 CI (`.github/workflows/ci.yml`) runs typecheck, tests, and both production builds on every push

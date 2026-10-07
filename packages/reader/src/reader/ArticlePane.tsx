@@ -47,7 +47,7 @@ export function ArticlePane({
 
   return (
     <article className="reader-pane flex h-full flex-1 flex-col">
-      <header className="flex h-14 shrink-0 items-center gap-1 border-b border-[var(--border)] bg-[var(--bg-elevated)] px-3 backdrop-blur-xl">
+      <header className="flex h-14 shrink-0 items-center gap-1 border-b border-[var(--border)] px-3">
         <IconButton className="lg:hidden" label="Back to list" onClick={onBack}>
           <IconArrowLeft size={16} />
         </IconButton>
@@ -237,7 +237,7 @@ function StatusBar({
 
 function Notice({ children }: { children: React.ReactNode }) {
   return (
-    <div className="mb-5 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-[10px] border border-[var(--border)] bg-[var(--bg-solid)] px-3.5 py-2.5 text-[12.5px]">
+    <div className="glass-card mb-5 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-[12px] px-3.5 py-2.5 text-[12.5px]">
       {children}
     </div>
   );

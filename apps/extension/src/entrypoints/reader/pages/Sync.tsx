@@ -182,7 +182,7 @@ function SignInForm({
         </div>
         <button
           type="button"
-          className="text-[12px] font-medium text-[var(--accent)] hover:underline"
+          className="text-[12px] font-medium text-[var(--accent-text)] hover:underline"
           onClick={() => {
             setMode(mode === 'in' ? 'up' : 'in');
             setErr(null);

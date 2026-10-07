@@ -40,14 +40,14 @@ function App() {
 
   if (session.status === 'loading') {
     return (
-      <div className="flex h-screen items-center justify-center bg-[var(--bg)]">
+      <div className="flex h-screen items-center justify-center">
         <Spinner size={20} />
       </div>
     );
   }
   if (session.status === 'error') {
     return (
-      <div className="flex h-screen items-center justify-center bg-[var(--bg)] p-6 text-center text-[13px] text-[var(--text-muted)]">
+      <div className="flex h-screen items-center justify-center p-6 text-center text-[13px] text-[var(--text-muted)]">
         {session.message}
       </div>
     );

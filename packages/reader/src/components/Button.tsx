@@ -22,9 +22,9 @@ const sizes: Record<Size, string> = {
 
 const variants: Record<Variant, string> = {
   primary:
-    'bg-[var(--button)] text-[var(--button-contrast)] hover:brightness-110 active:brightness-95',
+    'bg-[var(--button)] text-[var(--button-contrast)] font-semibold shadow-[0_6px_18px_-6px_color-mix(in_srgb,var(--button)_70%,transparent),inset_0_1px_0_rgba(255,255,255,0.25)] hover:brightness-105 active:brightness-95',
   default:
-    'bg-[var(--bg-solid)] text-[var(--text)] border border-[var(--border-strong)] hover:bg-[color-mix(in_srgb,var(--text)_5%,var(--bg-solid))]',
+    'bg-[color-mix(in_srgb,var(--bg-solid)_75%,transparent)] text-[var(--text)] border border-[var(--border-strong)] hover:bg-[color-mix(in_srgb,var(--text)_6%,var(--bg-solid))]',
   ghost:
     'text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[color-mix(in_srgb,var(--text)_7%,transparent)]',
   danger:

@@ -24,7 +24,7 @@ function Root() {
     void isPinEnabled().then((on) => setLocked(on));
   }, [settings.pinHash, settings.pinSalt]);
 
-  if (locked === null) return <div className="h-screen w-screen bg-[var(--bg)]" />;
+  if (locked === null) return <div className="h-screen w-screen" />;
   if (locked) {
     return (
       <PinGate

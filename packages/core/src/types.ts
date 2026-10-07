@@ -6,7 +6,7 @@ export type FeedFormat = 'rss' | 'atom' | 'json';
 export type ThemePreference = 'system' | 'light' | 'dark';
 export type ReaderOpenMode = 'tab' | 'window';
 
-/** User colour overrides for one theme mode. Unset = the built-in greyscale. */
+/** User colour overrides for one theme mode. Unset = the built-in palette. */
 export interface ColorOverrides {
   /** Page background (hex). Text colours follow its luminance automatically. */
   background?: string;
@@ -28,6 +28,16 @@ export interface WallpaperSettings {
   blur: number;
 }
 
+/** The frosted-glass look of the reader's panels. */
+export interface GlassSettings {
+  /** Off: solid panels, no blur. */
+  enabled: boolean;
+  /** How see-through the panels are, 0–100. 0 is solid, 50 the default look. */
+  transparency: number;
+  /** Blur behind the panels in px, 0–40. */
+  blur: number;
+}
+
 /** User-configurable settings, persisted in `browser.storage.local`. */
 export interface Settings {
   /** Open the reader in a new tab or a detached app-style window. */
@@ -46,6 +56,8 @@ export interface Settings {
   readingFont: 'sans' | 'serif';
   /** Custom colours, kept separately for the light and the dark theme. */
   appearance: Record<'light' | 'dark', ColorOverrides>;
+  /** Panel transparency and blur; unset means DEFAULT_GLASS. */
+  glass?: GlassSettings;
   /** Background image for the full-screen reader, when one is set. */
   wallpaper?: WallpaperSettings;
   /**
@@ -65,6 +77,9 @@ export const DEFAULT_SETTINGS: Settings = {
   readingFont: 'sans',
   appearance: { light: {}, dark: {} },
 };
+
+export const DEFAULT_GLASS: GlassSettings = { enabled: true, transparency: 50, blur: 24 };
+export const MAX_GLASS_BLUR = 40;
 
 export const DEFAULT_WALLPAPER_DIM = 35;
 export const DEFAULT_WALLPAPER_BLUR = 0;

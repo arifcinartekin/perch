@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { Settings, ThemePreference } from '@perch/core/types';
-import { THEME_VARS, buildThemeVars, type ColorMode } from '@perch/core/theme';
+import { THEME_VARS, buildThemeVars, glassVars, type ColorMode } from '@perch/core/theme';
 
 const DARK_QUERY = '(prefers-color-scheme: dark)';
 
@@ -25,8 +25,8 @@ export function useEffectiveMode(theme: ThemePreference | undefined): ColorMode 
  * `prefers-color-scheme` media query decide; custom colours for the effective
  * mode are layered on top as inline custom properties.
  */
-export function useApplyTheme(settings: Pick<Settings, 'theme' | 'appearance'>) {
-  const { theme, appearance } = settings;
+export function useApplyTheme(settings: Pick<Settings, 'theme' | 'appearance' | 'glass'>) {
+  const { theme, appearance, glass } = settings;
   const mode = useEffectiveMode(theme);
   const overrides = appearance?.[mode];
   const key = JSON.stringify(overrides ?? {});
@@ -46,6 +46,21 @@ export function useApplyTheme(settings: Pick<Settings, 'theme' | 'appearance'>) 
       root.removeAttribute('data-theme');
     }
   }, [theme, mode, key]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Glass: transparency and blur as custom properties, or off altogether.
+  const glassKey = JSON.stringify(glass ?? null);
+  useEffect(() => {
+    const root = document.documentElement;
+    const vars = glassVars(glass);
+    root.style.removeProperty('--glass-k');
+    root.style.removeProperty('--glass-blur');
+    if (!vars) {
+      root.setAttribute('data-glass', 'off');
+      return;
+    }
+    root.removeAttribute('data-glass');
+    for (const [name, value] of Object.entries(vars)) root.style.setProperty(name, value);
+  }, [glassKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return mode;
 }

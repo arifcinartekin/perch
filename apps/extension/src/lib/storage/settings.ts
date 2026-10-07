@@ -5,7 +5,7 @@ import {
   type Settings,
   type WallpaperSettings,
 } from '@perch/core/types';
-import { normalizeHex } from '@perch/core/theme';
+import { normalizeGlass, normalizeHex } from '@perch/core/theme';
 import { getLocal, setLocal, watchLocal, KEYS } from './local';
 
 export async function getSettings(): Promise<Settings> {
@@ -40,6 +40,7 @@ function normalizeSettings(s: Settings): Settings {
       light: normalizeColors(s.appearance?.light),
       dark: normalizeColors(s.appearance?.dark),
     },
+    glass: normalizeGlass(s.glass),
     wallpaper: normalizeWallpaper(s.wallpaper),
   };
 }

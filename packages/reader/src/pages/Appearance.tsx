@@ -14,13 +14,16 @@ import {
 } from '@perch/core/theme';
 import { pickFile } from '../lib/download';
 import {
+  DEFAULT_GLASS,
   DEFAULT_WALLPAPER_BLUR,
+  MAX_GLASS_BLUR,
+  type GlassSettings,
   DEFAULT_WALLPAPER_DIM,
   type ColorOverrides,
   type Settings,
 } from '@perch/core/types';
 import { useToast } from '../reader/Toasts';
-import { Row, Section, Segmented } from './settings-ui';
+import { Row, Section, Segmented, Toggle } from './settings-ui';
 
 type ColorKey = keyof ColorOverrides;
 type Update = (patch: Partial<Settings>) => Promise<Settings>;
@@ -127,6 +130,10 @@ export function AppearanceSection({ settings, update }: { settings: Settings; up
           </Button>
         </div>
       )}
+
+      <div className="h-px bg-[var(--border)]" />
+
+      <GlassRows settings={settings} update={update} />
 
       <div className="h-px bg-[var(--border)]" />
 
@@ -253,6 +260,63 @@ function ColorRow({
 
 // ---------------------------------------------------------------------------
 
+function GlassRows({ settings, update }: { settings: Settings; update: Update }) {
+  const backend = useBackend();
+  const glass = settings.glass ?? DEFAULT_GLASS;
+  const isDefault =
+    glass.enabled === DEFAULT_GLASS.enabled &&
+    glass.transparency === DEFAULT_GLASS.transparency &&
+    glass.blur === DEFAULT_GLASS.blur;
+
+  const set = async (patch: Partial<GlassSettings>) => {
+    const current = (await backend.getSettings()).glass ?? DEFAULT_GLASS;
+    await update({ glass: { ...current, ...patch } });
+  };
+
+  return (
+    <>
+      <Row
+        label="Glass effect"
+        hint="Frosted, see-through panels over the background. Off gives solid panels. Your
+        system’s “reduce transparency” setting always turns it off."
+      >
+        <Toggle checked={glass.enabled} onChange={(enabled) => set({ enabled })} />
+      </Row>
+      {glass.enabled && (
+        <div className="flex flex-col gap-3">
+          <Slider
+            label="Transparency"
+            unit="%"
+            min={0}
+            max={100}
+            value={glass.transparency}
+            labelWidth={84}
+            onChange={(transparency) => set({ transparency })}
+          />
+          <Slider
+            label="Blur"
+            unit="px"
+            min={0}
+            max={MAX_GLASS_BLUR}
+            value={glass.blur}
+            labelWidth={84}
+            onChange={(blur) => set({ blur })}
+          />
+        </div>
+      )}
+      {!isDefault && (
+        <div className="flex justify-end">
+          <Button size="sm" variant="ghost" onClick={() => update({ glass: { ...DEFAULT_GLASS } })}>
+            Reset glass
+          </Button>
+        </div>
+      )}
+    </>
+  );
+}
+
+// ---------------------------------------------------------------------------
+
 function WallpaperRows({ settings, update }: { settings: Settings; update: Update }) {
   const backend = useBackend();
   const store = backend.wallpaper!;
@@ -350,6 +414,7 @@ function Slider({
   min,
   max,
   value,
+  labelWidth = 36,
   onChange,
 }: {
   label: string;
@@ -357,6 +422,7 @@ function Slider({
   min: number;
   max: number;
   value: number;
+  labelWidth?: number;
   onChange: (v: number) => void;
 }) {
   const [draft, setDraft] = useState(value);
@@ -366,7 +432,9 @@ function Slider({
 
   return (
     <label className="flex items-center gap-3 text-[12px] text-[var(--text-muted)]">
-      <span className="w-9 shrink-0">{label}</span>
+      <span className="shrink-0" style={{ width: labelWidth }}>
+        {label}
+      </span>
       <input
         type="range"
         min={min}

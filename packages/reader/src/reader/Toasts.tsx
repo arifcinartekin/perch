@@ -29,7 +29,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         {toasts.map((t) => (
           <div
             key={t.id}
-            className="pointer-events-auto rounded-[10px] border border-[var(--border-strong)] bg-[var(--bg-solid)] px-3.5 py-2 text-[13px] shadow-[var(--shadow)] animate-[fade-in_.16s_ease-out]"
+            className="glass-strong pointer-events-auto rounded-[12px] px-3.5 py-2 text-[13px] animate-[fade-in_.16s_ease-out]"
             style={{
               color:
                 t.kind === 'error' ? '#ef4444' : t.kind === 'success' ? '#10b981' : 'var(--text)',

@@ -42,15 +42,12 @@ function Shell({ settingsExtra }: { settingsExtra?: ReactNode }) {
             blur={settings.wallpaper.blur}
           />
         )}
-        <div
-          className={`relative flex h-screen w-screen flex-col overflow-hidden text-[var(--text)] ${
-            wallpaperUrl ? '' : 'bg-[var(--bg)]'
-          }`}
-        >
+        {/* Floating glass panels over the backdrop (or the background image). */}
+        <div className="relative flex h-screen w-screen flex-col gap-2.5 overflow-hidden p-2.5 text-[var(--text)]">
           <TopBar />
-          <div className="flex min-h-0 flex-1">
+          <div className="flex min-h-0 flex-1 gap-2.5">
             <Sidebar />
-            <main className="flex min-w-0 flex-1">
+            <main className="reader-surface flex min-w-0 flex-1 overflow-hidden rounded-[18px]">
               <Gate>
                 <Routes>
                   <Route path="/" element={<AllStream />} />

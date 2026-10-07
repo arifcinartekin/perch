@@ -58,7 +58,7 @@ export function ExtensionSettings() {
         <Row
           label="Auto-discover feeds on every site"
           hint="Off by default. When on, Perch is granted access to all sites so it can scan
-            each page you visit for feeds and show a red dot on the toolbar icon when it finds
+            each page you visit for feeds and show an orange dot on the toolbar icon when it finds
             one. Turn it off to immediately revoke that access. When off, Perch only scans the
             current tab, and only when you open the popup."
         >

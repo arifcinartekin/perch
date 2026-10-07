@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { AuthResponse, PreloginResponse, PublicUser, ServerInfo } from '@perch/core/api';
 import { DEFAULT_KDF, deriveKeys, newSalt } from '@perch/core/auth';
-import { Button, IconRss } from '@perch/reader';
+import { Button, PerchLogo } from '@perch/reader';
 import { ServerError, api } from './api';
 
 const inputClass =
@@ -62,19 +62,13 @@ export function Auth({
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[var(--bg)] p-6 text-[var(--text)]">
-      <form
-        onSubmit={submit}
-        className="w-full max-w-[380px] rounded-[16px] border border-[var(--border)] bg-[var(--bg-solid)] p-7 shadow-sm"
-      >
-        <div className="mb-6 flex items-center gap-2.5">
-          <span className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-[var(--button)] text-[var(--button-contrast)]">
-            <IconRss size={18} />
-          </span>
-          <div>
-            <h1 className="text-[17px] font-bold tracking-tight">Perch</h1>
-            <p className="text-[12px] text-[var(--text-faint)]">{location.host}</p>
-          </div>
+    <div className="flex min-h-screen items-center justify-center p-6 text-[var(--text)]">
+      <form onSubmit={submit} className="glass w-full max-w-[380px] rounded-[22px] p-7">
+        <div className="mb-6">
+          <h1>
+            <PerchLogo height={40} />
+          </h1>
+          <p className="mt-1.5 text-[12px] text-[var(--text-faint)]">{location.host}</p>
         </div>
 
         <h2 className="mb-1 text-[15px] font-semibold">

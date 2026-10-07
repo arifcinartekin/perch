@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+<g transform="translate(128 112) scale(1.5)">
+<polygon points="362,132 462,168 372,192" fill="#FF7A1A"/>
+<g fill="none" stroke="#FF7A1A" stroke-width="15" stroke-linecap="round">
+<path d="M 214 266 A 64 64 0 0 1 278 330"/>
+<path d="M 214 216 A 114 114 0 0 1 328 330"/>
+</g>
+<circle cx="214" cy="330" r="14" fill="#FF7A1A"/>
+<rect x="96" y="436" width="340" height="26" rx="13" fill="#FF7A1A"/>
+</g>
+</svg>

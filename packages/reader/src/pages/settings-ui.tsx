@@ -6,9 +6,7 @@ export function Section({ title, children }: { title: string; children: React.Re
       <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-wide text-[var(--text-faint)]">
         {title}
       </h2>
-      <div className="flex flex-col gap-4 rounded-[14px] border border-[var(--border)] bg-[var(--bg-solid)] p-4">
-        {children}
-      </div>
+      <div className="glass-card flex flex-col gap-4 rounded-[16px] p-4">{children}</div>
     </section>
   );
 }

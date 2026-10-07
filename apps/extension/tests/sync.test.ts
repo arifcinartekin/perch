@@ -271,7 +271,7 @@ describe('extension sync engine', () => {
     await laptop.sync();
     const keys = [...server.records.keys()].filter((k) => k.startsWith('setting:'));
     expect(keys.sort()).toEqual(
-      ['appearance', 'openMode', 'readingFont', 'refreshIntervalMinutes', 'theme'].map(
+      ['appearance', 'glass', 'openMode', 'readingFont', 'refreshIntervalMinutes', 'theme'].map(
         (k) => `setting:${k}`,
       ),
     );

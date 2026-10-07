@@ -78,6 +78,7 @@ export const SYNCED_SETTING_KEYS = [
   'theme',
   'readingFont',
   'appearance',
+  'glass',
 ] as const satisfies readonly (keyof Settings)[];
 
 export type SyncedSettingKey = (typeof SYNCED_SETTING_KEYS)[number];

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { IconRss } from '@perch/reader';
+import { PerchMark } from '@perch/reader';
 import { verifyPin } from '@/lib/lock';
 
 export function PinGate({ onUnlock }: { onUnlock: () => void }) {
@@ -33,11 +33,9 @@ export function PinGate({ onUnlock }: { onUnlock: () => void }) {
   }, [pin, onUnlock]);
 
   return (
-    <div className="flex h-screen w-screen items-center justify-center bg-[var(--bg)] px-6">
+    <div className="flex h-screen w-screen items-center justify-center px-6">
       <div className="w-full max-w-[320px] text-center">
-        <div className="mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--accent-soft)] text-[var(--text)]">
-          <IconRss size={22} />
-        </div>
+        <PerchMark size={64} className="mx-auto mb-4" />
         <h1 className="text-[17px] font-semibold tracking-tight">Enter your PIN</h1>
         <p className="mt-1 text-[12.5px] text-[var(--text-faint)]">
           Perch is locked. Enter your 6-digit PIN to continue.

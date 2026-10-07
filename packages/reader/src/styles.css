@@ -12,70 +12,131 @@
   --radius-card: 14px;
 }
 
-/* Neutral, high-contrast greyscale by default: the accent and button colours are
-   near-black in light mode and near-white in dark mode. Users can override
-   --bg / --accent / --button in Settings → Appearance; those are applied as
-   inline properties on <html> (see packages/core/src/theme.ts). */
+/* Perch's palette, from the logo: ink, cream and ember on a night gradient.
+   Users can override --bg / --text / --accent / --button in Settings →
+   Appearance; those are applied as inline properties on <html> and everything
+   below (glass, glow, readable link colour) follows (packages/core/src/theme.ts). */
 :root {
   color-scheme: light;
-  --bg: #f5f5f6;
+  --bg: #f7f5f0;
   --bg-elevated: rgba(255, 255, 255, 0.75);
   --bg-solid: #ffffff;
-  --border: rgba(24, 24, 27, 0.1);
-  --border-strong: rgba(24, 24, 27, 0.17);
-  --text: #18181b;
-  --text-muted: #52525b;
-  --text-faint: #a1a1aa;
-  --accent: #18181b;
-  --accent-soft: rgba(24, 24, 27, 0.08);
-  --accent-contrast: #ffffff;
-  --button: #18181b;
-  --button-contrast: #ffffff;
-  --shadow: 0 1px 2px rgba(24, 24, 27, 0.05), 0 12px 32px -12px rgba(24, 24, 27, 0.16);
+  --border: rgba(18, 21, 28, 0.09);
+  --border-strong: rgba(18, 21, 28, 0.16);
+  --text: #12151c;
+  --text-muted: #555a66;
+  --text-faint: #9a9da6;
+  --accent: #ff7a1a;
+  --accent-soft: rgba(255, 122, 26, 0.14);
+  --accent-contrast: #12151c;
+  --accent-text: #b35512;
+  /* The logo's eye and perch, per scheme as in brand/src. */
+  --logo-eye: #f4f1ea;
+  --logo-perch: var(--text);
+  --button: #ff7a1a;
+  --button-contrast: #12151c;
+  /* Settings → Appearance → Glass: --glass-k scales how see-through every
+     surface is (1 = default, 0 = solid), --glass-blur is the frames' blur. */
+  --glass-k: 1;
+  --glass-blur: 24px;
+  --shadow: 0 1px 2px rgba(18, 21, 28, 0.05), 0 12px 32px -12px rgba(18, 21, 28, 0.18);
+  --glass-clear: 42%;
+  --glass-edge: rgba(18, 21, 28, 0.08);
+  --glass-highlight: rgba(255, 255, 255, 0.85);
+  /* The page behind the glass: an ember glow (the app icon's) on the background. */
+  --backdrop:
+    radial-gradient(
+      70% 60% at 100% 0%,
+      color-mix(in srgb, var(--accent) 16%, transparent),
+      transparent 70%
+    ),
+    radial-gradient(
+      60% 60% at 0% 100%,
+      color-mix(in srgb, var(--text) 5%, transparent),
+      transparent 70%
+    );
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
     color-scheme: dark;
-    --bg: #0a0a0b;
-    --bg-elevated: rgba(20, 20, 22, 0.72);
-    --bg-solid: #151517;
-    --border: rgba(255, 255, 255, 0.09);
-    --border-strong: rgba(255, 255, 255, 0.16);
-    --text: #e7e7ea;
-    --text-muted: #9c9ca5;
-    --text-faint: #64646d;
-    --accent: #fafafa;
-    --accent-soft: rgba(255, 255, 255, 0.11);
-    --accent-contrast: #18181b;
-    --button: #fafafa;
-    --button-contrast: #18181b;
-    --shadow: 0 1px 2px rgba(0, 0, 0, 0.45), 0 20px 48px -16px rgba(0, 0, 0, 0.65);
+    --bg: #0e1118;
+    --bg-elevated: rgba(22, 26, 36, 0.72);
+    --bg-solid: #161a24;
+    --border: rgba(244, 241, 234, 0.08);
+    --border-strong: rgba(244, 241, 234, 0.15);
+    --text: #f4f1ea;
+    --text-muted: #b8b4aa;
+    --text-faint: #7d7a73;
+    --accent: #ff7a1a;
+    --accent-soft: rgba(255, 122, 26, 0.16);
+    --accent-contrast: #12151c;
+    --accent-text: #ff7a1a;
+    --logo-eye: #12151c;
+    --logo-perch: var(--accent);
+    --button: #ff7a1a;
+    --button-contrast: #12151c;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.45), 0 20px 48px -16px rgba(0, 0, 0, 0.7);
+    --glass-clear: 48%;
+    --glass-edge: rgba(244, 241, 234, 0.08);
+    --glass-highlight: rgba(255, 255, 255, 0.07);
+    /* The app icon's night gradient with its ember glow. */
+    --backdrop:
+      radial-gradient(
+        70% 60% at 100% 0%,
+        color-mix(in srgb, var(--accent) 15%, transparent),
+        transparent 70%
+      ),
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--bg), #ffffff 6%),
+        color-mix(in srgb, var(--bg), #000000 30%)
+      );
   }
 }
 
 :root[data-theme='dark'] {
   color-scheme: dark;
-  --bg: #0a0a0b;
-  --bg-elevated: rgba(20, 20, 22, 0.72);
-  --bg-solid: #151517;
-  --border: rgba(255, 255, 255, 0.09);
-  --border-strong: rgba(255, 255, 255, 0.16);
-  --text: #e7e7ea;
-  --text-muted: #9c9ca5;
-  --text-faint: #64646d;
-  --accent: #fafafa;
-  --accent-soft: rgba(255, 255, 255, 0.11);
-  --accent-contrast: #18181b;
-  --button: #fafafa;
-  --button-contrast: #18181b;
-  --shadow: 0 1px 2px rgba(0, 0, 0, 0.45), 0 20px 48px -16px rgba(0, 0, 0, 0.65);
+  --bg: #0e1118;
+  --bg-elevated: rgba(22, 26, 36, 0.72);
+  --bg-solid: #161a24;
+  --border: rgba(244, 241, 234, 0.08);
+  --border-strong: rgba(244, 241, 234, 0.15);
+  --text: #f4f1ea;
+  --text-muted: #b8b4aa;
+  --text-faint: #7d7a73;
+  --accent: #ff7a1a;
+  --accent-soft: rgba(255, 122, 26, 0.16);
+  --accent-contrast: #12151c;
+  --accent-text: #ff7a1a;
+  --logo-eye: #12151c;
+  --logo-perch: var(--accent);
+  --button: #ff7a1a;
+  --button-contrast: #12151c;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.45), 0 20px 48px -16px rgba(0, 0, 0, 0.7);
+  --glass-clear: 48%;
+  --glass-edge: rgba(244, 241, 234, 0.08);
+  --glass-highlight: rgba(255, 255, 255, 0.07);
+  /* The app icon's night gradient with its ember glow. */
+  --backdrop:
+    radial-gradient(
+      70% 60% at 100% 0%,
+      color-mix(in srgb, var(--accent) 15%, transparent),
+      transparent 70%
+    ),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--bg), #ffffff 6%),
+      color-mix(in srgb, var(--bg), #000000 30%)
+    );
 }
 
 html,
 body {
   margin: 0;
-  background: var(--bg);
+  background-color: var(--bg);
+  background-image: var(--backdrop);
+  background-attachment: fixed;
   color: var(--text);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
@@ -149,21 +210,85 @@ body {
   }
 }
 
-/* Reader surfaces. With a background image set, they turn into frosted glass so
-   the image shows through while text stays readable. */
-.reader-pane {
-  background: var(--bg);
+/* Glass. Frames (top bar, sidebar, dialogs, toasts) are frosted panels floating
+   on the backdrop. The reading surface is glass too, but much more opaque so
+   long text stays crisp; the article pane adds a further layer. One blur per
+   panel — nested backdrop filters cost a lot and add nothing.
+
+   Each surface has a "clear" amount (how much of the backdrop shows through at
+   the default setting); the user's transparency setting scales it by --glass-k. */
+.glass,
+.glass-strong,
+.reader-surface,
+.reader-pane,
+.glass-card {
+  --clear: var(--glass-clear);
+  background: color-mix(
+    in srgb,
+    var(--bg-solid) clamp(0%, calc(100% - var(--clear) * var(--glass-k)), 100%),
+    transparent
+  );
+}
+.glass,
+.glass-strong,
+.reader-surface {
+  border: 1px solid var(--glass-edge);
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    var(--shadow);
+}
+.glass {
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(170%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(170%);
+}
+.glass-strong {
+  --clear: 18%;
+  -webkit-backdrop-filter: blur(calc(var(--glass-blur) * 1.33)) saturate(170%);
+  backdrop-filter: blur(calc(var(--glass-blur) * 1.33)) saturate(170%);
+}
+.reader-surface {
+  --clear: 28%;
+  -webkit-backdrop-filter: blur(calc(var(--glass-blur) * 0.75)) saturate(150%);
+  backdrop-filter: blur(calc(var(--glass-blur) * 0.75)) saturate(150%);
 }
 .reader-list {
   background: transparent;
 }
-:root[data-wallpaper] .reader-pane {
-  background: color-mix(in srgb, var(--bg) 86%, transparent);
-  backdrop-filter: blur(18px);
+.reader-pane {
+  --clear: 30%;
 }
-:root[data-wallpaper] .reader-list {
-  background: color-mix(in srgb, var(--bg) 55%, transparent);
-  backdrop-filter: blur(12px);
+/* Cards inside a glass surface (settings sections, notices). */
+.glass-card {
+  --clear: 34%;
+  border: 1px solid var(--glass-edge);
+}
+
+/* A background image shows through a little more. */
+:root[data-wallpaper] .reader-surface {
+  --clear: 38%;
+}
+
+/* Glass turned off in Settings, or "reduce transparency" in the OS: solid
+   surfaces, no blur. The backdrop glow stays unless the OS asks otherwise. */
+:root[data-glass='off'] :is(.glass, .glass-strong, .reader-surface, .reader-pane, .glass-card) {
+  background: var(--bg-solid);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+@media (prefers-reduced-transparency: reduce) {
+  .glass,
+  .glass-strong,
+  .reader-surface,
+  .reader-pane,
+  .glass-card {
+    background: var(--bg-solid);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  html,
+  body {
+    background-image: none;
+  }
 }
 
 /* Rendered feed/article HTML. */
@@ -189,7 +314,7 @@ body {
   font-weight: 650;
 }
 .prose-perch a {
-  color: var(--accent);
+  color: var(--accent-text);
   text-decoration: underline;
   text-underline-offset: 2px;
 }

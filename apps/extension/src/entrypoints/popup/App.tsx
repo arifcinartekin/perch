@@ -1,7 +1,15 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { browser } from 'wxt/browser';
 import { Button, Spinner, useApplyTheme } from '@perch/reader';
-import { IconExternal, IconPlus, IconRss, IconSearch, IconSettings, IconX } from '@perch/reader';
+import {
+  IconExternal,
+  IconPlus,
+  IconRss,
+  IconSearch,
+  IconSettings,
+  IconX,
+  PerchMark,
+} from '@perch/reader';
 import { sendMessage } from '@/lib/messaging';
 import { feedByUrl } from '@/lib/storage/feeds';
 import { getCategories } from '@/lib/storage/categories';
@@ -135,9 +143,9 @@ export function App() {
   const restricted = pageUrl != null && !isHttpUrl(pageUrl);
 
   return (
-    <div className="flex max-h-[560px] flex-col bg-[var(--bg)] text-[var(--text)]">
+    <div className="flex max-h-[560px] flex-col text-[var(--text)]">
       <header className="flex items-center gap-2 border-b border-[var(--border)] px-3.5 py-2.5">
-        <IconRss size={18} className="text-[var(--accent)]" />
+        <PerchMark size={24} />
         <div className="min-w-0 flex-1">
           <div className="text-[13px] font-semibold leading-tight">Perch</div>
           <div className="truncate text-[11px] text-[var(--text-faint)]">
@@ -276,7 +284,7 @@ function FeedRow({
   onAction: () => void;
 }) {
   return (
-    <div className="flex items-center gap-2 rounded-[10px] border border-[var(--border)] bg-[var(--bg-solid)] px-2.5 py-2">
+    <div className="glass-card flex items-center gap-2 rounded-[12px] px-2.5 py-2">
       <IconRss size={14} className="shrink-0 text-[var(--accent)]" />
       <div className="min-w-0 flex-1">
         <div className="truncate text-[12.5px] font-medium">

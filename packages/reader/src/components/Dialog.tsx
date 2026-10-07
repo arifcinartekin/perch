@@ -25,14 +25,14 @@ export function Dialog({
 
   return (
     <div
-      className="fixed inset-0 z-40 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm animate-[fade-in_.14s_ease-out]"
+      className="fixed inset-0 z-40 flex items-center justify-center bg-black/30 p-4 backdrop-blur-[3px] animate-[fade-in_.14s_ease-out]"
       onMouseDown={onClose}
     >
       <div
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className="w-full overflow-hidden rounded-[16px] border border-[var(--border-strong)] bg-[var(--bg-solid)] shadow-[var(--shadow)]"
+        className="glass-strong w-full overflow-hidden rounded-[20px]"
         style={{ maxWidth: width }}
         onMouseDown={(e) => e.stopPropagation()}
       >

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="39 53 440 440" width="512" height="512">
+<!-- Perch mark for 16–32 px: no legs, one thick wave, bigger eye and perch. -->
+<polygon points="356,128 470,168 366,198" fill="#FF7A1A"/>
+<path d="M 392 176 C 392 120 352 84 304 84 C 252 84 214 118 208 164 C 150 188 96 250 56 330 L 172 336 C 188 388 232 416 284 416 C 350 416 400 366 404 296 C 406 262 394 236 380 222 C 388 210 392 194 392 176 Z" fill="#F4F1EA"/>
+<path d="M 214 228 A 102 102 0 0 1 316 330" fill="none" stroke="#FF7A1A" stroke-width="34" stroke-linecap="round"/>
+<circle cx="220" cy="324" r="26" fill="#FF7A1A"/>
+<circle cx="336" cy="150" r="20" fill="#12151C"/>
+<rect x="90" y="428" width="352" height="42" rx="21" fill="#FF7A1A"/>
+</svg>
