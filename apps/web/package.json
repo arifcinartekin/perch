@@ -1,0 +1,31 @@
+{
+  "name": "@perch/web",
+  "version": "0.1.0",
+  "description": "Perch web reader, served by Perch Server.",
+  "type": "module",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@perch/core": "*",
+    "@perch/reader": "*",
+    "dompurify": "^3.4.15",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "react-router-dom": "^7.9.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.1.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@vitejs/plugin-react": "^6.1.1",
+    "tailwindcss": "^4.1.0",
+    "typescript": "^5.9.0",
+    "vite": "^8.3.3"
+  }
+}

@@ -113,6 +113,12 @@ export interface AddFeedRequest {
   title?: string;
 }
 
+export interface AddFeedResponse {
+  feed: ServerFeed;
+  /** False when you were already subscribed. */
+  created: boolean;
+}
+
 export interface UpdateFeedRequest {
   categoryId?: string;
   /** null clears the custom title. */

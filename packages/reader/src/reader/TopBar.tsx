@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { matchPath, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { IconButton } from '@/components/IconButton';
-import { IconRefresh, IconRss, IconSearch, IconSettings, IconX } from '@/components/icons';
-import { Spinner } from '@/components/Spinner';
-import { useLibrary } from '@/hooks/useLibrary';
-import { displayTitle } from '@/lib/storage/feeds';
-import { sendMessage } from '@/lib/messaging';
+import { IconButton } from '../components/IconButton';
+import { IconRefresh, IconRss, IconSearch, IconSettings, IconX } from '../components/icons';
+import { Spinner } from '../components/Spinner';
+import { useLibrary } from '../hooks/useLibrary';
+import { displayTitle } from '@perch/core/feeds';
+import { useBackend } from '../backend';
 import { useToast } from './Toasts';
 
 const DEBOUNCE_MS = 200;
@@ -16,6 +16,7 @@ const DEBOUNCE_MS = 200;
  * so it scopes to whatever feed / category is open and survives reloads.
  */
 export function TopBar() {
+  const backend = useBackend();
   const { feedById, grouped, refreshCounts } = useLibrary();
   const toast = useToast();
   const navigate = useNavigate();
@@ -84,7 +85,7 @@ export function TopBar() {
   const refreshAll = async () => {
     setRefreshing(true);
     try {
-      const res = await sendMessage('feeds:refresh', {});
+      const res = await backend.refresh();
       await refreshCounts();
       toast(
         res.failed > 0

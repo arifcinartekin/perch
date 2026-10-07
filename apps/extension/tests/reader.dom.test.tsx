@@ -83,7 +83,9 @@ vi.mock('wxt/browser', () => ({ browser: mocks.browser }));
 
 const { __resetDbForTests } = await import('@/lib/storage/db');
 const { upsertArticles } = await import('@/lib/storage/articles');
-const { App } = await import('@/entrypoints/reader/App');
+const { ReaderApp } = await import('@perch/reader');
+const { localBackend } = await import('@/lib/backend');
+const App = () => <ReaderApp backend={localBackend} />;
 const { App: PopupApp } = await import('@/entrypoints/popup/App');
 
 beforeEach(() => {

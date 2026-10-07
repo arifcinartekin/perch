@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { IconRss } from '@/components/icons';
+import { IconRss } from '@perch/reader';
 import { verifyPin } from '@/lib/lock';
 
 export function PinGate({ onUnlock }: { onUnlock: () => void }) {

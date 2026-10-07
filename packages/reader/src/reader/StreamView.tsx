@@ -1,24 +1,25 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
-import { IconButton } from '@/components/IconButton';
-import { IconCheck, IconRefresh } from '@/components/icons';
-import { Spinner } from '@/components/Spinner';
-import { useLibrary } from '@/hooks/useLibrary';
-import { useSettings } from '@/hooks/useSettings';
-import { useArticleStream } from '@/hooks/useArticleStream';
-import { sendMessage } from '@/lib/messaging';
-import { getArticle, setStarred } from '@/lib/storage/articles';
+import { IconButton } from '../components/IconButton';
+import { IconCheck, IconRefresh } from '../components/icons';
+import { Spinner } from '../components/Spinner';
+import { useLibrary } from '../hooks/useLibrary';
+import { useSettings } from '../hooks/useSettings';
+import { useArticleStream } from '../hooks/useArticleStream';
+import {
+  articleParam,
+  parseArticleParam,
+  useBackend,
+  type ArticleRef,
+  type StreamScope,
+} from '../backend';
 import { UNCATEGORIZED_ID } from '@perch/core/types';
 import type { Article } from '@perch/core/types';
 import { ArticleList } from './ArticleList';
 import { ArticlePane } from './ArticlePane';
 import { useToast } from './Toasts';
 
-type Scope =
-  | { kind: 'all' }
-  | { kind: 'starred' }
-  | { kind: 'feed'; id: string }
-  | { kind: 'category'; id: string };
+type Scope = StreamScope;
 
 export function AllStream() {
   return <StreamView scope={{ kind: 'all' }} />;
@@ -36,6 +37,7 @@ export function CategoryStream() {
 }
 
 function StreamView({ scope }: { scope: Scope }) {
+  const backend = useBackend();
   const { feeds, grouped, feedById, refreshCounts } = useLibrary();
   const { settings } = useSettings();
   const toast = useToast();
@@ -44,7 +46,9 @@ function StreamView({ scope }: { scope: Scope }) {
   const [refreshing, setRefreshing] = useState(false);
   const [selected, setSelected] = useState<Article | null>(null);
 
-  const selectedId = searchParams.get('a');
+  const selectedParam = searchParams.get('a');
+  const selectedRef = useMemo(() => parseArticleParam(selectedParam), [selectedParam]);
+  const selectedId = selectedRef?.id ?? null;
   const query = searchParams.get('q')?.trim() || undefined;
 
   const { feedIds, title, subtitle } = useMemo(() => {
@@ -74,43 +78,40 @@ function StreamView({ scope }: { scope: Scope }) {
     };
   }, [scope, feeds, grouped, feedById]);
 
-  const stream = useArticleStream({
-    feedIds,
-    unreadOnly,
-    starredOnly: scope.kind === 'starred',
-    text: query,
-  });
+  const stream = useArticleStream({ scope, feedIds, unreadOnly, text: query });
 
   // Resolve the selected article id from the URL into an Article object.
   useEffect(() => {
-    if (!selectedId) {
+    if (!selectedRef) {
       setSelected(null);
       return;
     }
-    const inList = stream.items.find((a) => a.id === selectedId);
+    const inList = stream.items.find(
+      (a) => a.id === selectedRef.id && a.feedId === selectedRef.feedId,
+    );
     if (inList) {
       setSelected(inList);
       return;
     }
     let alive = true;
-    void getArticle(selectedId).then((a) => alive && setSelected(a ?? null));
+    void backend.getArticle(selectedRef).then((a) => alive && setSelected(a ?? null));
     return () => {
       alive = false;
     };
-  }, [selectedId, stream.items]);
+  }, [backend, selectedRef, stream.items]);
 
   const openArticle = useCallback(
     (article: Article) => {
       setSearchParams(
         (prev) => {
           const next = new URLSearchParams(prev);
-          next.set('a', article.id);
+          next.set('a', articleParam(article));
           return next;
         },
         { replace: false },
       );
       if (article.read === 0) {
-        void stream.mark([article.id], true).then(refreshCounts);
+        void stream.mark([article], true).then(refreshCounts);
       }
     },
     [setSearchParams, stream, refreshCounts],
@@ -134,15 +135,15 @@ function StreamView({ scope }: { scope: Scope }) {
         items.map((a) => (a.id === article.id ? { ...a, starred: next } : a)),
       );
       if (selected?.id === article.id) setSelected({ ...selected, starred: next });
-      await setStarred(article.id, !article.starred);
+      await backend.setStarred(article, !article.starred);
     },
-    [stream, selected],
+    [backend, stream, selected],
   );
 
   const toggleRead = useCallback(
     async (article: Article) => {
       const read = article.read === 0;
-      await stream.mark([article.id], read);
+      await stream.mark([article], read);
       if (selected?.id === article.id) setSelected({ ...selected, read: read ? 1 : 0 });
       await refreshCounts();
     },
@@ -150,23 +151,23 @@ function StreamView({ scope }: { scope: Scope }) {
   );
 
   const markAllRead = useCallback(async () => {
-    const ids = stream.items.filter((a) => a.read === 0).map((a) => a.id);
-    if (ids.length === 0) return;
-    await stream.mark(ids, true);
+    const unread: ArticleRef[] = stream.items.filter((a) => a.read === 0);
+    if (unread.length === 0) return;
+    await stream.mark(unread, true);
     await refreshCounts();
-    toast(`Marked ${ids.length} read`, 'success');
+    toast(`Marked ${unread.length} read`, 'success');
   }, [stream, refreshCounts, toast]);
 
   const refresh = useCallback(async () => {
     setRefreshing(true);
     try {
-      const res = await sendMessage('feeds:refresh', { feedIds });
+      const res = await backend.refresh(feedIds);
       await Promise.all([stream.reload(), refreshCounts()]);
       if (res.failed > 0) toast(`${res.failed} feed(s) failed to refresh`, 'error');
     } finally {
       setRefreshing(false);
     }
-  }, [feedIds, stream, refreshCounts, toast]);
+  }, [backend, feedIds, stream, refreshCounts, toast]);
 
   const hasSelection = !!selected;
 

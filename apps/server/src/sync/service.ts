@@ -20,6 +20,7 @@ import { isHttpUrl } from '@perch/core/url';
 import type { DB } from '../db';
 import { articleStates, categories, subscriptions, syncRecords, userSettings } from '../db/schema';
 import { ensureFeed } from '../feeds/resolve';
+import { Notifier } from '../lib/notifier';
 
 // Every change to an account's library goes through here, whether it comes from
 // a client's push or from the reader API. A record is stored only if its clock
@@ -37,10 +38,10 @@ export type LocalChange = {
 
 export class SyncService {
   private readonly hlc: Hlc;
-  private readonly listeners = new Map<string, Set<(cursor: number) => void>>();
 
   constructor(
     private readonly db: DB,
+    private readonly notifier: Notifier = new Notifier(),
     /** Called with feeds that became subscribed and have never been fetched. */
     private readonly onNewFeeds: (feedIds: string[]) => void = () => {},
     clock?: () => number,
@@ -108,13 +109,7 @@ export class SyncService {
 
   /** Get told when an account's cursor moves (for Server-Sent Events). */
   subscribe(userId: string, listener: (cursor: number) => void): () => void {
-    let set = this.listeners.get(userId);
-    if (!set) this.listeners.set(userId, (set = new Set()));
-    set.add(listener);
-    return () => {
-      set.delete(listener);
-      if (set.size === 0) this.listeners.delete(userId);
-    };
+    return this.notifier.subscribe(userId, (e) => e.type === 'cursor' && listener(e.cursor));
   }
 
   private finish(
@@ -124,7 +119,7 @@ export class SyncService {
   ): SyncPushResponse {
     const cursor = this.cursor(userId);
     if (results.some((r) => r.status === 'ok')) {
-      for (const listener of this.listeners.get(userId) ?? []) listener(cursor);
+      this.notifier.emit(userId, { type: 'cursor', cursor });
     }
     if (newFeeds.length) this.onNewFeeds(newFeeds);
     return { results, cursor };

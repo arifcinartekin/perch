@@ -1,5 +1,6 @@
 import { sql } from 'drizzle-orm';
 import {
+  foreignKey,
   index,
   integer,
   primaryKey,
@@ -169,6 +170,28 @@ export const articleStates = sqliteTable(
     primaryKey({ columns: [t.userId, t.feedId, t.articleId] }),
     index('article_states_starred').on(t.userId, t.starred),
     uniqueIndex('article_states_lookup').on(t.feedId, t.articleId, t.userId),
+  ],
+);
+
+/** Readability output per article, shared by every reader of it. */
+export const fulltextCache = sqliteTable(
+  'fulltext_cache',
+  {
+    feedId: text('feed_id').notNull(),
+    articleId: text('article_id').notNull(),
+    /** Unsanitised; clients sanitise before rendering, as they do feed HTML. */
+    html: text('html').notNull(),
+    title: text('title'),
+    byline: text('byline'),
+    excerpt: text('excerpt'),
+    extractedAt: integer('extracted_at').notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.feedId, t.articleId] }),
+    foreignKey({
+      columns: [t.feedId, t.articleId],
+      foreignColumns: [articles.feedId, articles.id],
+    }).onDelete('cascade'),
   ],
 );
 

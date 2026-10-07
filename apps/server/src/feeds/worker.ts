@@ -3,6 +3,7 @@ import type { DB } from '../db';
 import { articleStates, feeds, subscriptions } from '../db/schema';
 import { purgeExpiredSessions } from '../auth/sessions';
 import { pruneSyncRecords } from '../sync/service';
+import type { Notifier } from '../lib/notifier';
 import type { SafeFetch } from '../lib/safe-fetch';
 import { refreshFeed, type RefreshResult } from './fetcher';
 
@@ -27,6 +28,7 @@ export class FeedWorker {
     private readonly db: DB,
     private readonly fetch: SafeFetch,
     private readonly intervalMin: number,
+    private readonly notifier?: Notifier,
   ) {}
 
   start() {
@@ -113,11 +115,26 @@ export class FeedWorker {
     return results;
   }
 
+  /** Tell the feed's subscribers (with an open stream) that articles arrived. */
+  private announce(feedId: string) {
+    if (!this.notifier?.active) return;
+    const subscribers = this.db
+      .select({ userId: subscriptions.userId })
+      .from(subscriptions)
+      .where(sql`${subscriptions.feedId} = ${feedId}`)
+      .all();
+    for (const { userId } of subscribers) this.notifier.emit(userId, { type: 'articles' });
+  }
+
   /** Coalesces concurrent refreshes of the same feed into one request. */
   private refreshOne(row: typeof feeds.$inferSelect): Promise<RefreshResult> {
     let job = this.inFlight.get(row.id);
     if (!job) {
       job = refreshFeed(this.db, this.fetch, row, this.intervalMin)
+        .then((result) => {
+          if (result.inserted) this.announce(row.id);
+          return result;
+        })
         .catch((err: Error): RefreshResult => ({ ok: false, error: err.message }))
         .finally(() => this.inFlight.delete(row.id));
       this.inFlight.set(row.id, job);

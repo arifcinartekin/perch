@@ -1,4 +1,5 @@
-// Generates Perch's extension icons (16/32/48/128 px) as PNGs with no external
+// Generates Perch's icons — the extension's (16/32/48/128 px) and the web
+// reader's (128/192/512 px, for the PWA manifest) — as PNGs with no external
 // dependencies — just Node's built-in zlib. The mark is a rounded indigo square
 // with a white RSS motif (corner dot + two broadcast arcs).
 //
@@ -10,6 +11,8 @@ import { dirname, resolve } from 'node:path';
 
 const OUT_DIR = resolve(dirname(fileURLToPath(import.meta.url)), '../public/icon');
 const SIZES = [16, 32, 48, 128];
+const WEB_DIR = resolve(dirname(fileURLToPath(import.meta.url)), '../../web/public');
+const WEB_SIZES = [128, 192, 512];
 
 const BG = [24, 24, 27]; // zinc-900 — monochrome, no brand colour
 const FG = [255, 255, 255];
@@ -105,6 +108,12 @@ function draw(size) {
 mkdirSync(OUT_DIR, { recursive: true });
 for (const size of SIZES) {
   const file = resolve(OUT_DIR, `${size}.png`);
+  writeFileSync(file, draw(size));
+  console.log('wrote', file);
+}
+mkdirSync(WEB_DIR, { recursive: true });
+for (const size of WEB_SIZES) {
+  const file = resolve(WEB_DIR, `icon-${size}.png`);
   writeFileSync(file, draw(size));
   console.log('wrote', file);
 }

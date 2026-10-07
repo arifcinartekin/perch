@@ -1,18 +1,17 @@
 import { useState } from 'react';
-import { Dialog } from '@/components/Dialog';
-import { Button } from '@/components/Button';
-import { useLibrary } from '@/hooks/useLibrary';
+import { Dialog } from '../components/Dialog';
+import { Button } from '../components/Button';
+import { useLibrary } from '../hooks/useLibrary';
 import { useToast } from './Toasts';
-import { sendMessage } from '@/lib/messaging';
-import { addCategory } from '@/lib/storage/categories';
-import { changeFeedUrl, displayTitle, moveFeedToCategory, renameFeed } from '@/lib/storage/feeds';
-import { requestHostPermission } from '@/lib/permissions/host';
+import { displayTitle } from '@perch/core/feeds';
+import { useBackend } from '../backend';
 import { isHttpUrl, normalizeFeedUrl } from '@perch/core/url';
 import type { Feed } from '@perch/core/types';
 
 const NEW = '__new__';
 
 export function FeedEditDialog({ feed, onClose }: { feed: Feed; onClose: () => void }) {
+  const backend = useBackend();
   const { categories } = useLibrary();
   const toast = useToast();
   const [title, setTitle] = useState(feed.customTitle ?? '');
@@ -33,27 +32,18 @@ export function FeedEditDialog({ feed, onClose }: { feed: Feed; onClose: () => v
     setBusy(true);
     setError(null);
     try {
-      // If the feed URL is changing, grab the new site's permission first while
-      // we still have the click's user gesture.
-      let urlSwapped = false;
-      if (urlChanged) {
-        await requestHostPermission(url.trim());
-        urlSwapped = await changeFeedUrl(feed.id, url.trim());
-        if (!urlSwapped) {
-          setError('That URL is already used by another feed.');
-          setBusy(false);
-          return;
-        }
+      const problem = await backend.updateFeed(feed, {
+        ...(urlChanged && { url: url.trim() }),
+        customTitle: title,
+        ...(categoryId === NEW
+          ? { category: { newCategory: newCategory || 'New category' } }
+          : categoryId !== feed.categoryId && { category: { categoryId } }),
+      });
+      if (problem) {
+        setError(problem);
+        return;
       }
-
-      await renameFeed(feed.id, title);
-
-      let target = categoryId;
-      if (categoryId === NEW) target = (await addCategory(newCategory || 'New category')).id;
-      if (target !== feed.categoryId) await moveFeedToCategory(feed.id, target);
-
-      if (urlSwapped) await sendMessage('feeds:refresh', { feedIds: [feed.id] });
-      toast(urlSwapped ? 'Feed updated — refreshing' : 'Feed updated', 'success');
+      toast(urlChanged ? 'Feed updated — refreshing' : 'Feed updated', 'success');
       onClose();
     } finally {
       setBusy(false);
@@ -63,7 +53,7 @@ export function FeedEditDialog({ feed, onClose }: { feed: Feed; onClose: () => v
   const remove = async () => {
     setBusy(true);
     try {
-      await sendMessage('feed:remove', { feedId: feed.id });
+      await backend.removeFeed(feed.id);
       toast('Feed removed', 'success');
       onClose();
     } finally {
@@ -72,9 +62,8 @@ export function FeedEditDialog({ feed, onClose }: { feed: Feed; onClose: () => v
   };
 
   const grantAccess = async () => {
-    const granted = await requestHostPermission(feed.url);
-    if (granted) {
-      await sendMessage('feeds:refresh', { feedIds: [feed.id] });
+    if (!backend.grantFeedAccess) return;
+    if (await backend.grantFeedAccess(feed)) {
       toast('Access granted — refreshing', 'success');
       onClose();
     } else {
@@ -121,7 +110,7 @@ export function FeedEditDialog({ feed, onClose }: { feed: Feed; onClose: () => v
           />
           {urlChanged && (
             <span className="text-[11px] text-[var(--text-faint)]">
-              Cached articles are kept. Perch will ask for access to the new site and refresh.
+              Cached articles and read state are kept, and the feed is refreshed.
             </span>
           )}
         </label>
@@ -150,7 +139,7 @@ export function FeedEditDialog({ feed, onClose }: { feed: Feed; onClose: () => v
           />
         )}
 
-        {feed.needsPermission && !urlChanged && (
+        {feed.needsPermission && !urlChanged && backend.grantFeedAccess && (
           <div className="rounded-[9px] border border-[var(--border-strong)] bg-[var(--bg)] px-3 py-2.5">
             <p className="text-[12px] text-[var(--text-muted)]">
               Perch doesn’t have permission to fetch this feed’s site yet.

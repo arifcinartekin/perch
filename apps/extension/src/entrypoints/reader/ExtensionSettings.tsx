@@ -1,12 +1,16 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { IconArrowLeft } from '@/components/icons';
-import { Button } from '@/components/Button';
-import { Spinner } from '@/components/Spinner';
-import { useSettings } from '@/hooks/useSettings';
-import { useToast } from '../components/Toasts';
+import {
+  Button,
+  Row,
+  Section,
+  Spinner,
+  Toggle,
+  downloadText,
+  pickTextFile,
+  useSettings,
+  useToast,
+} from '@perch/reader';
 import { ALL_SITES, hasAllSites, removeAllSites, requestAllSites } from '@/lib/permissions/host';
-import { MIN_REFRESH_MINUTES } from '@perch/core/types';
 import { clearFullText } from '@/lib/storage/fulltext';
 import {
   exportBackupString,
@@ -15,28 +19,20 @@ import {
   importOpml,
   type ImportResult,
 } from '@/lib/backup';
-import { downloadText, pickTextFile } from '@/lib/util/download';
 import { clearPin, isPinEnabled, isValidPin, setPin } from '@/lib/lock';
-import { Row, Section, Segmented, Toggle } from './settings-ui';
-import { AppearanceSection } from './Appearance';
-import { SyncSection } from './Sync';
+import { SyncSection } from './pages/Sync';
 
-export function Settings() {
-  const { settings, loaded, update } = useSettings();
+// Settings that only exist in the extension: site permissions, sync, local
+// backups, the PIN and the full-text cache. Rendered inside the shared page.
+
+export function ExtensionSettings() {
+  const { settings, update } = useSettings();
   const toast = useToast();
   const [autoGranted, setAutoGranted] = useState(false);
 
   useEffect(() => {
     void hasAllSites().then(setAutoGranted);
   }, []);
-
-  if (!loaded) {
-    return (
-      <div className="flex flex-1 items-center justify-center">
-        <Spinner size={20} />
-      </div>
-    );
-  }
 
   const toggleAutoDiscovery = async (next: boolean) => {
     if (next) {
@@ -57,111 +53,45 @@ export function Settings() {
   };
 
   return (
-    <div className="flex-1 overflow-y-auto">
-      <div className="mx-auto max-w-[640px] px-6 py-8">
-        <Link
-          to="/"
-          className="mb-6 inline-flex items-center gap-1.5 text-[12.5px] font-medium text-[var(--text-muted)] hover:text-[var(--text)]"
-        >
-          <IconArrowLeft size={14} /> Back to reader
-        </Link>
-        <h1 className="text-[22px] font-bold tracking-tight">Settings</h1>
-        <p className="mt-1 text-[13px] text-[var(--text-faint)]">
-          Everything is stored in your browser. Nothing leaves it unless you turn on sync.
-        </p>
-
-        <Section title="Reading">
-          <Row label="Open the reader as" hint="Where “Open RSS Reader” takes you.">
-            <Segmented
-              value={settings.openMode}
-              onChange={(v) => update({ openMode: v as 'tab' | 'window' })}
-              options={[
-                { value: 'tab', label: 'Browser tab' },
-                { value: 'window', label: 'App window' },
-              ]}
-            />
-          </Row>
-          <Row label="Reading font">
-            <Segmented
-              value={settings.readingFont}
-              onChange={(v) => update({ readingFont: v as 'sans' | 'serif' })}
-              options={[
-                { value: 'sans', label: 'Sans' },
-                { value: 'serif', label: 'Serif' },
-              ]}
-            />
-          </Row>
-        </Section>
-
-        <AppearanceSection settings={settings} update={update} />
-
-        <Section title="Refreshing">
-          <Row
-            label="Background refresh interval"
-            hint={`How often Perch checks your feeds in the background. Minimum ${MIN_REFRESH_MINUTES} minutes.`}
-          >
-            <div className="flex items-center gap-2">
-              <input
-                type="number"
-                min={MIN_REFRESH_MINUTES}
-                value={settings.refreshIntervalMinutes}
-                onChange={(e) =>
-                  update({ refreshIntervalMinutes: Number(e.target.value) || MIN_REFRESH_MINUTES })
-                }
-                className="w-20 rounded-[9px] border border-[var(--border-strong)] bg-[var(--bg)] px-2.5 py-1.5 text-[13px]"
-              />
-              <span className="text-[12px] text-[var(--text-faint)]">minutes</span>
-            </div>
-          </Row>
-        </Section>
-
-        <Section title="Feed discovery">
-          <Row
-            label="Auto-discover feeds on every site"
-            hint="Off by default. When on, Perch is granted access to all sites so it can scan
+    <>
+      <Section title="Feed discovery">
+        <Row
+          label="Auto-discover feeds on every site"
+          hint="Off by default. When on, Perch is granted access to all sites so it can scan
             each page you visit for feeds and show a red dot on the toolbar icon when it finds
             one. Turn it off to immediately revoke that access. When off, Perch only scans the
             current tab, and only when you open the popup."
+        >
+          <Toggle checked={settings.autoDiscovery && autoGranted} onChange={toggleAutoDiscovery} />
+        </Row>
+        {settings.autoDiscovery && !autoGranted && (
+          <p className="text-[12px] text-[var(--text-muted)]">
+            The all-sites permission (<code>{ALL_SITES}</code>) is currently not granted, so
+            auto-discovery is inactive. Toggle it again to re-request.
+          </p>
+        )}
+      </Section>
+
+      <SyncSection />
+
+      <BackupSection />
+
+      <LockSection />
+
+      <Section title="Storage">
+        <Row label="Full-text cache" hint="Extracted article bodies stored for offline reading.">
+          <button
+            onClick={async () => {
+              await clearFullText();
+              toast('Full-text cache cleared', 'success');
+            }}
+            className="rounded-[9px] border border-[var(--border-strong)] px-3 py-1.5 text-[12.5px] font-medium hover:bg-[var(--accent-soft)]"
           >
-            <Toggle
-              checked={settings.autoDiscovery && autoGranted}
-              onChange={toggleAutoDiscovery}
-            />
-          </Row>
-          {settings.autoDiscovery && !autoGranted && (
-            <p className="text-[12px] text-[var(--text-muted)]">
-              The all-sites permission (<code>{ALL_SITES}</code>) is currently not granted, so
-              auto-discovery is inactive. Toggle it again to re-request.
-            </p>
-          )}
-        </Section>
-
-        <SyncSection />
-
-        <BackupSection />
-
-        <LockSection />
-
-        <Section title="Storage">
-          <Row label="Full-text cache" hint="Extracted article bodies stored for offline reading.">
-            <button
-              onClick={async () => {
-                await clearFullText();
-                toast('Full-text cache cleared', 'success');
-              }}
-              className="rounded-[9px] border border-[var(--border-strong)] px-3 py-1.5 text-[12.5px] font-medium hover:bg-[var(--accent-soft)]"
-            >
-              Clear cache
-            </button>
-          </Row>
-        </Section>
-
-        <p className="mt-10 text-[11.5px] text-[var(--text-faint)]">
-          Perch is open source and MIT licensed. Feeds, articles, and favicons are fetched only from
-          sites you have added.
-        </p>
-      </div>
-    </div>
+            Clear cache
+          </button>
+        </Row>
+      </Section>
+    </>
   );
 }
 

@@ -4,8 +4,8 @@ A self-hostable server for Perch. In **personal mode** it fetches your feeds in 
 background, keeps your read and starred state, and serves it to every device you sign in on.
 One process, one SQLite file, no external services.
 
-> Status: early. Accounts, feed fetching, the reader API and sync with the browser extension
-> work and are tested. The web reader and E2E mode (for the official server) come next.
+> Status: early. Accounts, feed fetching, the reader API, the web reader and sync with the
+> browser extension work and are tested. E2E mode (for the official server) comes next.
 
 ## Run it
 
@@ -14,7 +14,8 @@ docker build -f apps/server/Dockerfile -t perch/server .   # from the repository
 docker run -d -p 8080:8080 -v perch-data:/data --name perch perch/server
 ```
 
-The first account you create becomes the admin. After that, sign-up is by invite unless you
+Open `http://your-server:8080` for the **web reader** — the same reader as the extension,
+installable as an app (PWA). The first account you create becomes the admin. After that, sign-up is by invite unless you
 change `PERCH_SIGNUP`. For HTTPS, see [`docker-compose.example.yml`](./docker-compose.example.yml)
 (Caddy, automatic certificates).
 
@@ -22,9 +23,13 @@ Without Docker (Node 22+):
 
 ```bash
 npm ci
-npm run build:server
+npm run build:server && npm run build:web
 DATABASE_URL=./perch.db node apps/server/dist/main.js
 ```
+
+The server finds the web build in `apps/web/dist` by itself (or wherever `PERCH_WEB_ROOT`
+points). For working on the web reader, run `npm run dev:server` and `npm run dev:web`, then
+open http://localhost:5173 — Vite proxies `/api` to the server.
 
 ## Configuration
 
@@ -39,6 +44,7 @@ DATABASE_URL=./perch.db node apps/server/dist/main.js
 | `PERCH_FETCH_ALLOW_PRIVATE` | `false`            | Allow feeds on private / loopback addresses.                                             |
 | `PERCH_FETCH_ALLOW_HOSTS`   |                    | Comma-separated hostnames allowed to resolve to private addresses (e.g. `nas.local`).    |
 | `PERCH_TRUST_PROXY`         | `false`            | Use `X-Forwarded-For` for rate limiting. Only behind a proxy you control.                |
+| `PERCH_WEB_ROOT`            | `apps/web/dist`    | Folder with the built web reader. The Docker image sets it.                              |
 
 ## How it works
 

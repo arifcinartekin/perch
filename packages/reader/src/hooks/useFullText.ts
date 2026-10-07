@@ -1,14 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Article, FullText } from '@perch/core/types';
-import { extractFullText, getCachedFullText, type ExtractFailure } from '@/lib/readability/extract';
-import { hasHostPermission, requestHostPermission } from '@/lib/permissions/host';
+import { useBackend, type FullTextFailure } from '../backend';
 
 type State =
   | { status: 'idle' } // no URL, or the feed already ships the whole article
   | { status: 'loading' }
   | { status: 'ready'; data: FullText }
-  | { status: 'blocked' } // needs a per-site permission we can't ask for without a click
-  | { status: 'error'; reason: ExtractFailure; detail?: string };
+  | { status: 'blocked' } // needs access we can't ask for without a click
+  | { status: 'error'; reason: FullTextFailure; detail?: string };
 
 // If the feed itself carries a substantial article body, don't bother fetching
 // and running Readability — the feed content IS the full text.
@@ -16,33 +15,34 @@ const FEED_CONTENT_ENOUGH = 2400;
 
 /**
  * Full-text state for the currently open article. It loads automatically:
- * cache hit → shown instantly; permission already granted → fetched + extracted
- * silently; otherwise `blocked`, and the caller shows a one-tap "load" affordance
- * (a click is required so the browser will show the permission prompt).
+ * cache hit → shown instantly; access already there → fetched + extracted
+ * silently; otherwise `blocked`, and the caller shows a one-tap "load"
+ * affordance (in the extension a click is needed for the permission prompt).
  */
 export function useFullText(article: Article | null) {
+  const backend = useBackend();
   const [state, setState] = useState<State>({ status: 'idle' });
   const runId = useRef(0);
   const articleRef = useRef(article);
   articleRef.current = article;
 
-  const extract = useCallback(async (opts: { force?: boolean; prompt?: boolean } = {}) => {
-    const current = articleRef.current;
-    if (!current?.url) {
-      setState({ status: 'idle' });
-      return;
-    }
-    const id = ++runId.current;
-    setState({ status: 'loading' });
-    const result = await extractFullText(current, {
-      allowPermissionPrompt: opts.prompt ?? false,
-      force: opts.force,
-    });
-    if (id !== runId.current) return;
-    if (result.ok) setState({ status: 'ready', data: result.fullText });
-    else if (result.reason === 'permission-denied') setState({ status: 'blocked' });
-    else setState({ status: 'error', reason: result.reason, detail: result.detail });
-  }, []);
+  const extract = useCallback(
+    async (opts: { force?: boolean; prompt?: boolean } = {}) => {
+      const current = articleRef.current;
+      if (!current?.url) {
+        setState({ status: 'idle' });
+        return;
+      }
+      const id = ++runId.current;
+      setState({ status: 'loading' });
+      const result = await backend.fullText.extract(current, opts);
+      if (id !== runId.current) return;
+      if (result.ok) setState({ status: 'ready', data: result.fullText });
+      else if (result.reason === 'permission-denied') setState({ status: 'blocked' });
+      else setState({ status: 'error', reason: result.reason, detail: result.detail });
+    },
+    [backend],
+  );
 
   useEffect(() => {
     const id = ++runId.current;
@@ -52,7 +52,7 @@ export function useFullText(article: Article | null) {
     }
     let alive = true;
     void (async () => {
-      const cached = await getCachedFullText(article.id);
+      const cached = await backend.fullText.cached(article).catch(() => undefined);
       if (!alive || id !== runId.current) return;
       if (cached) {
         setState({ status: 'ready', data: cached });
@@ -63,24 +63,23 @@ export function useFullText(article: Article | null) {
         setState({ status: 'idle' });
         return;
       }
-      const granted = await hasHostPermission(article.url!).catch(() => false);
+      const allowed = await backend.fullText.canExtract(article).catch(() => false);
       if (!alive || id !== runId.current) return;
-      if (granted) void extract();
+      if (allowed) void extract();
       else setState({ status: 'blocked' });
     })();
     return () => {
       alive = false;
     };
-  }, [article?.id, article?.url, extract]);
+  }, [backend, article?.id, article?.url, extract]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  /** Called from a click: request the per-site permission, then extract. */
+  /** Called from a click: ask for access, then extract. */
   const grant = useCallback(async () => {
     const current = articleRef.current;
     if (!current?.url) return;
-    const granted = await requestHostPermission(current.url);
-    if (granted) void extract();
+    if (await backend.fullText.requestAccess(current)) void extract();
     else setState({ status: 'blocked' });
-  }, [extract]);
+  }, [backend, extract]);
 
   const reload = useCallback(() => extract({ force: true, prompt: true }), [extract]);
 

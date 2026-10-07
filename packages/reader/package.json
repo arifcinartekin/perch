@@ -1,0 +1,32 @@
+{
+  "name": "@perch/reader",
+  "version": "0.1.0",
+  "description": "The Perch reading app (React), shared by the extension and the web reader.",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./styles.css": "./src/styles.css"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@perch/core": "*"
+  },
+  "peerDependencies": {
+    "dompurify": "^3.4.15",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "react-router-dom": "^7.9.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "typescript": "^5.9.0"
+  },
+  "sideEffects": [
+    "*.css"
+  ]
+}

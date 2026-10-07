@@ -1,10 +1,10 @@
 import { useEffect, useRef } from 'react';
-import { Favicon } from '@/components/Favicon';
-import { Spinner } from '@/components/Spinner';
-import { IconStar } from '@/components/icons';
+import { Favicon } from '../components/Favicon';
+import { Spinner } from '../components/Spinner';
+import { IconStar } from '../components/icons';
 import { excerptOf } from '@perch/core/parser/normalize';
 import { relativeTime } from '@perch/core/time';
-import { displayTitle } from '@/lib/storage/feeds';
+import { displayTitle } from '@perch/core/feeds';
 import type { Article, Feed } from '@perch/core/types';
 
 interface Props {

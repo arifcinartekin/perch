@@ -1,13 +1,13 @@
 import { useMemo } from 'react';
-import { Button } from '@/components/Button';
-import { IconButton } from '@/components/IconButton';
-import { Spinner } from '@/components/Spinner';
-import { IconArrowLeft, IconExternal, IconRefresh, IconStar, IconCheck } from '@/components/icons';
-import { sanitizeHtml } from '@/lib/sanitize';
+import { Button } from '../components/Button';
+import { IconButton } from '../components/IconButton';
+import { Spinner } from '../components/Spinner';
+import { IconArrowLeft, IconExternal, IconRefresh, IconStar, IconCheck } from '../components/icons';
+import { sanitizeHtml } from '../lib/sanitize';
 import { fullTimestamp } from '@perch/core/time';
-import { displayTitle } from '@/lib/storage/feeds';
+import { displayTitle } from '@perch/core/feeds';
 import { bareHost } from '@perch/core/url';
-import { useFullText } from '@/hooks/useFullText';
+import { useFullText } from '../hooks/useFullText';
 import type { Article, Feed } from '@perch/core/types';
 
 interface Props {

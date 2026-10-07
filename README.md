@@ -105,31 +105,36 @@ background refresher can fetch it. If you decline, the feed is still added but f
 
 Perch is an npm-workspaces monorepo. Everything that doesn't depend on a browser lives in
 `packages/core`, so the server and the upcoming mobile app share the exact same parsing, ids
-and search as the extension.
+and search as the extension. The reading app itself lives in `packages/reader` and runs twice:
+in the extension over local storage, and on the web over the Perch Server API — one UI, two
+data layers behind the same `ReaderBackend` interface.
 
 ```
 packages/
-└─ core/                   Platform-independent, no DOM, no browser APIs.
-   ├─ src/parser/          RSS 2.0 / RDF, Atom, JSON Feed → one normalised shape
-   │                       (fast-xml-parser, so it runs in a service worker or on Node).
-   ├─ src/discovery/       candidate URL builder + bounded prober.
-   ├─ src/feeds.ts         stable feed ids, display titles.
-   ├─ src/auth.ts          client-side Argon2id key derivation.
-   ├─ src/api.ts           Perch Server request / response types.
-   ├─ src/username.ts      username rules and look-alike folding.
-   ├─ src/sync.ts          sync records, protocol types, hybrid logical clock.
-   ├─ src/opml.ts          OPML import / export.
-   ├─ src/search.ts        accent-insensitive article search.
-   ├─ src/theme.ts         custom colour palettes.
-   ├─ src/types.ts         shared domain types.
-   └─ tests/               Vitest: parser, dates, normalisation, discovery, colours.
+├─ core/                   Platform-independent, no DOM, no browser APIs.
+│  ├─ src/parser/          RSS 2.0 / RDF, Atom, JSON Feed → one normalised shape
+│  │                       (fast-xml-parser, so it runs in a service worker or on Node).
+│  ├─ src/discovery/       candidate URL builder + bounded prober.
+│  ├─ src/feeds.ts         stable feed ids, display titles.
+│  ├─ src/auth.ts          client-side Argon2id key derivation.
+│  ├─ src/api.ts           Perch Server request / response types.
+│  ├─ src/username.ts      username rules and look-alike folding.
+│  ├─ src/sync.ts          sync records, protocol types, hybrid logical clock.
+│  ├─ src/opml.ts          OPML import / export.
+│  ├─ src/search.ts        accent-insensitive article search.
+│  ├─ src/theme.ts         custom colour palettes.
+│  ├─ src/types.ts         shared domain types.
+│  └─ tests/               Vitest: parser, dates, normalisation, discovery, colours.
+└─ reader/                 The reading app (React): sidebar, streams, article pane,
+                           settings, theme. Talks to data only through src/backend.ts.
 apps/
 ├─ extension/              The WXT browser extension.
 │  ├─ src/entrypoints/
 │  │  ├─ background.ts     Service worker: alarm-driven refresh, message router,
 │  │  │                    toolbar badge, optional auto-discovery listener.
 │  │  ├─ popup/            React. Discover / add / remove feeds for the current site.
-│  │  ├─ reader/           React + HashRouter. The full-screen reading app.
+│  │  ├─ reader/           @perch/reader over local storage, plus the PIN gate and the
+│  │  │                    extension-only settings (discovery, sync, backup, lock).
 │  │  └─ options/          Thin redirect to reader.html#/settings.
 │  ├─ src/lib/
 │  │  ├─ discovery/        link-tag collector (scripting API) + orchestration.
@@ -139,13 +144,16 @@ apps/
 │  │  ├─ readability/      reader-page-only full-text fetch + @mozilla/readability + sanitise.
 │  │  ├─ permissions/      runtime host-permission helpers.
 │  │  ├─ sync/             Perch Server sign-in, sync engine (pull → merge → push), triggers.
+│  │  ├─ backend.ts        the reader's data layer (ReaderBackend over local storage).
 │  │  └─ backup.ts …       JSON backup, messaging, badge, PIN lock.
-│  ├─ src/components/ hooks/ assets/
 │  └─ tests/              Vitest: storage (fake-indexeddb), backup, and a jsdom smoke test.
+├─ web/                    The web reader (Vite PWA): sign-in, @perch/reader over the server
+│                          API, account / devices / invites / OPML settings. Served by the server.
 └─ server/                 Perch Server: self-hostable, fetches feeds, serves every device.
    ├─ src/auth/            accounts, sessions, devices, invites.
    ├─ src/feeds/           SSRF-safe fetcher, background worker, subscribe-from-any-URL.
    ├─ src/reader/          reader API: articles, search, read state, OPML, settings.
+   ├─ src/fulltext/        Readability (linkedom) for the web reader, cached per article.
    ├─ src/sync/            sync records (last writer wins), change feed, Server-Sent Events.
    ├─ src/db/              Drizzle schema (SQLite); migrations in drizzle/.
    └─ tests/               Vitest against an in-memory database and a local feed server.

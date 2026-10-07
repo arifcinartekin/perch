@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { relativeTime } from '@perch/core/time';
-import { Button } from '@/components/Button';
-import { Spinner } from '@/components/Spinner';
+import { Button, Row, Section, Spinner, useToast } from '@perch/reader';
 import { sendMessage } from '@/lib/messaging';
 import { requestHostPermission } from '@/lib/permissions/host';
 import {
@@ -21,8 +20,6 @@ import {
   type SyncAccount,
   type SyncStatus,
 } from '@/lib/sync/state';
-import { useToast } from '../components/Toasts';
-import { Row, Section } from './settings-ui';
 
 const inputClass =
   'w-full rounded-[9px] border border-[var(--border-strong)] bg-[var(--bg-solid)] px-2.5 py-1.5 text-[13px]';

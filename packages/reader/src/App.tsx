@@ -1,45 +1,36 @@
-import { useEffect, useState } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
-import { LibraryProvider, useLibrary } from '@/hooks/useLibrary';
-import { useSettings } from '@/hooks/useSettings';
-import { useApplyTheme } from '@/hooks/useTheme';
-import { useWallpaperUrl } from '@/hooks/useWallpaper';
-import { isPinEnabled, isUnlockedThisSession, markUnlocked } from '@/lib/lock';
-import { Sidebar } from './components/Sidebar';
-import { TopBar } from './components/TopBar';
-import { ToastProvider } from './components/Toasts';
-import { AllStream, CategoryStream, FeedStream, StarredStream } from './components/StreamView';
+import { BackendProvider, type ReaderBackend } from './backend';
+import { LibraryProvider, useLibrary } from './hooks/useLibrary';
+import { useSettings } from './hooks/useSettings';
+import { useApplyTheme } from './hooks/useTheme';
+import { useWallpaperUrl } from './hooks/useWallpaper';
+import { Sidebar } from './reader/Sidebar';
+import { TopBar } from './reader/TopBar';
+import { ToastProvider } from './reader/Toasts';
+import { AllStream, CategoryStream, FeedStream, StarredStream } from './reader/StreamView';
 import { Settings } from './pages/Settings';
-import { Onboarding } from './components/Onboarding';
-import { PinGate } from './components/PinGate';
+import { Onboarding } from './reader/Onboarding';
 
-export function App() {
+export interface ReaderAppProps {
+  backend: ReaderBackend;
+  /** Host-specific sections appended to the Settings page. */
+  settingsExtra?: ReactNode;
+}
+
+/** The full reader. The host provides the router (hash or browser history). */
+export function ReaderApp({ backend, settingsExtra }: ReaderAppProps) {
+  return (
+    <BackendProvider backend={backend}>
+      <Shell settingsExtra={settingsExtra} />
+    </BackendProvider>
+  );
+}
+
+function Shell({ settingsExtra }: { settingsExtra?: ReactNode }) {
   const { settings } = useSettings();
   useApplyTheme(settings);
   const wallpaperUrl = useWallpaperUrl(settings.wallpaper?.id);
-
-  // null = still deciding, true = show the PIN gate, false = unlocked.
-  const [locked, setLocked] = useState<boolean | null>(null);
-
-  useEffect(() => {
-    if (isUnlockedThisSession()) {
-      setLocked(false);
-      return;
-    }
-    void isPinEnabled().then((on) => setLocked(on));
-  }, [settings.pinHash, settings.pinSalt]);
-
-  if (locked === null) return <div className="h-screen w-screen bg-[var(--bg)]" />;
-  if (locked) {
-    return (
-      <PinGate
-        onUnlock={() => {
-          markUnlocked();
-          setLocked(false);
-        }}
-      />
-    );
-  }
 
   return (
     <LibraryProvider>
@@ -66,7 +57,7 @@ export function App() {
                   <Route path="/starred" element={<StarredStream />} />
                   <Route path="/feed/:feedId" element={<FeedStream />} />
                   <Route path="/category/:categoryId" element={<CategoryStream />} />
-                  <Route path="/settings" element={<Settings />} />
+                  <Route path="/settings" element={<Settings extra={settingsExtra} />} />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
               </Gate>

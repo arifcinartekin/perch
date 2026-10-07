@@ -6,6 +6,7 @@ import type { Config } from './config';
 import type { DB } from './db';
 import type { SafeFetch } from './lib/safe-fetch';
 import type { FeedWorker } from './feeds/worker';
+import type { Notifier } from './lib/notifier';
 import type { SyncService } from './sync/service';
 
 export interface AppContext {
@@ -16,6 +17,7 @@ export interface AppContext {
   fetch: SafeFetch;
   worker: FeedWorker;
   sync: SyncService;
+  notifier: Notifier;
 }
 
 export interface SessionUser {

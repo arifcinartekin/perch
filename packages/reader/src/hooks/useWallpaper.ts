@@ -1,21 +1,23 @@
 import { useEffect, useState } from 'react';
-import { loadWallpaper } from '@/lib/storage/wallpaper';
+import { useBackend } from '../backend';
 
 /**
  * Object URL for the stored background image, reloaded whenever the id in
  * settings changes (so every open reader tab follows along).
  */
 export function useWallpaperUrl(id: string | undefined): string | null {
+  const backend = useBackend();
   const [url, setUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!id) {
+    if (!id || !backend.wallpaper) {
       setUrl(null);
       return;
     }
     let alive = true;
     let objectUrl: string | null = null;
-    void loadWallpaper()
+    void backend.wallpaper
+      .load(id)
       .then((blob) => {
         if (!alive || !blob) return setUrl(null);
         objectUrl = URL.createObjectURL(blob);
@@ -26,7 +28,7 @@ export function useWallpaperUrl(id: string | undefined): string | null {
       alive = false;
       if (objectUrl) URL.revokeObjectURL(objectUrl);
     };
-  }, [id]);
+  }, [backend, id]);
 
   return url;
 }

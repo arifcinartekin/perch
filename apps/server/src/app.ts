@@ -8,6 +8,7 @@ import { meta, users } from './db/schema';
 import { FeedWorker } from './feeds/worker';
 import { HttpError, errorResponse, type AppContext, type Env } from './http';
 import { randomToken } from './lib/crypto';
+import { Notifier } from './lib/notifier';
 import { createSafeFetch } from './lib/safe-fetch';
 import { adminRoutes, authRoutes, deviceRoutes } from './auth/routes';
 import { readerRoutes } from './reader/routes';
@@ -30,7 +31,8 @@ export function createContext(config: Config): AppContext & { close: () => void 
     allowPrivate: config.fetchAllowPrivate,
     allowHosts: config.fetchAllowHosts,
   });
-  const worker = new FeedWorker(db, fetch, config.fetchIntervalMin);
+  const notifier = new Notifier();
+  const worker = new FeedWorker(db, fetch, config.fetchIntervalMin, notifier);
   return {
     config,
     db,
@@ -38,7 +40,8 @@ export function createContext(config: Config): AppContext & { close: () => void 
     fetch,
     worker,
     // Feeds a client subscribes to are fetched right away, not at the next tick.
-    sync: new SyncService(db, (ids) => void worker.refresh(ids)),
+    sync: new SyncService(db, notifier, (ids) => void worker.refresh(ids)),
+    notifier,
     close,
   };
 }

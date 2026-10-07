@@ -2,13 +2,12 @@ import { createContext, createElement, useContext, useEffect, useMemo, useState 
 import type { ReactNode } from 'react';
 import type { Category, Feed } from '@perch/core/types';
 import { UNCATEGORIZED_ID } from '@perch/core/types';
-import { getCategories, watchCategories } from '@/lib/storage/categories';
-import { displayTitle, getFeeds, watchFeeds } from '@/lib/storage/feeds';
-import { unreadCountsByFeed } from '@/lib/storage/articles';
+import { displayTitle } from '@perch/core/feeds';
+import { useBackend } from '../backend';
 
 // The reader's shared view of the feed library: feeds, categories, and unread
-// counts. Backed by storage watchers so every context stays in sync, plus a
-// manual `refreshCounts` for after a feed refresh.
+// counts. Reloaded when the backend reports a change, plus a manual
+// `refreshCounts` for after a feed refresh.
 
 export interface LibraryValue {
   feeds: Feed[];
@@ -26,6 +25,7 @@ export interface LibraryValue {
 const LibraryContext = createContext<LibraryValue | null>(null);
 
 export function LibraryProvider({ children }: { children: ReactNode }) {
+  const backend = useBackend();
   const [feeds, setFeeds] = useState<Feed[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [unreadByFeed, setUnreadByFeed] = useState<Record<string, number>>({});
@@ -33,29 +33,24 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let alive = true;
-    const refreshCounts = () => unreadCountsByFeed().then((c) => alive && setUnreadByFeed(c));
-
-    void Promise.all([getFeeds(), getCategories(), unreadCountsByFeed()]).then(([f, c, u]) => {
-      if (!alive) return;
-      setFeeds(f);
-      setCategories(c);
-      setUnreadByFeed(u);
-      setLoading(false);
+    const load = () =>
+      Promise.all([backend.loadLibrary(), backend.unreadCounts()]).then(([lib, counts]) => {
+        if (!alive) return;
+        setFeeds(lib.feeds);
+        setCategories(lib.categories);
+        setUnreadByFeed(counts);
+        setLoading(false);
+      });
+    void load();
+    const unwatch = backend.watch({
+      library: () => void load(),
+      articles: () => void backend.unreadCounts().then((c) => alive && setUnreadByFeed(c)),
     });
-
-    const unwatchFeeds = watchFeeds((f) => {
-      if (!alive) return;
-      setFeeds(f);
-      void refreshCounts();
-    });
-    const unwatchCats = watchCategories((c) => alive && setCategories(c));
-
     return () => {
       alive = false;
-      unwatchFeeds();
-      unwatchCats();
+      unwatch();
     };
-  }, []);
+  }, [backend]);
 
   const value = useMemo<LibraryValue>(() => {
     const feedById = (id: string) => feeds.find((f) => f.id === id);
@@ -84,13 +79,13 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
       categories,
       unreadByFeed,
       loading,
-      refreshCounts: () => unreadCountsByFeed().then(setUnreadByFeed),
+      refreshCounts: () => backend.unreadCounts().then(setUnreadByFeed),
       grouped,
       feedById,
       unreadForFeeds,
       totalUnread: Object.values(unreadByFeed).reduce((a, b) => a + b, 0),
     };
-  }, [feeds, categories, unreadByFeed, loading]);
+  }, [backend, feeds, categories, unreadByFeed, loading]);
 
   return createElement(LibraryContext.Provider, { value }, children);
 }

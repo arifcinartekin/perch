@@ -49,9 +49,12 @@ All of these run in CI too.
   articles/full-text. Never overwrite a user's read/starred state on refresh.
 - **Background** — `apps/extension/src/entrypoints/background.ts` + `apps/extension/src/lib/background/`. Assume the worker can
   restart at any time.
-- **UI** — `apps/extension/src/entrypoints/popup/` (small, fast) and
-  `apps/extension/src/entrypoints/reader/` (the main app). Shared bits in `src/components/` and
-  `src/hooks/`.
+- **UI** — the reader is `packages/reader` and is shared by the extension and the web app, so
+  it must not touch storage or browser APIs: anything data-related goes through
+  `ReaderBackend` (`packages/reader/src/backend.ts`), implemented in
+  `apps/extension/src/lib/backend.ts` and `apps/web/src/backend.ts`. The popup is
+  `apps/extension/src/entrypoints/popup/` (small, fast); it borrows components from
+  `@perch/reader`.
 - **Anything platform-independent** (ids, OPML, search, theming, types) belongs in
   `packages/core` so the server and mobile app can reuse it.
 - **Server** — `apps/server/` (see its [README](./apps/server/README.md)). Every outbound

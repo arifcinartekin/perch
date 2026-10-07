@@ -1,9 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import { Button } from '@/components/Button';
-import { useEffectiveMode } from '@/hooks/useTheme';
-import { useWallpaperUrl } from '@/hooks/useWallpaper';
-import { getSettings } from '@/lib/storage/settings';
-import { clearWallpaper, saveWallpaper } from '@/lib/storage/wallpaper';
+import { Button } from '../components/Button';
+import { useEffectiveMode } from '../hooks/useTheme';
+import { useWallpaperUrl } from '../hooks/useWallpaper';
+import { useBackend } from '../backend';
 import {
   ACCENT_PRESETS,
   BACKGROUND_PRESETS,
@@ -13,14 +12,14 @@ import {
   resolvePalette,
   type ColorMode,
 } from '@perch/core/theme';
-import { pickFile } from '@/lib/util/download';
+import { pickFile } from '../lib/download';
 import {
   DEFAULT_WALLPAPER_BLUR,
   DEFAULT_WALLPAPER_DIM,
   type ColorOverrides,
   type Settings,
 } from '@perch/core/types';
-import { useToast } from '../components/Toasts';
+import { useToast } from '../reader/Toasts';
 import { Row, Section, Segmented } from './settings-ui';
 
 type ColorKey = keyof ColorOverrides;
@@ -29,6 +28,7 @@ type Update = (patch: Partial<Settings>) => Promise<Settings>;
 const SAVE_DELAY_MS = 120;
 
 export function AppearanceSection({ settings, update }: { settings: Settings; update: Update }) {
+  const backend = useBackend();
   const toast = useToast();
   const effective = useEffectiveMode(settings.theme);
   // Which theme's palette is being edited. Follows the visible theme by default.
@@ -41,14 +41,14 @@ export function AppearanceSection({ settings, update }: { settings: Settings; up
   // Read the latest settings at write time, so quick successive edits (and the
   // debounced picker) never overwrite each other with a stale copy.
   const setColor = async (mode: ColorMode, key: ColorKey, hex: string | undefined) => {
-    const current = await getSettings();
+    const current = await backend.getSettings();
     await update({
       appearance: { ...current.appearance, [mode]: { ...current.appearance[mode], [key]: hex } },
     });
   };
 
   const resetColors = async () => {
-    const current = await getSettings();
+    const current = await backend.getSettings();
     await update({ appearance: { ...current.appearance, [editing]: {} } });
     toast(`${editing === 'dark' ? 'Dark' : 'Light'} theme colors reset`, 'info');
   };
@@ -130,7 +130,7 @@ export function AppearanceSection({ settings, update }: { settings: Settings; up
 
       <div className="h-px bg-[var(--border)]" />
 
-      <WallpaperRows settings={settings} update={update} />
+      {backend.wallpaper && <WallpaperRows settings={settings} update={update} />}
     </Section>
   );
 }
@@ -254,6 +254,8 @@ function ColorRow({
 // ---------------------------------------------------------------------------
 
 function WallpaperRows({ settings, update }: { settings: Settings; update: Update }) {
+  const backend = useBackend();
+  const store = backend.wallpaper!;
   const toast = useToast();
   const [busy, setBusy] = useState(false);
   const wallpaper = settings.wallpaper;
@@ -264,8 +266,8 @@ function WallpaperRows({ settings, update }: { settings: Settings; update: Updat
     if (!file) return;
     setBusy(true);
     try {
-      const id = await saveWallpaper(file);
-      const current = (await getSettings()).wallpaper;
+      const id = await store.save(file);
+      const current = (await backend.getSettings()).wallpaper;
       await update({
         wallpaper: {
           id,
@@ -282,7 +284,7 @@ function WallpaperRows({ settings, update }: { settings: Settings; update: Updat
   };
 
   const remove = async () => {
-    await clearWallpaper();
+    await store.clear();
     await update({ wallpaper: undefined });
     toast('Background image removed', 'info');
   };
@@ -320,7 +322,7 @@ function WallpaperRows({ settings, update }: { settings: Settings; update: Updat
               max={90}
               value={wallpaper.dim}
               onChange={async (dim) => {
-                const w = (await getSettings()).wallpaper;
+                const w = (await backend.getSettings()).wallpaper;
                 if (w) await update({ wallpaper: { ...w, dim } });
               }}
             />
@@ -331,7 +333,7 @@ function WallpaperRows({ settings, update }: { settings: Settings; update: Updat
               max={24}
               value={wallpaper.blur}
               onChange={async (blur) => {
-                const w = (await getSettings()).wallpaper;
+                const w = (await backend.getSettings()).wallpaper;
                 if (w) await update({ wallpaper: { ...w, blur } });
               }}
             />

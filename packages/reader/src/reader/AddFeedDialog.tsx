@@ -1,11 +1,9 @@
 import { useState } from 'react';
-import { Dialog } from '@/components/Dialog';
-import { Button } from '@/components/Button';
-import { useLibrary } from '@/hooks/useLibrary';
+import { Dialog } from '../components/Dialog';
+import { Button } from '../components/Button';
+import { useLibrary } from '../hooks/useLibrary';
 import { useToast } from './Toasts';
-import { sendMessage } from '@/lib/messaging';
-import { addCategory } from '@/lib/storage/categories';
-import { requestHostPermission } from '@/lib/permissions/host';
+import { useBackend } from '../backend';
 import { isHttpUrl } from '@perch/core/url';
 import { UNCATEGORIZED_ID } from '@perch/core/types';
 
@@ -18,6 +16,7 @@ export function AddFeedDialog({
   onClose: () => void;
   presetCategoryId?: string;
 }) {
+  const backend = useBackend();
   const { categories } = useLibrary();
   const toast = useToast();
   const [url, setUrl] = useState('');
@@ -35,26 +34,11 @@ export function AddFeedDialog({
     setBusy(true);
     setError(null);
     try {
-      // Ask for site access first, while we still hold the click's user gesture.
-      const granted = await requestHostPermission(feedUrl);
-      let targetCategory = categoryId;
-      if (categoryId === NEW) {
-        const created = await addCategory(newCategory || 'New category');
-        targetCategory = created.id;
-      }
-      const { created } = await sendMessage('feed:add', {
-        url: feedUrl,
-        categoryId: targetCategory,
-        needsPermission: !granted,
-      });
-      toast(
-        created
-          ? granted
-            ? 'Feed added'
-            : 'Feed added — grant site access to fetch it'
-          : 'That feed is already in your reader',
-        created ? 'success' : 'info',
+      const result = await backend.addFeed(
+        feedUrl,
+        categoryId === NEW ? { newCategory: newCategory || 'New category' } : { categoryId },
       );
+      toast(result.message, result.created ? 'success' : 'info');
       onClose();
     } catch (err) {
       setError((err as Error).message || 'Could not add that feed');
@@ -117,8 +101,7 @@ export function AddFeedDialog({
         )}
 
         <p className="text-[11.5px] leading-relaxed text-[var(--text-faint)]">
-          Perch will ask for permission to fetch this one site. It never requests access to sites
-          you haven’t added.
+          {backend.copy.addFeedNote}
         </p>
 
         {error && <p className="text-[12px] text-[#ef4444]">{error}</p>}

@@ -25,25 +25,28 @@ export function syncRoutes(ctx: AppContext) {
     return c.json(ctx.sync.push(c.get('user').id, body.records as SyncRecord[]));
   });
 
-  // "Something changed, pull now." Clients that can hold a connection open (the
-  // web reader, the app in the foreground) use this instead of polling.
+  // "Something changed": `cursor` (pull sync records after this version) and
+  // `articles` (new articles in your feeds). Clients that can hold a connection
+  // open (the web reader, the app in the foreground) use this instead of polling.
   app.get('/events', (c) => {
     const userId = c.get('user').id;
     return streamSSE(c, async (stream) => {
       let wake: () => void = () => {};
-      let latest = ctx.sync.cursor(userId);
-      const unsubscribe = ctx.sync.subscribe(userId, (cursor) => {
-        latest = cursor;
+      let cursor = ctx.sync.cursor(userId);
+      let articles = false;
+      const unsubscribe = ctx.notifier.subscribe(userId, (event) => {
+        if (event.type === 'cursor') cursor = event.cursor;
+        else articles = true;
         wake();
       });
       stream.onAbort(() => {
         unsubscribe();
         wake();
       });
-      await stream.writeSSE({ event: 'cursor', data: String(latest) });
-      let sent = latest;
+      await stream.writeSSE({ event: 'cursor', data: String(cursor) });
+      let sent = cursor;
       while (!stream.aborted) {
-        // Wake on a change, or every 25 s to keep proxies from closing the stream.
+        // Wake on an event, or every 25 s to keep proxies from closing the stream.
         await new Promise<void>((resolve) => {
           const timer = setTimeout(resolve, 25_000);
           wake = () => {
@@ -52,12 +55,18 @@ export function syncRoutes(ctx: AppContext) {
           };
         });
         if (stream.aborted) break;
-        if (latest !== sent) {
-          sent = latest;
-          await stream.writeSSE({ event: 'cursor', data: String(latest) });
-        } else {
-          await stream.write(': ping\n\n');
+        let wrote = false;
+        if (cursor !== sent) {
+          sent = cursor;
+          await stream.writeSSE({ event: 'cursor', data: String(cursor) });
+          wrote = true;
         }
+        if (articles) {
+          articles = false;
+          await stream.writeSSE({ event: 'articles', data: '' });
+          wrote = true;
+        }
+        if (!wrote) await stream.write(': ping\n\n');
       }
       unsubscribe();
     });

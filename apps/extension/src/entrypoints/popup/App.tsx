@@ -1,21 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { browser } from 'wxt/browser';
-import { Button } from '@/components/Button';
-import { Spinner } from '@/components/Spinner';
-import {
-  IconExternal,
-  IconPlus,
-  IconRss,
-  IconSearch,
-  IconSettings,
-  IconX,
-} from '@/components/icons';
+import { Button, Spinner, useApplyTheme } from '@perch/reader';
+import { IconExternal, IconPlus, IconRss, IconSearch, IconSettings, IconX } from '@perch/reader';
 import { sendMessage } from '@/lib/messaging';
 import { feedByUrl } from '@/lib/storage/feeds';
 import { getCategories } from '@/lib/storage/categories';
 import { requestHostPermission } from '@/lib/permissions/host';
 import { useSettings } from '@/hooks/useSettings';
-import { useApplyTheme } from '@/hooks/useTheme';
 import { bareHost, isHttpUrl } from '@perch/core/url';
 import type { Category, DiscoveredFeed, TabDiscovery } from '@perch/core/types';
 import { UNCATEGORIZED_ID } from '@perch/core/types';

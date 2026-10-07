@@ -321,3 +321,47 @@ describe('reader API', () => {
     expect((await t.call('GET', '/reader/library')).status).toBe(401);
   });
 });
+
+describe('full text', () => {
+  it('extracts the article page with Readability and caches it', async () => {
+    const t = setup();
+    const page = `<html><head><title>Post</title></head><body><nav>menu</nav><article><h1>Post</h1>${'<p>Readable paragraph text that goes on for a while. </p>'.repeat(20)}<a href="/rel">link</a></article></body></html>`;
+    let pageHits = 0;
+    const srv = await feedServer({
+      '/post': (_q, r) => {
+        pageHits++;
+        r.writeHead(200, { 'content-type': 'text/html' }).end(page);
+      },
+    });
+    // The feed links to the article page on the same test server.
+    srv.routes['/feed.xml'] = (_q, r) =>
+      r
+        .writeHead(200, { 'content-type': 'application/rss+xml' })
+        .end(
+          rss([{ guid: 'p', title: 'Post' }]).replace('https://blog.example/p', srv.url('/post')),
+        );
+    try {
+      const { token } = await t.register('owner');
+      await t.call('POST', '/reader/feeds', { token, body: { url: srv.url('/feed.xml') } });
+      const [a] = (await t.call('GET', '/reader/articles', { token })).body.items;
+      const first = await t.call('GET', `/reader/articles/${a.feedId}/${a.id}/fulltext`, { token });
+      expect(first.status).toBe(200);
+      expect(first.body.fullText.html).toContain('Readable paragraph text');
+      expect(first.body.fullText.html).not.toContain('menu');
+      await t.call('GET', `/reader/articles/${a.feedId}/${a.id}/fulltext`, { token });
+      expect(pageHits).toBe(1); // cached
+      await t.call('GET', `/reader/articles/${a.feedId}/${a.id}/fulltext?force=1`, { token });
+      expect(pageHits).toBe(2);
+
+      srv.routes['/post'] = (_q, r) => r.writeHead(404).end();
+      const failed = await t.call('GET', `/reader/articles/${a.feedId}/${a.id}/fulltext?force=1`, {
+        token,
+      });
+      expect(failed.status).toBe(422);
+      expect(failed.body).toMatchObject({ error: 'fetch-failed', message: 'HTTP 404' });
+    } finally {
+      t.close();
+      await srv.close();
+    }
+  });
+});

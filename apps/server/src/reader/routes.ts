@@ -23,10 +23,11 @@ import {
   subscriptions,
   userSettings,
 } from '../db/schema';
-import { badRequest, jsonBody, notFound, str, type AppContext, type Env } from '../http';
+import { HttpError, badRequest, jsonBody, notFound, str, type AppContext, type Env } from '../http';
 import { randomToken } from '../lib/crypto';
 import { requireUser } from '../auth/sessions';
 import { resolveFeed } from '../feeds/resolve';
+import { fullTextFor } from '../fulltext/extract';
 import type { LocalChange } from '../sync/service';
 
 // The personal-mode reader API: what the web reader and native clients use to
@@ -64,7 +65,8 @@ export function readerRoutes(ctx: AppContext) {
     const userId = c.get('user').id;
     const body = await jsonBody(c);
     const feed = await resolveFeed(db, ctx.fetch, str(body, 'url'), config.fetchIntervalMin);
-    if (!feedData(db, userId, feed.id)) {
+    const created = !feedData(db, userId, feed.id);
+    if (created) {
       const title = str(body, 'title', { max: 200, optional: true }).trim();
       const categoryId = str(body, 'categoryId', { max: 64, optional: true });
       ctx.sync.local(userId, [
@@ -82,7 +84,7 @@ export function readerRoutes(ctx: AppContext) {
         },
       ]);
     }
-    return c.json({ feed: listFeeds(db, userId, feed.id)[0]! });
+    return c.json({ feed: listFeeds(db, userId, feed.id)[0]!, created });
   });
 
   app.patch('/feeds/:id', async (c) => {
@@ -237,6 +239,29 @@ export function readerRoutes(ctx: AppContext) {
     return c.json({ article: toArticle(row) });
   });
 
+  app.get('/articles/:feedId/:id/fulltext', async (c) => {
+    const userId = c.get('user').id;
+    const row = db.get<{ url: string | null }>(sql`
+      select a.url as url
+      from articles a
+      left join subscriptions sub on sub.feed_id = a.feed_id and sub.user_id = ${userId}
+      left join article_states s
+        on s.user_id = ${userId} and s.feed_id = a.feed_id and s.article_id = a.id
+      where a.feed_id = ${c.req.param('feedId')} and a.id = ${c.req.param('id')}
+        and (sub.user_id is not null or s.starred = 1)
+    `);
+    if (!row) throw notFound('No such article');
+    if (!row.url) throw new HttpError(422, 'no-url', 'This article has no link');
+    const result = await fullTextFor(
+      db,
+      ctx.fetch,
+      { feedId: c.req.param('feedId'), id: c.req.param('id'), url: row.url },
+      c.req.query('force') === '1',
+    );
+    if (!result.ok) throw new HttpError(422, result.reason, result.detail ?? result.reason);
+    return c.json({ fullText: result.fullText });
+  });
+
   app.get('/counts', (c) => {
     const userId = c.get('user').id;
     const rows = db.all<{ feedId: string; n: number }>(sql`
@@ -329,18 +354,19 @@ export function readerRoutes(ctx: AppContext) {
   app.post('/refresh', async (c) => {
     const userId = c.get('user').id;
     const body = await jsonBody(c).catch(() => ({}) as Record<string, unknown>);
-    const feedId = typeof body.feed === 'string' ? body.feed : undefined;
+    // One feed, a list (a category's), or everything you subscribe to.
+    const wanted = Array.isArray(body.feeds)
+      ? new Set(body.feeds.filter((f): f is string => typeof f === 'string'))
+      : typeof body.feed === 'string'
+        ? new Set([body.feed])
+        : null;
     const ids = db
       .select({ id: subscriptions.feedId })
       .from(subscriptions)
-      .where(
-        and(
-          eq(subscriptions.userId, userId),
-          feedId ? eq(subscriptions.feedId, feedId) : undefined,
-        ),
-      )
+      .where(eq(subscriptions.userId, userId))
       .all()
-      .map((r) => r.id);
+      .map((r) => r.id)
+      .filter((id) => !wanted || wanted.has(id));
     const results = await ctx.worker.refresh(ids);
     const failed = [...results.values()].filter((r) => !r.ok).length;
     return c.json({ refreshed: results.size - failed, failed });

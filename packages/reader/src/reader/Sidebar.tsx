@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { Button } from '@/components/Button';
-import { Favicon } from '@/components/Favicon';
+import { Button } from '../components/Button';
+import { Favicon } from '../components/Favicon';
 import {
   IconChevronDown,
   IconChevronRight,
@@ -9,11 +9,11 @@ import {
   IconPencil,
   IconPlus,
   IconStar,
-} from '@/components/icons';
-import { Spinner } from '@/components/Spinner';
-import { useLibrary } from '@/hooks/useLibrary';
-import { setCollapsed } from '@/lib/storage/categories';
-import { displayTitle } from '@/lib/storage/feeds';
+} from '../components/icons';
+import { Spinner } from '../components/Spinner';
+import { useLibrary } from '../hooks/useLibrary';
+import { useBackend } from '../backend';
+import { displayTitle } from '@perch/core/feeds';
 import type { Category, Feed } from '@perch/core/types';
 import { AddFeedDialog } from './AddFeedDialog';
 import { FeedEditDialog } from './FeedEditDialog';
@@ -110,13 +110,14 @@ function CategoryGroup({
   unreadForFeeds: (ids: string[]) => number;
   onEditFeed: (feed: Feed) => void;
 }) {
+  const backend = useBackend();
   const [collapsed, setLocalCollapsed] = useState(!!category.collapsed);
   const unread = unreadForFeeds(feeds.map((f) => f.id));
 
   const toggle = () => {
     const next = !collapsed;
     setLocalCollapsed(next);
-    void setCollapsed(category.id, next);
+    void backend.setCategoryCollapsed(category.id, next);
   };
 
   return (

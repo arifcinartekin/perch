@@ -1,6 +1,6 @@
 import { Readability } from '@mozilla/readability';
 import { hasHostPermission, requestHostPermission } from '../permissions/host';
-import { sanitizeHtml } from '../sanitize';
+import { sanitizeHtml } from '@perch/reader';
 import { getFullText, saveFullText } from '../storage/fulltext';
 import type { Article, FullText } from '@perch/core/types';
 
