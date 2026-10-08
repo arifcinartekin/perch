@@ -4,8 +4,9 @@ import SwiftUI
 import WebKit
 
 /// One article. Opening it marks it read; the bottom bar stars it, keeps it
-/// unread, swaps in the full text from the site, shares, opens the original,
-/// and moves on to the next article in the list.
+/// unread, swaps in the full text from the site, sets the text size, shares,
+/// opens the original, and moves on to the next article in the list. The bars
+/// step aside while you scroll down and come back when you scroll up.
 struct ArticleView: View {
   @Environment(Reader.self) private var reader
   @Environment(\.theme) private var theme
@@ -19,6 +20,9 @@ struct ArticleView: View {
   @State private var fullTextError: String?
   @State private var safari: SafariTarget?
   @State private var hasNext = true
+  @State private var barsHidden = false
+  @State private var textSettings = false
+  @State private var progress = ReadingProgress()
 
   init(article: Article, list: ArticleList? = nil) {
     _article = State(initialValue: article)
@@ -35,18 +39,30 @@ struct ArticleView: View {
         feedTitle: reader.feed(article.feedId)?.displayTitle,
         body: showFullText ? fullText?.html : nil,
         theme: theme),
+      style: ArticleHTML.Style(
+        size: reader.device.readerTextSize, leading: reader.device.readerLineHeight),
       baseURL: link,
+      progress: progress,
       onLink: { url in
         if url.scheme == "http" || url.scheme == "https" { safari = SafariTarget(url: url) }
+      },
+      onScrollDirection: { down in
+        guard down != barsHidden else { return }
+        withAnimation(.easeInOut(duration: 0.25)) { barsHidden = down }
       }
     )
+    .id(article.id)
+    .transition(.push(from: .bottom))
     .background { Surface(clear: 0.28).ignoresSafeArea() }
     .ignoresSafeArea(edges: .bottom)
+    .overlay(alignment: .top) { ProgressLine(progress: progress) }
     .background { Backdrop() }
     .navigationTitle(reader.feed(article.feedId)?.displayTitle ?? "")
     .toolbarTitleDisplayMode(.inline)
     // The article's own bar takes the tab bar's place while reading.
     .toolbar(.hidden, for: .tabBar)
+    .toolbarVisibility(barsHidden ? .hidden : .visible, for: .navigationBar, .bottomBar)
+    .statusBarHidden(barsHidden)
     .toolbar {
       ToolbarItemGroup(placement: .bottomBar) {
         Button(
@@ -54,12 +70,14 @@ struct ArticleView: View {
         ) {
           Task { await reader.setStarred(article, !current.starred) }
         }
+        .symbolEffect(.bounce, value: current.starred)
         Button(
           current.read ? "Keep unread" : "Mark read",
           systemImage: current.read ? "circle" : "checkmark.circle"
         ) {
           Task { await reader.setRead(article, !current.read) }
         }
+        .contentTransition(.symbolEffect(.replace))
         if link != nil {
           Button(
             showFullText ? "Feed text" : "Full text",
@@ -70,15 +88,26 @@ struct ArticleView: View {
       }
       ToolbarSpacer(.flexible, placement: .bottomBar)
       ToolbarItemGroup(placement: .bottomBar) {
+        Button("Text", systemImage: "textformat.size") { textSettings = true }
         if let link {
           ShareLink(item: link)
-          Button("Open in Safari", systemImage: "safari") { safari = SafariTarget(url: link) }
         }
         if list != nil {
           Button("Next article", systemImage: "chevron.down") { next() }
             .disabled(!hasNext)
         }
       }
+      if let link {
+        ToolbarItem(placement: .topBarTrailing) {
+          Button("Open in Safari", systemImage: "safari") { safari = SafariTarget(url: link) }
+        }
+      }
+    }
+    .sensoryFeedback(.impact(weight: .light), trigger: current.starred)
+    .sensoryFeedback(.selection, trigger: article.id)
+    .sheet(isPresented: $textSettings) {
+      TextSettingsSheet()
+        .presentationDetents([.height(250)])
     }
     .alert("Couldn't get the full text", isPresented: present($fullTextError)) {
       Button("OK") {}
@@ -115,10 +144,98 @@ struct ArticleView: View {
         hasNext = false
         return
       }
-      fullText = nil
-      showFullText = false
-      article = following
+      withAnimation(.smooth(duration: 0.35)) {
+        fullText = nil
+        showFullText = false
+        barsHidden = false
+        progress.value = 0
+        article = following
+      }
     }
+  }
+}
+
+/// How far down the article you've scrolled, 0–1. Its own object so scrolling
+/// redraws only the progress line, not the whole article view.
+@MainActor @Observable
+final class ReadingProgress {
+  var value: Double = 0
+}
+
+private struct ProgressLine: View {
+  @Environment(\.theme) private var theme
+  let progress: ReadingProgress
+
+  var body: some View {
+    GeometryReader { geo in
+      theme.accent
+        .frame(width: geo.size.width * progress.value, height: 2)
+        .opacity(progress.value > 0.02 ? 1 : 0)
+    }
+    .frame(height: 2)
+    .allowsHitTesting(false)
+    .accessibilityHidden(true)
+  }
+}
+
+/// Text size, line spacing and the reading font. Size and spacing stay on
+/// this phone; the font follows the account like on the other clients.
+private struct TextSettingsSheet: View {
+  @Environment(Reader.self) private var reader
+  @Environment(\.theme) private var theme
+
+  static let sizes: ClosedRange<Double> = 14...26
+  static let spacings: [(String, Double)] = [("Tight", 1.4), ("Normal", 1.6), ("Roomy", 1.85)]
+
+  var body: some View {
+    @Bindable var device = reader.device
+    VStack(spacing: 22) {
+      Picker("Font", selection: font) {
+        Text("Sans").tag(SyncedSettings.ReadingFont.sans)
+        Text("Serif").tag(SyncedSettings.ReadingFont.serif)
+      }
+      .pickerStyle(.segmented)
+
+      HStack(spacing: 16) {
+        Button("Smaller", systemImage: "textformat.size.smaller") {
+          device.readerTextSize = max(Self.sizes.lowerBound, device.readerTextSize - 1)
+        }
+        .labelStyle(.iconOnly)
+        .disabled(device.readerTextSize <= Self.sizes.lowerBound)
+        Slider(value: $device.readerTextSize, in: Self.sizes, step: 1)
+        Button("Larger", systemImage: "textformat.size.larger") {
+          device.readerTextSize = min(Self.sizes.upperBound, device.readerTextSize + 1)
+        }
+        .labelStyle(.iconOnly)
+        .disabled(device.readerTextSize >= Self.sizes.upperBound)
+      }
+      .font(.title3)
+      .sensoryFeedback(.selection, trigger: device.readerTextSize)
+
+      Picker("Line spacing", selection: $device.readerLineHeight) {
+        ForEach(Self.spacings, id: \.1) { name, value in
+          Text(name).tag(value)
+        }
+      }
+      .pickerStyle(.segmented)
+
+      Button("Default size") {
+        device.readerTextSize = 17
+        device.readerLineHeight = 1.6
+      }
+      .font(.footnote)
+      .disabled(device.readerTextSize == 17 && device.readerLineHeight == 1.6)
+    }
+    .padding(.horizontal, 24)
+    .padding(.top, 28)
+    .frame(maxHeight: .infinity, alignment: .top)
+    .tint(theme.accent)
+  }
+
+  private var font: Binding<SyncedSettings.ReadingFont> {
+    Binding(
+      get: { reader.settings.readingFont ?? .sans },
+      set: { font in Task { await reader.updateSettings(SyncedSettings(readingFont: font)) } })
   }
 }
 
@@ -133,11 +250,17 @@ private struct SafariTarget: Identifiable {
 /// Renders article HTML with JavaScript off and a CSP that blocks scripts,
 /// frames, forms and plugins: feed HTML is untrusted. Images come through
 /// `perch-image:` (the image cache, so they work offline). Link taps come back
-/// through `onLink` instead of navigating.
+/// through `onLink` instead of navigating. Text size changes are applied in
+/// place, so the page keeps its scroll position.
 struct ArticleWebView: UIViewRepresentable {
   let html: String
+  let style: ArticleHTML.Style
   let baseURL: URL?
+  let progress: ReadingProgress
   let onLink: (URL) -> Void
+  /// Called with true when you scroll down into the article, false when you
+  /// scroll back up or reach either end.
+  let onScrollDirection: (Bool) -> Void
 
   func makeCoordinator() -> Coordinator { Coordinator() }
 
@@ -152,28 +275,40 @@ struct ArticleWebView: UIViewRepresentable {
     view.isOpaque = false
     view.backgroundColor = .clear
     view.scrollView.backgroundColor = .clear
+    view.scrollView.delegate = context.coordinator
     view.navigationDelegate = context.coordinator
     view.allowsLinkPreview = true
     return view
   }
 
   func updateUIView(_ view: WKWebView, context: Context) {
-    context.coordinator.onLink = onLink
-    guard context.coordinator.loaded != html else { return }
-    let isNewArticle = context.coordinator.baseURL != baseURL
-    context.coordinator.loaded = html
-    context.coordinator.baseURL = baseURL
-    context.coordinator.expectingLoad = true
-    view.loadHTMLString(html, baseURL: baseURL)
-    if isNewArticle { view.scrollView.setContentOffset(.zero, animated: false) }
+    let coordinator = context.coordinator
+    coordinator.onLink = onLink
+    coordinator.onScrollDirection = onScrollDirection
+    coordinator.progress = progress
+    if coordinator.loaded != html {
+      coordinator.loaded = html
+      coordinator.style = style
+      coordinator.expectingLoad = true
+      view.loadHTMLString(ArticleHTML.styled(html, style), baseURL: baseURL)
+    } else if coordinator.style != style {
+      coordinator.style = style
+      // The app's own script; the page's scripts stay off.
+      view.evaluateJavaScript(
+        "document.documentElement.style.setProperty('--size','\(style.size)px');"
+          + "document.documentElement.style.setProperty('--leading','\(style.leading)')")
+    }
   }
 
-  final class Coordinator: NSObject, WKNavigationDelegate {
+  final class Coordinator: NSObject, WKNavigationDelegate, UIScrollViewDelegate {
     let images = ImageSchemeHandler()
     var loaded: String?
-    var baseURL: URL?
+    var style: ArticleHTML.Style?
     var expectingLoad = false
     var onLink: (URL) -> Void = { _ in }
+    var onScrollDirection: (Bool) -> Void = { _ in }
+    var progress: ReadingProgress?
+    private var lastOffset: CGFloat = 0
 
     func webView(
       _ webView: WKWebView, decidePolicyFor action: WKNavigationAction,
@@ -195,6 +330,34 @@ struct ArticleWebView: UIViewRepresentable {
       }
       decisionHandler(.cancel)
     }
+
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+      let offset = scrollView.contentOffset.y + scrollView.adjustedContentInset.top
+      let scrollable =
+        scrollView.contentSize.height - scrollView.bounds.height
+        + scrollView.adjustedContentInset.top + scrollView.adjustedContentInset.bottom
+      let value = scrollable > 0 ? min(1, max(0, offset / scrollable)) : 0
+      if abs((progress?.value ?? 0) - value) > 0.002 { progress?.value = value }
+
+      // Only while the reader drags, so layout changes don't toggle the bars.
+      guard scrollView.isTracking || scrollView.isDecelerating else {
+        lastOffset = offset
+        return
+      }
+      let delta = offset - lastOffset
+      if offset < 40 || offset > scrollable - 40 {
+        onScrollDirection(false)
+      } else if delta > 12 {
+        onScrollDirection(true)
+      } else if delta < -12 {
+        onScrollDirection(false)
+      }
+      if abs(delta) > 12 { lastOffset = offset }
+    }
+
+    func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+      lastOffset = scrollView.contentOffset.y + scrollView.adjustedContentInset.top
+    }
   }
 }
 
@@ -211,6 +374,22 @@ struct SafariView: UIViewControllerRepresentable {
 // MARK: - HTML
 
 enum ArticleHTML {
+  /// Text size and line height, applied through CSS variables.
+  struct Style: Equatable {
+    var size: Double
+    var leading: Double
+  }
+
+  private static let styleSlot = "/*perch-style*/"
+
+  /// The page with the reader's text size filled in (in the stylesheet,
+  /// which comes before the article).
+  static func styled(_ page: String, _ style: Style) -> String {
+    guard let slot = page.range(of: styleSlot) else { return page }
+    return page.replacingCharacters(
+      in: slot, with: "--size: \(style.size)px; --leading: \(style.leading);")
+  }
+
   static func page(article: Article, feedTitle: String?, body: String?, theme: AppTheme) -> String {
     let base = article.url.flatMap(URL.init(string:))
     // Tags that could change how the page loads; the CSP and disabled
@@ -218,8 +397,11 @@ enum ArticleHTML {
     let raw = (body ?? article.contentHtml ?? article.summaryHtml ?? "")
       .replacing(/(?i)<\/?(meta|base|link|head|html|body)\b[^>]*>/, with: "")
     let content = proxyImages(raw, base: base)
-    let date = article.published.formatted(date: .long, time: .shortened)
-    let meta = [feedTitle, article.author, date].compactMap { $0 }.filter { !$0.isEmpty }
+    let date = article.published.formatted(date: .abbreviated, time: .shortened)
+    let words = HTMLText.plain(raw, limit: .max).split(whereSeparator: \.isWhitespace).count
+    let minutes = words > 120 ? "\(max(1, Int((Double(words) / 230).rounded()))) min read" : nil
+    let meta = [feedTitle, article.author, date, minutes].compactMap { $0 }
+      .filter { !$0.isEmpty }
       .map(escape).joined(separator: " · ")
     let p = theme.palette
     let font =
@@ -238,12 +420,12 @@ enum ArticleHTML {
       <meta name="viewport" content="width=device-width, initial-scale=1">
       <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src \(ImageCache.scheme): data:; media-src https: http:; style-src 'unsafe-inline'; font-src https:">
       <style>
-      :root { color-scheme: \(p.scheme.rawValue); --text: \(p.text); --muted: \(p.textMuted); --link: \(p.accentText); --rule: \(rule); --code: \(code); }
+      :root { color-scheme: \(p.scheme.rawValue); --text: \(p.text); --muted: \(p.textMuted); --link: \(p.accentText); --rule: \(rule); --code: \(code); \(styleSlot) }
       html { -webkit-text-size-adjust: 100%; }
-      body { margin: 0; padding: 12px 20px 120px; background: transparent; color: var(--text); font: 17px/1.65 \(font); overflow-wrap: anywhere; }
+      body { margin: 0; padding: 12px 20px 120px; background: transparent; color: var(--text); font-family: \(font); font-size: var(--size, 17px); line-height: var(--leading, 1.6); overflow-wrap: anywhere; }
       header { margin: 8px 0 22px; }
       .meta { font: 600 13px/1.4 -apple-system, system-ui; color: var(--muted); margin: 0 0 8px; }
-      h1.title { font: 700 26px/1.2 -apple-system, system-ui; letter-spacing: -0.01em; margin: 0; }
+      h1.title { font: 700 calc(var(--size, 17px) * 1.5)/1.2 -apple-system, system-ui; letter-spacing: -0.01em; margin: 0; }
       h1.title a { color: inherit; text-decoration: none; }
       a { color: var(--link); text-underline-offset: 2px; }
       img, video, figure, svg, table { max-width: 100%; height: auto; }

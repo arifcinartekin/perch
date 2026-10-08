@@ -15,6 +15,7 @@
 		3CC263518A8DB08FE7FE3A01 /* AppearanceSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 659C049AD8C502121851289D /* AppearanceSettingsView.swift */; };
 		467A098C9959101B6914679F /* Reader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BFE3507078C2399F4F0E88D /* Reader.swift */; };
 		60DC4360D085209EB712A956 /* BackgroundRefresh.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16DB99A3BC6609013D614C6A /* BackgroundRefresh.swift */; };
+		6E140EB56A427E4A8FA10D64 /* ReaderUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 919DE3B89AF84FDDA3735FDC /* ReaderUITests.swift */; };
 		6FB486DF2AA9F2C06344CEDB /* PerchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8FEB8A1AEBD4A3546F97BED /* PerchApp.swift */; };
 		75C83EEB1EC0AA2A6B5E5CAF /* AddFeedSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 655340A93FD076C55BABDD92 /* AddFeedSheet.swift */; };
 		78120E6FD0CB355F794B2B46 /* LibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D2C8281A15D24FE521E108C /* LibraryView.swift */; };
@@ -25,12 +26,24 @@
 		A32E1B72217B04F5C1E6DF00 /* FeedEditSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9820D50B5167D72FD592FFE /* FeedEditSheet.swift */; };
 		A3E2CF5F0B32751D3D0F5EF1 /* OfflineSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16D59EB0C384D24D03E73507 /* OfflineSettingsView.swift */; };
 		ACAD3E4D8FB017B803231DD3 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B00D3F911F440538B501763 /* SettingsView.swift */; };
+		CFA786A4CCFEB8FE1381735A /* ArticlePreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E3E523673D21B622A82627B /* ArticlePreview.swift */; };
 		D6603A9321C3D2CB3A192A7F /* ArticleListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B7ACCA0FE0FE10D84A4CF9D /* ArticleListView.swift */; };
 		E694A9F5C25936946F2C5F40 /* ConnectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 655E06FA19C1CD5AF49DDF1B /* ConnectView.swift */; };
 		F317DF96E4AB0F2B532938F0 /* DeviceSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AC49BD3F4ABE421B671D9FE /* DeviceSettings.swift */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		9464F082C1B4C33B80059B2A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 78904F42286EE3E52ED2700B /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 45DC64F4606392864F14C513;
+			remoteInfo = Perch;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
+		0E3E523673D21B622A82627B /* ArticlePreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArticlePreview.swift; sourceTree = "<group>"; };
 		16D59EB0C384D24D03E73507 /* OfflineSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineSettingsView.swift; sourceTree = "<group>"; };
 		16DB99A3BC6609013D614C6A /* BackgroundRefresh.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundRefresh.swift; sourceTree = "<group>"; };
 		1B00D3F911F440538B501763 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
@@ -45,8 +58,10 @@
 		659C049AD8C502121851289D /* AppearanceSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppearanceSettingsView.swift; sourceTree = "<group>"; };
 		6A04F0519598EE4BAAF1557C /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
 		76BBF3114C6EAD96BD58E6A2 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		919DE3B89AF84FDDA3735FDC /* ReaderUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderUITests.swift; sourceTree = "<group>"; };
 		9BFE3507078C2399F4F0E88D /* Reader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Reader.swift; sourceTree = "<group>"; };
 		9D81815F02D951B683871555 /* Session.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Session.swift; sourceTree = "<group>"; };
+		9DEC51BF47974BCC5F748D16 /* PerchUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = PerchUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A8FEB8A1AEBD4A3546F97BED /* PerchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerchApp.swift; sourceTree = "<group>"; };
 		A9820D50B5167D72FD592FFE /* FeedEditSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedEditSheet.swift; sourceTree = "<group>"; };
 		CE8C30FB9465701CCD476FE5 /* ArticleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArticleView.swift; sourceTree = "<group>"; };
@@ -80,6 +95,7 @@
 			isa = PBXGroup;
 			children = (
 				D41D4D3B908363F711572982 /* Perch.app */,
+				9DEC51BF47974BCC5F748D16 /* PerchUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -101,6 +117,14 @@
 			path = Views;
 			sourceTree = "<group>";
 		};
+		9019F5C59F8C2B93EDFCB2BE /* PerchUITests */ = {
+			isa = PBXGroup;
+			children = (
+				919DE3B89AF84FDDA3735FDC /* ReaderUITests.swift */,
+			);
+			path = PerchUITests;
+			sourceTree = "<group>";
+		};
 		9D0550E96E022111AD197242 /* Packages */ = {
 			isa = PBXGroup;
 			children = (
@@ -114,6 +138,7 @@
 			children = (
 				9D0550E96E022111AD197242 /* Packages */,
 				E32E753CE6364804D2CF49B3 /* Perch */,
+				9019F5C59F8C2B93EDFCB2BE /* PerchUITests */,
 				5604ACE44E439FA92A920531 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -133,6 +158,7 @@
 		EEC16C9E619B957A56177B83 /* App */ = {
 			isa = PBXGroup;
 			children = (
+				0E3E523673D21B622A82627B /* ArticlePreview.swift */,
 				16DB99A3BC6609013D614C6A /* BackgroundRefresh.swift */,
 				323845EBB2AE8AABB41A1503 /* Brand.swift */,
 				2AC49BD3F4ABE421B671D9FE /* DeviceSettings.swift */,
@@ -168,6 +194,24 @@
 			productReference = D41D4D3B908363F711572982 /* Perch.app */;
 			productType = "com.apple.product-type.application";
 		};
+		9D5ECBB07DF30C831907761C /* PerchUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E32370E5E3C83C4A92520FF5 /* Build configuration list for PBXNativeTarget "PerchUITests" */;
+			buildPhases = (
+				4C1DC8AA3E31CB18F60D5C7C /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				6895A8A38A44766EC217DCB2 /* PBXTargetDependency */,
+			);
+			name = PerchUITests;
+			packageProductDependencies = (
+			);
+			productName = PerchUITests;
+			productReference = 9DEC51BF47974BCC5F748D16 /* PerchUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -180,6 +224,11 @@
 					45DC64F4606392864F14C513 = {
 						DevelopmentTeam = "";
 						ProvisioningStyle = Automatic;
+					};
+					9D5ECBB07DF30C831907761C = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Automatic;
+						TestTargetID = 45DC64F4606392864F14C513;
 					};
 				};
 			};
@@ -201,6 +250,7 @@
 			projectRoot = "";
 			targets = (
 				45DC64F4606392864F14C513 /* Perch */,
+				9D5ECBB07DF30C831907761C /* PerchUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -217,6 +267,14 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		4C1DC8AA3E31CB18F60D5C7C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6E140EB56A427E4A8FA10D64 /* ReaderUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		D1A1C77C580B3DEA6A464FB2 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -224,6 +282,7 @@
 				75C83EEB1EC0AA2A6B5E5CAF /* AddFeedSheet.swift in Sources */,
 				3CC263518A8DB08FE7FE3A01 /* AppearanceSettingsView.swift in Sources */,
 				D6603A9321C3D2CB3A192A7F /* ArticleListView.swift in Sources */,
+				CFA786A4CCFEB8FE1381735A /* ArticlePreview.swift in Sources */,
 				07A5C7C984CD07E27F1D9CCE /* ArticleView.swift in Sources */,
 				60DC4360D085209EB712A956 /* BackgroundRefresh.swift in Sources */,
 				8B03761A51FCCFD6A12DEACF /* Brand.swift in Sources */,
@@ -244,6 +303,14 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		6895A8A38A44766EC217DCB2 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 45DC64F4606392864F14C513 /* Perch */;
+			targetProxy = 9464F082C1B4C33B80059B2A /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		0F6AD60D2124FA67F1FB6499 /* Release */ = {
@@ -329,6 +396,23 @@
 				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
+		};
+		7E6744030DB0BDBB7734160A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = app.perch.ios.uitests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Perch;
+			};
+			name = Release;
 		};
 		99C45836D2F1D4E548E783B4 /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -421,6 +505,23 @@
 			};
 			name = Release;
 		};
+		E688591DEF9913571FD2AA78 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = app.perch.ios.uitests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Perch;
+			};
+			name = Debug;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -429,6 +530,15 @@
 			buildConfigurations = (
 				204E4DAFE4A978BD53C4066A /* Debug */,
 				DD1BC7C1BF042D41AC16AD92 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		E32370E5E3C83C4A92520FF5 /* Build configuration list for PBXNativeTarget "PerchUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E688591DEF9913571FD2AA78 /* Debug */,
+				7E6744030DB0BDBB7734160A /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

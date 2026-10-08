@@ -259,11 +259,21 @@ struct LibraryView: View {
 
   #if DEBUG
     /// Debug builds only, for simulator screenshots: PERCH_DEV_OPEN=all opens
-    /// All Feeds, =article its newest article, =article:<search> the newest match.
+    /// All Feeds, =article its newest article, =article:<search> the newest
+    /// match, =feed:<title> the first feed whose title starts with it.
     private func openFromLaunchEnvironment() async {
-      guard let open = ProcessInfo.processInfo.environment["PERCH_DEV_OPEN"],
-        open == "all" || open.hasPrefix("article"), path.isEmpty
+      guard let open = ProcessInfo.processInfo.environment["PERCH_DEV_OPEN"], path.isEmpty
       else { return }
+      if open.hasPrefix("feed:") {
+        let prefix = open.dropFirst(5).lowercased()
+        if let feed = reader.library.feeds.first(where: {
+          $0.displayTitle.lowercased().hasPrefix(prefix)
+        }) {
+          path.append(Scope.feed(feed))
+        }
+        return
+      }
+      guard open == "all" || open.hasPrefix("article") else { return }
       path.append(Scope.all)
       // article, or article:<search> for the newest match.
       let search = open.split(separator: ":", maxSplits: 1).dropFirst().first.map(String.init)
@@ -286,6 +296,8 @@ struct FeedIcon: View {
   @Environment(\.theme) private var theme
   let feed: Feed
   var size: CGFloat = 22
+  /// Width the icon is centred in, so sidebar rows line up.
+  var slot: CGFloat = 26
 
   var body: some View {
     Text(String(feed.displayTitle.prefix(1)).uppercased())
@@ -293,7 +305,7 @@ struct FeedIcon: View {
       .foregroundStyle(theme.accentContrast)
       .frame(width: size, height: size)
       .background(theme.accent.opacity(0.85), in: .rect(cornerRadius: size * 0.27))
-      .frame(width: 26)
+      .frame(width: max(size, slot))
       .accessibilityHidden(true)
   }
 }

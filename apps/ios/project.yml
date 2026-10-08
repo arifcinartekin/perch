@@ -39,12 +39,28 @@ targets:
         INFOPLIST_KEY_NSLocalNetworkUsageDescription: Perch connects to your Perch Server when it runs on your local network.
         INFOPLIST_FILE: Perch/Support/Info.plist
         ENABLE_PREVIEWS: YES
+  # Drives the app in the simulator against a test server; see README.
+  PerchUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: PerchUITests
+    dependencies:
+      - target: Perch
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: app.perch.ios.uitests
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_TARGET_NAME: Perch
 schemes:
   Perch:
     build:
       targets:
         Perch: all
+        PerchUITests: [test]
     run:
       config: Debug
     test:
       config: Debug
+      targets:
+        - PerchUITests

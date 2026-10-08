@@ -40,6 +40,8 @@ struct SettingsView: View {
             Text("Serif").tag(SyncedSettings.ReadingFont.serif)
           }
           .surfaceRow()
+          Toggle("Pictures in article lists", isOn: listImages)
+            .surfaceRow()
           NavigationLink(value: Page.appearance) {
             Label("Appearance", systemImage: "paintpalette")
           }
@@ -167,6 +169,10 @@ struct SettingsView: View {
     Binding(
       get: { reader.settings.readingFont ?? .sans },
       set: { font in Task { await reader.updateSettings(SyncedSettings(readingFont: font)) } })
+  }
+
+  private var listImages: Binding<Bool> {
+    Binding(get: { reader.device.listImages }, set: { reader.device.listImages = $0 })
   }
 
   private var version: String {

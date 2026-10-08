@@ -3,8 +3,8 @@ import Observation
 import UIKit
 
 /// Settings that stay on this phone, like the PIN and wallpaper in the
-/// extension: offline reading and the wallpaper. Kept in UserDefaults; the
-/// wallpaper image itself is a file.
+/// extension: offline reading, list pictures, text size and the wallpaper.
+/// Kept in UserDefaults; the wallpaper image itself is a file.
 @MainActor @Observable
 final class DeviceSettings {
   static let shared = DeviceSettings()
@@ -23,6 +23,19 @@ final class DeviceSettings {
     didSet { defaults.set(offlineLimit, forKey: "offline.limit") }
   }
 
+  /// Pictures next to articles in lists.
+  var listImages: Bool {
+    didSet { defaults.set(listImages, forKey: "list.images") }
+  }
+
+  /// Article text size in points, and its line height as a multiple.
+  var readerTextSize: Double {
+    didSet { defaults.set(readerTextSize, forKey: "reader.size") }
+  }
+  var readerLineHeight: Double {
+    didSet { defaults.set(readerLineHeight, forKey: "reader.leading") }
+  }
+
   var wallpaperDim: Double {
     didSet { defaults.set(wallpaperDim, forKey: "wallpaper.dim") }
   }
@@ -35,12 +48,16 @@ final class DeviceSettings {
 
   private init() {
     defaults.register(defaults: [
-      "offline.enabled": true, "offline.images": true, "offline.limit": 300,
+      "offline.enabled": true, "offline.images": true, "offline.limit": 300, "list.images": true,
+      "reader.size": 17.0, "reader.leading": 1.6,
       "wallpaper.dim": 0.35, "wallpaper.blur": 0.0,
     ])
     offlineEnabled = defaults.bool(forKey: "offline.enabled")
     offlineImages = defaults.bool(forKey: "offline.images")
     offlineLimit = defaults.integer(forKey: "offline.limit")
+    listImages = defaults.bool(forKey: "list.images")
+    readerTextSize = defaults.double(forKey: "reader.size")
+    readerLineHeight = defaults.double(forKey: "reader.leading")
     wallpaperDim = defaults.double(forKey: "wallpaper.dim")
     wallpaperBlur = defaults.double(forKey: "wallpaper.blur")
     wallpaper = UIImage(contentsOfFile: Self.wallpaperURL.path)

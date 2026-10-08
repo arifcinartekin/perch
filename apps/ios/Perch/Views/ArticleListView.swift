@@ -8,6 +8,8 @@ struct ArticleListView: View {
   @Environment(\.theme) private var theme
   @State private var list: ArticleList
   @State private var confirmingMarkAll = false
+  /// Bumped by swipe actions, for a tap of haptic feedback.
+  @State private var swiped = 0
   private let title: String
   /// The Search tab: nothing until you type.
   private let searchOnly: Bool
@@ -30,12 +32,14 @@ struct ArticleListView: View {
         } label: {
           ArticleRow(article: article, showFeed: !isSingleFeed)
         }
+        .navigationLinkIndicatorVisibility(.hidden)
         .listRowBackground(Color.clear)
         .swipeActions(edge: .leading) {
           Button(
             article.read ? "Unread" : "Read",
             systemImage: article.read ? "circle.fill" : "checkmark.circle"
           ) {
+            swiped += 1
             Task { await reader.setRead(item, !article.read) }
           }
           .tint(.gray)
@@ -45,6 +49,7 @@ struct ArticleListView: View {
             article.starred ? "Unstar" : "Star",
             systemImage: article.starred ? "star.slash" : "star"
           ) {
+            swiped += 1
             Task { await reader.setStarred(item, !article.starred) }
           }
           .tint(theme.accent)
@@ -64,18 +69,27 @@ struct ArticleListView: View {
       }
     }
     .listStyle(.plain)
+    .sensoryFeedback(.impact(weight: .light), trigger: swiped)
     .perchBackdrop()
     .overlay { placeholder }
     .safeAreaInset(edge: .bottom) { OfflineNotice() }
     .navigationTitle(title)
-    .toolbarTitleDisplayMode(searchOnly ? .large : .inline)
+    .toolbarTitleDisplayMode(isSingleFeed ? .inline : .large)
     .searchable(text: $list.search, prompt: searchOnly ? "Search your articles" : "Search \(title)")
     .refreshable { await reader.refresh(list.scope) }
     .toolbar {
       if !searchOnly {
         ToolbarItemGroup(placement: .topBarTrailing) {
-          Toggle(isOn: $list.unreadOnly) {
-            Label("Unread only", systemImage: "line.3.horizontal.decrease")
+          Menu {
+            Picker("Show", selection: $list.unreadOnly) {
+              Label("Unread", systemImage: "circle.inset.filled").tag(true)
+              Label("All articles", systemImage: "tray.full").tag(false)
+            }
+          } label: {
+            Label(
+              "Show",
+              systemImage: list.unreadOnly
+                ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
           }
           if list.scope != .starred {
             Button("Mark all as read", systemImage: "checkmark.circle") {
@@ -160,49 +174,104 @@ struct ArticleRow: View {
   var showFeed = true
 
   var body: some View {
-    HStack(alignment: .top, spacing: 10) {
-      Circle()
-        .fill(article.read ? .clear : theme.accent)
-        .frame(width: 8, height: 8)
-        .padding(.top, 7)
-      VStack(alignment: .leading, spacing: 4) {
+    let preview = ArticlePreview.of(article)
+    HStack(alignment: .top, spacing: 12) {
+      VStack(alignment: .leading, spacing: 5) {
         HStack(spacing: 6) {
+          if !article.read {
+            Circle()
+              .fill(theme.accent)
+              .frame(width: 7, height: 7)
+              .transition(.scale.combined(with: .opacity))
+              .accessibilityLabel("Unread")
+          }
           if showFeed, let feed = reader.feed(article.feedId) {
-            Text(feed.displayTitle).lineLimit(1)
+            FeedIcon(feed: feed, size: 16, slot: 16)
+            Text(feed.displayTitle).lineLimit(1).layoutPriority(-1)
             Text("·")
           }
           Text(
             article.published, format: .relative(presentation: .named, unitsStyle: .abbreviated)
           )
           .lineLimit(1)
+          .fixedSize()
           Spacer(minLength: 0)
           if article.starred {
-            Image(systemName: "star.fill").foregroundStyle(theme.accent)
+            Image(systemName: "star.fill")
+              .foregroundStyle(theme.accent)
               .accessibilityLabel("Starred")
+              .transition(.scale.combined(with: .opacity))
           }
         }
-        .font(.caption)
+        .font(.caption.weight(.medium))
         .foregroundStyle(theme.faint)
 
         Text(article.displayTitle)
-          .font(.body.weight(article.read ? .regular : .semibold))
+          .font(.headline.weight(article.read ? .medium : .semibold))
           .foregroundStyle(article.read ? theme.muted : theme.text)
           .lineLimit(3)
+          .fixedSize(horizontal: false, vertical: true)
 
-        if let summary, !summary.isEmpty {
-          Text(summary)
+        if !preview.text.isEmpty {
+          Text(preview.text)
             .font(.subheadline)
             .foregroundStyle(theme.muted)
             .lineLimit(2)
         }
       }
+      .frame(maxWidth: .infinity, alignment: .leading)
+
+      if reader.device.listImages, let image = preview.image {
+        Thumbnail(url: image)
+      }
     }
-    .padding(.vertical, 4)
+    .padding(.vertical, 6)
+    .opacity(article.read ? 0.72 : 1)
+    .animation(.snappy, value: article.read)
+    .animation(.snappy, value: article.starred)
     .accessibilityElement(children: .combine)
   }
+}
 
-  private var summary: String? {
-    guard let html = article.summaryHtml ?? article.contentHtml else { return nil }
-    return HTMLText.plain(html, limit: 200)
+/// An article's picture in a list row. Rows without one, or whose picture
+/// can't be loaded, simply go without.
+private struct Thumbnail: View {
+  @Environment(\.theme) private var theme
+  @Environment(\.displayScale) private var scale
+  let url: URL
+  @State private var image: UIImage?
+  @State private var failed = false
+  private static let side: CGFloat = 72
+
+  var body: some View {
+    if !failed {
+      ZStack {
+        if let image {
+          Image(uiImage: image)
+            .resizable()
+            .scaledToFill()
+            .transition(.opacity)
+        } else {
+          theme.text.opacity(0.06)
+        }
+      }
+      .frame(width: Self.side, height: Self.side)
+      .clipShape(.rect(cornerRadius: 12))
+      .overlay {
+        RoundedRectangle(cornerRadius: 12).strokeBorder(theme.text.opacity(0.08), lineWidth: 0.5)
+      }
+      .padding(.top, 2)
+      .accessibilityHidden(true)
+      .task(id: url) {
+        if let hit = Thumbnails.cached(url) {
+          image = hit
+          return
+        }
+        let loaded = await Thumbnails.load(url, pixels: Int(Self.side * scale * 1.5))
+        withAnimation(.easeOut(duration: 0.2)) {
+          if let loaded { image = loaded } else { failed = true }
+        }
+      }
+    }
   }
 }

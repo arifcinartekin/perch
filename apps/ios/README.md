@@ -6,8 +6,11 @@ Glass.
 
 - **Tabs:** Unread, Feeds, Starred, Settings and Search. The tab bar tucks away while you
   scroll.
+- **Lists:** each row has the feed, a short summary and the article's first picture (from the
+  image cache, so it shows offline too; can be turned off). Swipe a row to read or star it.
 - **Reading:** stars, keep unread, the site's full text, share, Safari, and the next article.
-  Swipe a row to read or star it.
+  Text size and line spacing (kept on the phone), reading time, a progress line, and bars that
+  step aside while you scroll down.
 - **Library:** add feeds (from a site or feed address), rename them and move them between
   categories. Create, rename, fold and delete categories, and mark a feed, a category or
   everything read.
@@ -80,7 +83,17 @@ run the live tests (sign in, library, state, events, sign out) against a running
 
 Debug builds can sign in from the launch environment for simulator checks:
 `SIMCTL_CHILD_PERCH_DEV_SERVER`, `…_PERCH_DEV_USER`, `…_PERCH_DEV_PASSWORD`, and
-`…_PERCH_DEV_OPEN=all|article` to open a screen. Release builds don't contain this.
+`…_PERCH_DEV_OPEN=all|article|feed:<title>` to open a screen. Release builds don't contain this.
+
+`PerchUITests` walks through reading (open an article, scroll, text size, next article) against a
+running server; it's skipped unless the same variables are passed with the `TEST_RUNNER_` prefix:
+
+```bash
+TEST_RUNNER_PERCH_DEV_SERVER=http://localhost:8080 TEST_RUNNER_PERCH_DEV_USER=… \
+TEST_RUNNER_PERCH_DEV_PASSWORD=… xcodebuild test -scheme Perch -destination 'platform=iOS Simulator,name=iPhone 18 Pro'
+```
+
+`TEST_RUNNER_PERCH_SHOTS=<folder>` also saves its screenshots there.
 
 ## Not yet
 
