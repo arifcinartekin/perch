@@ -8,6 +8,9 @@ struct MainTabView: View {
   @Environment(\.theme) private var theme
   @Environment(\.horizontalSizeClass) private var sizeClass
   @State private var tab: TabID = Self.initialTab
+  /// An article opened from a widget or notification.
+  @State private var linked: Article?
+  private let links = DeepLinks.shared
 
   enum TabID: String, Hashable { case unread, feeds, starred, settings, search }
 
@@ -58,6 +61,25 @@ struct MainTabView: View {
     }
     .tabBarMinimizeBehavior(.onScrollDown)
     .solidBarsWhenGlassIsOff()
+    .sheet(item: $linked) { article in
+      NavigationStack {
+        ArticleView(article: article)
+          .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+              Button("Close", systemImage: "xmark") { linked = nil }
+            }
+          }
+      }
+    }
+    .task(id: links.pending) { await openLink() }
+  }
+
+  private func openLink() async {
+    guard let url = links.pending else { return }
+    links.pending = nil
+    tab = .unread
+    guard let (feedId, articleId) = WidgetSnapshot.article(in: url) else { return }
+    linked = await reader.article(feedId: feedId, id: articleId)
   }
 }
 

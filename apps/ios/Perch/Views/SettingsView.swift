@@ -57,6 +57,19 @@ struct SettingsView: View {
         }
 
         Section {
+          Toggle(isOn: notifications) {
+            Label("New articles", systemImage: "bell.badge")
+          }
+          .surfaceRow()
+        } header: {
+          Text("Notifications")
+        } footer: {
+          Text(
+            "A notification when background refresh finds new articles. iOS decides how often that runs, usually every hour or so."
+          )
+        }
+
+        Section {
           LabeledContent {
             Text(reader.isOffline ? "Offline" : "Connected")
               .foregroundStyle(reader.isOffline ? .orange : theme.muted)
@@ -169,6 +182,27 @@ struct SettingsView: View {
     Binding(
       get: { reader.settings.readingFont ?? .sans },
       set: { font in Task { await reader.updateSettings(SyncedSettings(readingFont: font)) } })
+  }
+
+  private var notifications: Binding<Bool> {
+    Binding(
+      get: { reader.device.notifyNewArticles },
+      set: { on in
+        guard on else {
+          reader.device.notifyNewArticles = false
+          return
+        }
+        Task {
+          if await Glance.requestPermission() {
+            reader.device.notifyNewArticles = true
+          } else {
+            message = String(
+              localized:
+                "Notifications are off for Perch. Turn them on in the Settings app, under Notifications."
+            )
+          }
+        }
+      })
   }
 
   private var listImages: Binding<Bool> {

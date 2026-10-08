@@ -2,9 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<!-- A self-hosted server on the local network (or the Mac running the
-	     simulator) is often plain http; the public internet still needs https. -->
-	<!-- Background refresh keeps the offline copy up to date. -->
+	<!-- Background refresh keeps the offline copy, widgets and notifications
+	     up to date. -->
 	<key>BGTaskSchedulerPermittedIdentifiers</key>
 	<array>
 		<string>app.perch.ios.refresh</string>
@@ -13,6 +12,20 @@
 	<array>
 		<string>fetch</string>
 	</array>
+	<!-- perch:// links from the widgets and notifications. -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>app.perch.ios</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>perch</string>
+			</array>
+		</dict>
+	</array>
+	<!-- A self-hosted server on the local network (or the Mac running the
+	     simulator) is often plain http; the public internet still needs https. -->
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsLocalNetworking</key>

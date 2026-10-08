@@ -148,7 +148,7 @@ apps/
 │  │  ├─ backend.ts        the reader's data layer (ReaderBackend over local storage).
 │  │  └─ backup.ts …       JSON backup, messaging, badge, PIN lock.
 │  └─ tests/              Vitest: storage (fake-indexeddb), backup, and a jsdom smoke test.
-├─ ios/                    The iPhone app (SwiftUI, iOS 26+, Liquid Glass). See apps/ios/README.md.
+├─ ios/                    The iPhone and iPad app with widgets (SwiftUI, iOS 26+). See apps/ios/README.md.
 │  ├─ Perch/               tabs and screens, session (Keychain), offline sync and image cache,
 │  │                       background refresh, live updates over Server-Sent Events.
 │  └─ PerchKit/            Swift package: API client and types, a port of core/theme.ts, the

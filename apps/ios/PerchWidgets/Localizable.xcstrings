@@ -1,0 +1,79 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "%lld unread": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld okunmamış"
+          }
+        }
+      }
+    },
+    "All caught up": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hepsi okundu"
+          }
+        }
+      }
+    },
+    "New articles show up here.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yeni makaleler burada görünür."
+          }
+        }
+      }
+    },
+    "Open Perch to sign in": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Giriş yapmak için Perch'ü aç"
+          }
+        }
+      }
+    },
+    "Unread": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Okunmamış"
+          }
+        }
+      }
+    },
+    "Your unread count and the newest articles.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Okunmamış sayın ve en yeni makaleler."
+          }
+        }
+      }
+    },
+    "unread": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "okunmamış"
+          }
+        }
+      }
+    },
+    "·": {
+      "shouldTranslate": false
+    }
+  },
+  "version": "1.0"
+}

@@ -28,6 +28,11 @@ final class DeviceSettings {
     didSet { defaults.set(listImages, forKey: "list.images") }
   }
 
+  /// A notification when background refresh finds new articles.
+  var notifyNewArticles: Bool {
+    didSet { defaults.set(notifyNewArticles, forKey: "notify.new") }
+  }
+
   /// Article text size in points, and its line height as a multiple.
   var readerTextSize: Double {
     didSet { defaults.set(readerTextSize, forKey: "reader.size") }
@@ -56,6 +61,7 @@ final class DeviceSettings {
     offlineImages = defaults.bool(forKey: "offline.images")
     offlineLimit = defaults.integer(forKey: "offline.limit")
     listImages = defaults.bool(forKey: "list.images")
+    notifyNewArticles = defaults.bool(forKey: "notify.new")
     readerTextSize = defaults.double(forKey: "reader.size")
     readerLineHeight = defaults.double(forKey: "reader.leading")
     wallpaperDim = defaults.double(forKey: "wallpaper.dim")

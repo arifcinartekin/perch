@@ -99,6 +99,7 @@ final class Session {
     store = nil
     user = nil
     phase = .signedOut
+    Glance.clear()
   }
 
   /// Application Support/Accounts/<hash of server and username>.

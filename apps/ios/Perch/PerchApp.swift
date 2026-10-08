@@ -1,6 +1,7 @@
 import PerchKit
 import SwiftUI
 import UIKit
+import UserNotifications
 
 @main
 struct PerchApp: App {
@@ -9,15 +10,22 @@ struct PerchApp: App {
 
   init() {
     BackgroundRefresh.register()
+    UNUserNotificationCenter.current().delegate = NotificationDelegate.shared
   }
 
   var body: some Scene {
     WindowGroup {
       RootView()
         .environment(session)
+        .onOpenURL { DeepLinks.shared.open($0) }
     }
     .onChange(of: scenePhase) { _, phase in
-      if phase == .background { BackgroundRefresh.schedule() }
+      if phase == .background {
+        BackgroundRefresh.schedule()
+        #if DEBUG
+          BackgroundRefresh.runOnBackgroundForTesting()
+        #endif
+      }
     }
   }
 }

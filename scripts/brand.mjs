@@ -3,7 +3,8 @@
 //   - the web reader's favicon, PWA and Apple touch icons (apps/web/public)
 //   - iOS: an asset-catalog AppIcon (light, dark, tinted) and the separate
 //     layers for Icon Composer (brand/ios); the app's catalog with the icon,
-//     logo, mark and accent colour (apps/ios/Perch/Assets.xcassets)
+//     logo, mark and accent colour (apps/ios/Perch/Assets.xcassets); the mark
+//     again for the widgets (apps/ios/PerchWidgets/Assets.xcassets)
 //
 // Run after changing anything in brand/src:  npm run brand
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -126,9 +127,9 @@ const cropLogo = (svg) =>
     /viewBox="[^"]*" width="\d+" height="\d+"/,
     'viewBox="88 106 1548 473" width="1548" height="473"',
   );
-function vectorImage(name, light, dark) {
-  text(light, `${CATALOG}/${name}.imageset/${name}.svg`);
-  text(dark, `${CATALOG}/${name}.imageset/${name}-Dark.svg`);
+function vectorImage(name, light, dark, catalog = CATALOG) {
+  text(light, `${catalog}/${name}.imageset/${name}.svg`);
+  text(dark, `${catalog}/${name}.imageset/${name}-Dark.svg`);
   text(
     json({
       images: [
@@ -142,7 +143,7 @@ function vectorImage(name, light, dark) {
       info: INFO,
       properties: { 'preserves-vector-representation': true },
     }),
-    `${CATALOG}/${name}.imageset/Contents.json`,
+    `${catalog}/${name}.imageset/Contents.json`,
   );
 }
 vectorImage(
@@ -151,6 +152,10 @@ vectorImage(
   cropLogo(src('perch-logo-horizontal-on-dark.svg')),
 );
 vectorImage('PerchMark', src('perch-mark-dark.svg'), src('perch-mark-light.svg'));
+// The widget extension has its own catalog.
+const WIDGET_CATALOG = 'apps/ios/PerchWidgets/Assets.xcassets';
+text(json({ info: INFO }), `${WIDGET_CATALOG}/Contents.json`);
+vectorImage('PerchMark', src('perch-mark-dark.svg'), src('perch-mark-light.svg'), WIDGET_CATALOG);
 text(
   json({
     colors: [

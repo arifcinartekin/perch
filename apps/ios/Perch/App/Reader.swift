@@ -39,7 +39,10 @@ final class Reader {
   private let onUnauthorized: @MainActor () -> Void
 
   private(set) var library = Library()
-  private(set) var counts = Counts()
+  private(set) var counts = Counts() {
+    didSet { updateGlance() }
+  }
+  private var glanceTask: Task<Void, Never>?
   private(set) var settings = SyncedSettings()
   private(set) var loaded = false
   /// The last request couldn't reach the server; showing what's on the phone.
@@ -135,6 +138,31 @@ final class Reader {
     await online {
       counts = try await client.counts()
       await store.saveCounts(counts)
+    }
+  }
+
+  /// An article by its ids, for links from widgets and notifications: from
+  /// the phone if it's saved, else from the feed's newest pages.
+  func article(feedId: String, id: String) async -> Article? {
+    if let saved = await store.article("\(feedId):\(id)") { return saved }
+    var cursor: String?
+    for _ in 0..<3 {
+      guard let page = try? await client.articles(.init(feed: feedId), before: cursor, limit: 100)
+      else { return nil }
+      if let hit = page.items.first(where: { $0.articleId == id }) { return hit }
+      guard let next = page.next else { return nil }
+      cursor = next
+    }
+    return nil
+  }
+
+  /// The widgets follow the unread count, a moment after it settles.
+  private func updateGlance() {
+    glanceTask?.cancel()
+    glanceTask = Task {
+      try? await Task.sleep(for: .seconds(2))
+      guard !Task.isCancelled, !isOffline else { return }
+      await Glance.update(client: client, store: store, counts: counts, notify: false)
     }
   }
 

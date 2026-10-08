@@ -21,6 +21,16 @@
         }
       }
     },
+    "%lld new articles": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld yeni makale"
+          }
+        }
+      }
+    },
     "%lld newest": {
       "localizations": {
         "tr": {
@@ -60,6 +70,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Bir bağlantı"
+          }
+        }
+      }
+    },
+    "A notification when background refresh finds new articles. iOS decides how often that runs, usually every hour or so.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arka plan yenilemesi yeni makale bulduğunda bildirim gelir. Bunun ne sıklıkla çalışacağına iOS karar verir, genelde saatte bir kadar."
           }
         }
       }
@@ -356,6 +376,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Okumak için bir makale seç"
+          }
+        }
+      }
+    },
+    "Close": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kapat"
           }
         }
       }
@@ -1066,6 +1096,16 @@
         }
       }
     },
+    "New articles": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yeni makaleler"
+          }
+        }
+      }
+    },
     "New category": {
       "localizations": {
         "tr": {
@@ -1162,6 +1202,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Henüz okunacak bir şey yok"
+          }
+        }
+      }
+    },
+    "Notifications": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bildirimler"
+          }
+        }
+      }
+    },
+    "Notifications are off for Perch. Turn them on in the Settings app, under Notifications.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Perch'ün bildirimleri kapalı. Ayarlar uygulamasında Bildirimler bölümünden açabilirsin."
           }
         }
       }
