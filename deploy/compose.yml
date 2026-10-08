@@ -1,0 +1,38 @@
+# Perch Server and Caddy (automatic HTTPS) on one machine.
+# setup.sh writes .env next to this file; update.sh rebuilds from the checkout.
+
+name: perch
+
+services:
+  perch:
+    image: perch/server
+    build:
+      context: ..
+      dockerfile: apps/server/Dockerfile
+    restart: unless-stopped
+    environment:
+      PERCH_PUBLIC_URL: https://${PERCH_DOMAIN:?set PERCH_DOMAIN in .env}
+      PERCH_SIGNUP: ${PERCH_SIGNUP:-invite}
+      PERCH_FETCH_INTERVAL_MIN: ${PERCH_FETCH_INTERVAL_MIN:-30}
+      PERCH_TRUST_PROXY: 'true' # Caddy sets X-Forwarded-For
+    volumes:
+      - ${PERCH_DATA:-/var/lib/perch}:/data
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    depends_on: [perch]
+    ports:
+      - '80:80'
+      - '443:443'
+      - '443:443/udp' # HTTP/3
+    environment:
+      PERCH_DOMAIN: ${PERCH_DOMAIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+
+volumes:
+  caddy-data:
+  caddy-config:
