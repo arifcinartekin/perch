@@ -149,9 +149,11 @@ apps/
 │  │  └─ backup.ts …       JSON backup, messaging, badge, PIN lock.
 │  └─ tests/              Vitest: storage (fake-indexeddb), backup, and a jsdom smoke test.
 ├─ ios/                    The iPhone app (SwiftUI, iOS 26+, Liquid Glass). See apps/ios/README.md.
-│  ├─ Perch/               screens, session (Keychain), live updates over Server-Sent Events.
-│  └─ PerchKit/            Swift package: API client and types, Argon2id + HKDF key derivation
-│                          (reference C Argon2), feed-HTML helpers; `swift test` on the Mac.
+│  ├─ Perch/               tabs and screens, session (Keychain), offline sync and image cache,
+│  │                       background refresh, live updates over Server-Sent Events.
+│  └─ PerchKit/            Swift package: API client and types, a port of core/theme.ts, the
+│                          offline store (SQLite), Argon2id + HKDF key derivation (reference C
+│                          Argon2); `swift test` on the Mac.
 ├─ web/                    The web reader (Vite PWA): sign-in, @perch/reader over the server
 │                          API, account / devices / invites / OPML settings. Served by the server.
 └─ server/                 Perch Server: self-hostable, fetches feeds, serves every device.

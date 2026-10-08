@@ -1,9 +1,30 @@
 # Perch for iPhone
 
-A native SwiftUI client for [Perch Server](../server/README.md): your feeds, unread counts,
-reading, stars and full text, kept in sync with the extension and the web reader. iOS 26 or
-later, so the bars, buttons and sheets are Liquid Glass; the screens sit on the same ember
-backdrop as the other Perch apps.
+A native SwiftUI client for [Perch Server](../server/README.md), kept in sync with the
+extension and the web reader. iOS 26 or later, so the tab bar, toolbars and sheets are Liquid
+Glass.
+
+- **Tabs:** Unread, Feeds, Starred, Settings and Search. The tab bar tucks away while you
+  scroll.
+- **Reading:** stars, keep unread, the site's full text, share, Safari, and the next article.
+  Swipe a row to read or star it.
+- **Library:** add feeds (from a site or feed address), rename them and move them between
+  categories. Create, rename, fold and delete categories, and mark a feed, a category or
+  everything read.
+- **Offline:** the newest unread articles (100 to 3000) and every starred one, with their
+  images and any full text you opened, stay on the phone. Background refresh keeps them
+  current. Read and star changes made offline are queued and sent when the server is back.
+- **Personalisation:** everything the extension and web reader have, synced with the account:
+  - the theme;
+  - separate light and dark colours for background, text, accent and buttons (the same
+    palette maths as `core/theme.ts`, with the same presets);
+  - glass on/off, transparency and blur;
+  - the reading font.
+
+  A background photo with dim and blur stays on this phone, like the extension's wallpaper.
+
+- **Account:** change password, devices (sign one out), invites for admins, OPML import and
+  export.
 
 ## Open and run
 
@@ -43,7 +64,10 @@ committed so Xcode opens it directly.
 - Article HTML is untrusted. It renders in a `WKWebView` with JavaScript off, a non-persistent
   data store and a CSP that allows only images, media and inline styles; links open in Safari
   instead of navigating the page.
+- Images load only through the app's image cache, without cookies, and `srcset` is dropped, so
+  nothing in an article reaches the network behind the cache's back.
 - No favicons: fetching them would tell each site which feeds you follow.
+- Signing out deletes the account's offline copy and cached images from the phone.
 
 ## Tests
 
@@ -60,6 +84,4 @@ Debug builds can sign in from the launch environment for simulator checks:
 
 ## Not yet
 
-Offline reading, editing feeds and categories, OPML, colour and glass settings (they're read
-from the account; edit them in the extension or web reader), iPad layout, end-to-end
-encrypted servers.
+iPad layout, widgets, notifications, and end-to-end encrypted servers.
