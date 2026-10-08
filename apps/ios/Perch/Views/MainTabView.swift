@@ -24,7 +24,8 @@ struct MainTabView: View {
     TabView(selection: $tab) {
       Tab("Unread", systemImage: "tray.full", value: .unread) {
         NavigationStack {
-          ArticleListView(scope: .all, reader: reader, unreadOnly: true, title: "Unread")
+          ArticleListView(
+            scope: .all, reader: reader, unreadOnly: true, title: String(localized: "Unread"))
         }
       }
       .badge(reader.unread(.all))
@@ -43,9 +44,10 @@ struct MainTabView: View {
         SettingsView()
       }
 
-      Tab(value: .search, role: .search) {
+      Tab("Search", systemImage: "magnifyingglass", value: .search, role: .search) {
         NavigationStack {
-          ArticleListView(scope: .all, reader: reader, title: "Search", searchOnly: true)
+          ArticleListView(
+            scope: .all, reader: reader, title: String(localized: "Search"), searchOnly: true)
         }
       }
     }

@@ -72,6 +72,12 @@ committed so Xcode opens it directly.
 - No favicons: fetching them would tell each site which feeds you follow.
 - Signing out deletes the account's offline copy and cached images from the phone.
 
+## Languages
+
+English and Turkish, in `Perch/Support/Localizable.xcstrings` (and `InfoPlist.xcstrings` for the
+permission prompt). Xcode adds new strings to the catalog when it builds; the app follows the
+phone's language.
+
 ## Tests
 
 ```bash

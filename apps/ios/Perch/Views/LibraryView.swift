@@ -181,7 +181,7 @@ struct LibraryView: View {
 
   private func categoryHeader(_ category: PerchKit.Category, feeds: [Feed]) -> some View {
     HStack {
-      Text(category.name)
+      Text(category.displayName)
       Spacer()
       let unread = reader.unread(.category(category))
       if unread > 0, reader.isCollapsed(category) {
@@ -203,7 +203,7 @@ struct LibraryView: View {
         }
       } label: {
         Image(systemName: "ellipsis.circle")
-          .accessibilityLabel("\(category.name) options")
+          .accessibilityLabel("\(category.displayName) options")
       }
       .disabled(feeds.isEmpty && category.id == uncategorizedId)
     }

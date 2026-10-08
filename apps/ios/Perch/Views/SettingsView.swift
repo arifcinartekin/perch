@@ -162,7 +162,7 @@ struct SettingsView: View {
 
   private var serverLine: String {
     let host = session.server?.host() ?? ""
-    return session.user?.role == "admin" ? "Admin of \(host)" : host
+    return session.user?.role == "admin" ? String(localized: "Admin of \(host)") : host
   }
 
   private var readingFont: Binding<SyncedSettings.ReadingFont> {
@@ -189,7 +189,7 @@ struct SettingsView: View {
         try data.write(to: url, options: .atomic)
         exported = ExportedFile(url: url)
       } catch {
-        message = "Couldn't export: \(error.localizedDescription)"
+        message = String(localized: "Couldn't export: \(error.localizedDescription)")
       }
     }
   }
@@ -203,11 +203,15 @@ struct SettingsView: View {
         let result = try await reader.client.importOPML(data)
         await reader.load()
         message =
-          "Added \(result.added) feeds"
-          + (result.existing > 0 ? ", \(result.existing) were already here" : "")
-          + ". New feeds are fetched in the background."
+          result.existing > 0
+          ? String(
+            localized:
+              "Added \(result.added) feeds, \(result.existing) were already here. New feeds are fetched in the background."
+          )
+          : String(
+            localized: "Added \(result.added) feeds. New feeds are fetched in the background.")
       } catch {
-        message = "Couldn't import: \(error.localizedDescription)"
+        message = String(localized: "Couldn't import: \(error.localizedDescription)")
       }
     }
   }
@@ -277,11 +281,11 @@ struct ChangePasswordView: View {
 
   private func save() {
     guard new.count >= 8 else {
-      error = "Use at least 8 characters."
+      error = String(localized: "Use at least 8 characters.")
       return
     }
     guard new == confirm else {
-      error = "The new passwords don't match."
+      error = String(localized: "The new passwords don't match.")
       return
     }
     guard let username = session.user?.username ?? session.username else { return }

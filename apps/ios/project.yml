@@ -6,6 +6,7 @@ options:
   deploymentTarget:
     iOS: '26.0'
   createIntermediateGroups: true
+  developmentLanguage: en
 settings:
   base:
     SWIFT_VERSION: '6.0'
@@ -14,6 +15,9 @@ settings:
     # Set your team to run on a device (Signing & Capabilities in Xcode).
     DEVELOPMENT_TEAM: ''
     CODE_SIGN_STYLE: Automatic
+    # Strings live in Perch/Support/Localizable.xcstrings (English and Turkish).
+    LOCALIZATION_PREFERS_STRING_CATALOGS: YES
+    SWIFT_EMIT_LOC_STRINGS: YES
 packages:
   PerchKit:
     path: PerchKit

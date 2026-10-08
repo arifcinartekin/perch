@@ -11,11 +11,19 @@ enum Scope: Hashable {
 
   var title: String {
     switch self {
-    case .all: "All Feeds"
-    case .starred: "Starred"
-    case .category(let c): c.name
+    case .all: String(localized: "All Feeds")
+    case .starred: String(localized: "Starred")
+    case .category(let c): c.displayName
     case .feed(let f): f.displayTitle
     }
+  }
+}
+
+extension PerchKit.Category {
+  /// The name to show; the server's built-in "Uncategorized" in the app's
+  /// language.
+  var displayName: String {
+    id == uncategorizedId ? String(localized: "Uncategorized") : name
   }
 }
 
@@ -224,7 +232,7 @@ final class Reader {
       onUnauthorized()
     } catch {
       settings = before
-      self.error = "Couldn't save the setting: \(error.localizedDescription)"
+      self.error = String(localized: "Couldn't save the setting: \(error.localizedDescription)")
     }
   }
 

@@ -5,6 +5,7 @@ import SwiftUI
 /// is stretched on the device; only the derived auth key is sent.
 struct ConnectView: View {
   @Environment(Session.self) private var session
+  @Environment(\.theme) private var theme
 
   @State private var address =
     UserDefaults.standard.url(forKey: "perch.server")?.absoluteString ?? ""
@@ -21,7 +22,7 @@ struct ConnectView: View {
 
   var body: some View {
     ScrollView {
-      VStack(spacing: 28) {
+      VStack(spacing: 30) {
         header
         VStack(alignment: .leading, spacing: 16) {
           if let server {
@@ -40,31 +41,79 @@ struct ConnectView: View {
         .glassEffect(.regular, in: .rect(cornerRadius: 28))
         .animation(.snappy, value: server?.url)
         .animation(.snappy, value: error)
+
+        if server == nil {
+          features
+            .transition(.opacity)
+        }
       }
       .padding(.horizontal, 20)
-      .padding(.top, 64)
+      .padding(.top, 72)
+      .padding(.bottom, 24)
       .frame(maxWidth: 480)
       .frame(maxWidth: .infinity)
     }
     .scrollDismissesKeyboard(.interactively)
+    .scrollBounceBehavior(.basedOnSize)
+    .foregroundStyle(theme.text)
     .background { Backdrop() }
-    .onAppear { focus = .address }
   }
 
   private var header: some View {
-    VStack(spacing: 14) {
+    VStack(spacing: 16) {
       Image("PerchLogo")
         .resizable()
         .scaledToFit()
-        .frame(height: 52)
+        .frame(height: 60)
+        .background {
+          Circle()
+            .fill(Brand.ember.opacity(0.28))
+            .frame(width: 180, height: 180)
+            .blur(radius: 60)
+        }
         .accessibilityLabel("Perch")
       Text("A calm, private reader for your feeds.")
-        .font(.subheadline)
-        .foregroundStyle(.secondary)
+        .font(.title3.weight(.medium))
+        .multilineTextAlignment(.center)
+        .foregroundStyle(theme.muted)
     }
   }
 
+  /// What Perch is, under the server form on first launch.
+  private var features: some View {
+    VStack(alignment: .leading, spacing: 16) {
+      feature(
+        "lock.shield", "Yours",
+        "Feeds and reading history live on your own server, not someone else's.")
+      feature(
+        "arrow.triangle.2.circlepath", "In sync",
+        "Read here, in the browser extension or on the web; it's all the same library.")
+      feature(
+        "arrow.down.circle", "Offline",
+        "Recent and starred articles stay on your iPhone, pictures included.")
+    }
+    .padding(.horizontal, 8)
+  }
+
+  private func feature(_ symbol: String, _ title: LocalizedStringKey, _ text: LocalizedStringKey)
+    -> some View
+  {
+    HStack(alignment: .top, spacing: 14) {
+      Image(systemName: symbol)
+        .font(.title3)
+        .foregroundStyle(Brand.ember)
+        .frame(width: 28)
+      VStack(alignment: .leading, spacing: 2) {
+        Text(title).font(.subheadline.weight(.semibold))
+        Text(text).font(.subheadline).foregroundStyle(theme.muted)
+      }
+    }
+    .accessibilityElement(children: .combine)
+  }
+
   // MARK: Step 1: the server
+
+  private static let localServer = "http://localhost:8080"
 
   private var serverForm: some View {
     VStack(alignment: .leading, spacing: 14) {
@@ -79,12 +128,17 @@ struct ConnectView: View {
         .submitLabel(.continue)
         .onSubmit(connect)
         .fieldStyle()
-      Text(
-        verbatim:
-          "The address of the server you or a friend runs. On the simulator, the Mac's own server is http://localhost:8080."
-      )
+      Group {
+        #if targetEnvironment(simulator)
+          Text(
+            "The address of the Perch Server you or a friend runs. On the simulator, the Mac's own server is \(Self.localServer)."
+          )
+        #else
+          Text("The address of the Perch Server you or a friend runs.")
+        #endif
+      }
       .font(.footnote)
-      .foregroundStyle(.secondary)
+      .foregroundStyle(theme.muted)
       primaryButton("Continue", action: connect)
         .disabled(address.trimmingCharacters(in: .whitespaces).isEmpty)
     }
@@ -92,19 +146,22 @@ struct ConnectView: View {
 
   private func connect() {
     guard let url = APIClient.normalizeServerURL(address) else {
-      error = "That doesn't look like a server address."
+      error = String(localized: "That doesn't look like a server address.")
       return
     }
     run {
       let info = try await APIClient(baseURL: url).serverInfo()
       guard info.software == "perch-server" else {
-        throw APIError(status: 0, code: "not-perch", message: "That server isn't a Perch Server.")
+        throw APIError(
+          status: 0, code: "not-perch",
+          message: String(localized: "That server isn't a Perch Server."))
       }
       guard info.mode == .personal else {
         throw APIError(
           status: 0, code: "e2e",
-          message:
-            "This server uses end-to-end encryption, which the iPhone app doesn't support yet.")
+          message: String(
+            localized:
+              "This server uses end-to-end encryption, which the iPhone app doesn't support yet."))
       }
       server = (url, info)
       creating = info.needsSetup
@@ -123,7 +180,7 @@ struct ConnectView: View {
             .font(.headline)
           Text(url.host() ?? url.absoluteString)
             .font(.footnote)
-            .foregroundStyle(.secondary)
+            .foregroundStyle(theme.muted)
         }
         Spacer()
         Button("Change") {
@@ -137,7 +194,7 @@ struct ConnectView: View {
       if info.needsSetup {
         Text("No accounts yet. The first one you create here is the admin.")
           .font(.footnote)
-          .foregroundStyle(.secondary)
+          .foregroundStyle(theme.muted)
       }
 
       TextField("Username", text: $username)
@@ -187,7 +244,7 @@ struct ConnectView: View {
   private func submit(_ url: URL) {
     guard !username.isEmpty, !password.isEmpty else { return }
     if creating && password.count < 8 {
-      error = "Use at least 8 characters for your password."
+      error = String(localized: "Use at least 8 characters for your password.")
       return
     }
     run {
@@ -202,7 +259,8 @@ struct ConnectView: View {
 
   // MARK: -
 
-  private func primaryButton(_ title: String, action: @escaping () -> Void) -> some View {
+  private func primaryButton(_ title: LocalizedStringKey, action: @escaping () -> Void) -> some View
+  {
     Button(action: action) {
       ZStack {
         Text(title).opacity(busy ? 0 : 1)

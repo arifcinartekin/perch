@@ -10,6 +10,7 @@ struct ArticleListView: View {
   @State private var confirmingMarkAll = false
   /// Bumped by swipe actions, for a tap of haptic feedback.
   @State private var swiped = 0
+  @State private var addingFeed = false
   private let title: String
   /// The Search tab: nothing until you type.
   private let searchOnly: Bool
@@ -100,6 +101,7 @@ struct ArticleListView: View {
         }
       }
     }
+    .sheet(isPresented: $addingFeed) { AddFeedSheet { _ in } }
     .confirmationDialog(
       "Mark all \(reader.unread(list.scope)) articles in \(title) as read?",
       isPresented: $confirmingMarkAll, titleVisibility: .visible
@@ -142,8 +144,23 @@ struct ArticleListView: View {
         ContentUnavailableView(
           "Search your articles", systemImage: "magnifyingglass",
           description: Text("Titles, authors and text, in every feed."))
+      } else if reader.loaded && reader.library.feeds.isEmpty {
+        ContentUnavailableView {
+          Label {
+            Text("Nothing to read yet")
+          } icon: {
+            Image("PerchMark").resizable().scaledToFit().frame(width: 72)
+          }
+        } description: {
+          Text("Add a feed and its newest articles show up here.")
+        } actions: {
+          Button("Add a feed") { addingFeed = true }
+            .buttonStyle(.glassProminent)
+            .tint(theme.button)
+            .foregroundStyle(theme.buttonContrast)
+        }
       } else if list.loading {
-        ProgressView()
+        SkeletonRows()
       } else if let error = list.error {
         ContentUnavailableView(
           "Couldn't load articles", systemImage: "wifi.exclamationmark", description: Text(error))
@@ -164,6 +181,46 @@ struct ArticleListView: View {
           description: Text("Pull down to fetch the latest."))
       }
     }
+  }
+}
+
+/// Grey stand-ins for article rows while the first page loads.
+private struct SkeletonRows: View {
+  @Environment(\.theme) private var theme
+  @State private var pulse = false
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: 0) {
+      ForEach(0..<7, id: \.self) { i in
+        HStack(alignment: .top, spacing: 12) {
+          VStack(alignment: .leading, spacing: 8) {
+            bar(width: 140, height: 10)
+            bar(width: i % 2 == 0 ? 280 : 230, height: 14)
+            bar(width: i % 3 == 0 ? 180 : 250, height: 14)
+            bar(width: 300, height: 10).opacity(0.7)
+          }
+          .frame(maxWidth: .infinity, alignment: .leading)
+          if i % 3 != 1 {
+            RoundedRectangle(cornerRadius: 12).fill(theme.text.opacity(0.07))
+              .frame(width: 72, height: 72)
+          }
+        }
+        .padding(.vertical, 14)
+        .padding(.horizontal, 20)
+      }
+    }
+    .frame(maxHeight: .infinity, alignment: .top)
+    .opacity(pulse ? 0.45 : 1)
+    .animation(.easeInOut(duration: 0.9).repeatForever(autoreverses: true), value: pulse)
+    .onAppear { pulse = true }
+    .accessibilityLabel("Loading articles")
+    .allowsHitTesting(false)
+  }
+
+  private func bar(width: CGFloat, height: CGFloat) -> some View {
+    RoundedRectangle(cornerRadius: height / 2)
+      .fill(theme.text.opacity(0.08))
+      .frame(maxWidth: width, minHeight: height, maxHeight: height)
   }
 }
 

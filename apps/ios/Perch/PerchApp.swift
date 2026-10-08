@@ -24,13 +24,24 @@ struct PerchApp: App {
 
 struct RootView: View {
   @Environment(Session.self) private var session
+  @Environment(\.colorScheme) private var colorScheme
+
+  /// Before signing in there are no account settings: the default palette
+  /// for the system's light or dark mode.
+  private var signedOutTheme: AppTheme {
+    var theme = AppTheme.default
+    theme.palette = Theme.palette(colorScheme == .dark ? .dark : .light)
+    return theme
+  }
 
   var body: some View {
     switch session.phase {
     case .restoring:
       Backdrop()
+        .environment(\.theme, signedOutTheme)
     case .signedOut:
       ConnectView()
+        .environment(\.theme, signedOutTheme)
         .tint(Brand.ember)
     case .signedIn:
       if let client = session.client, let store = session.store {

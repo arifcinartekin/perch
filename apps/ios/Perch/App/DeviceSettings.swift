@@ -92,6 +92,6 @@ final class DeviceSettings {
 
   enum WallpaperError: LocalizedError {
     case unreadable
-    var errorDescription: String? { "Perch couldn't read that image." }
+    var errorDescription: String? { String(localized: "Perch couldn't read that image.") }
   }
 }

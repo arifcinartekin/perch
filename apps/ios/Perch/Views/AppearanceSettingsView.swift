@@ -71,7 +71,10 @@ struct AppearanceSettingsView: View {
         ) { setColor(mode, \.button, $0) }
 
         if !overrides.isEmpty {
-          Button("Reset \(mode.rawValue) theme colors", role: .destructive) {
+          Button(
+            mode == .light ? "Reset light theme colors" : "Reset dark theme colors",
+            role: .destructive
+          ) {
             var a = appearance
             a[mode] = ColorOverrides()
             save(SyncedSettings(appearance: a), debounce: false)
@@ -186,8 +189,8 @@ private struct PreviewCard: View {
 /// One colour: the system picker, the preset swatches, and "Default".
 private struct ColorRow: View {
   @Environment(\.theme) private var theme
-  let label: String
-  let hint: String
+  let label: LocalizedStringKey
+  let hint: LocalizedStringKey
   let value: String
   let custom: Bool
   let presets: [String]
@@ -293,10 +296,10 @@ private struct WallpaperSection: View {
 
   var body: some View {
     let device = reader.device
-    let pickLabel = device.wallpaper == nil ? "Choose a photo…" : "Replace photo…"
+    let hasWallpaper = device.wallpaper != nil
     Section {
       PhotosPicker(selection: $item, matching: .images) {
-        Label(pickLabel, systemImage: "photo")
+        Label(hasWallpaper ? "Replace photo…" : "Choose a photo…", systemImage: "photo")
       }
       .surfaceRow()
       if let image = device.wallpaper {
@@ -343,7 +346,7 @@ private struct WallpaperSection: View {
 /// A labelled slider that saves as it moves.
 struct SliderRow: View {
   @Environment(\.theme) private var theme
-  let label: String
+  let label: LocalizedStringKey
   let value: Double
   let range: ClosedRange<Double>
   let unit: String

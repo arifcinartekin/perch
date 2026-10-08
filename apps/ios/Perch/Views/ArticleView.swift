@@ -399,7 +399,9 @@ enum ArticleHTML {
     let content = proxyImages(raw, base: base)
     let date = article.published.formatted(date: .abbreviated, time: .shortened)
     let words = HTMLText.plain(raw, limit: .max).split(whereSeparator: \.isWhitespace).count
-    let minutes = words > 120 ? "\(max(1, Int((Double(words) / 230).rounded()))) min read" : nil
+    let minutes =
+      words > 120
+      ? String(localized: "\(max(1, Int((Double(words) / 230).rounded()))) min read") : nil
     let meta = [feedTitle, article.author, date, minutes].compactMap { $0 }
       .filter { !$0.isEmpty }
       .map(escape).joined(separator: " · ")

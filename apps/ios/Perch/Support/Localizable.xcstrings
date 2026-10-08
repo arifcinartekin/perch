@@ -1,0 +1,2073 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "%@ options": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ seçenekleri"
+          }
+        }
+      }
+    },
+    "%lld min read": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld dk okuma"
+          }
+        }
+      }
+    },
+    "%lld newest": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "En yeni %lld"
+          }
+        }
+      }
+    },
+    "%lld%@": {
+      "shouldTranslate": false
+    },
+    "A calm place for your feeds": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Feed'lerin için sakin bir yer"
+          }
+        }
+      }
+    },
+    "A calm, private reader for your feeds.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Feed'lerin için sakin ve gizli bir okuyucu."
+          }
+        }
+      }
+    },
+    "A link": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bir bağlantı"
+          }
+        }
+      }
+    },
+    "Accent": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vurgu"
+          }
+        }
+      }
+    },
+    "Account": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hesap"
+          }
+        }
+      }
+    },
+    "Add": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ekle"
+          }
+        }
+      }
+    },
+    "Add a feed": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Feed ekle"
+          }
+        }
+      }
+    },
+    "Add a feed and its newest articles show up here.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bir feed ekle, en yeni makaleleri burada görünsün."
+          }
+        }
+      }
+    },
+    "Add your first feed: paste a site or feed address.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "İlk feed'ini ekle: bir site ya da feed adresi yapıştır."
+          }
+        }
+      }
+    },
+    "Added %lld feeds, %lld were already here. New feeds are fetched in the background.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Added %1$lld feeds, %2$lld were already here. New feeds are fetched in the background."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld feed eklendi, %2$lld tanesi zaten vardı. Yeni feed'ler arka planda getiriliyor."
+          }
+        }
+      }
+    },
+    "Added %lld feeds. New feeds are fetched in the background.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld feed eklendi. Yeni feed'ler arka planda getiriliyor."
+          }
+        }
+      }
+    },
+    "Address": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adres"
+          }
+        }
+      }
+    },
+    "Admin of %@": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ yöneticisi"
+          }
+        }
+      }
+    },
+    "All Feeds": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tüm Feed'ler"
+          }
+        }
+      }
+    },
+    "All articles": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tüm makaleler"
+          }
+        }
+      }
+    },
+    "All caught up": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hepsi okundu"
+          }
+        }
+      }
+    },
+    "Appearance": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Görünüm"
+          }
+        }
+      }
+    },
+    "Articles": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Makaleler"
+          }
+        }
+      }
+    },
+    "Articles saved on this iPhone for offline reading are removed.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Çevrimdışı okuma için bu iPhone'a kaydedilen makaleler silinir."
+          }
+        }
+      }
+    },
+    "At least 8 characters. Your other devices are signed out and need the new password.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "En az 8 karakter. Diğer cihazlarının oturumu kapanır ve yeni şifre gerekir."
+          }
+        }
+      }
+    },
+    "Background": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arka plan"
+          }
+        }
+      }
+    },
+    "Background image": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arka plan resmi"
+          }
+        }
+      }
+    },
+    "Blur": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bulanıklık"
+          }
+        }
+      }
+    },
+    "Button": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Düğme"
+          }
+        }
+      }
+    },
+    "Buttons": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Düğmeler"
+          }
+        }
+      }
+    },
+    "Cancel": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vazgeç"
+          }
+        }
+      }
+    },
+    "Category": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kategori"
+          }
+        }
+      }
+    },
+    "Change": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Değiştir"
+          }
+        }
+      }
+    },
+    "Change password": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Şifreyi değiştir"
+          }
+        }
+      }
+    },
+    "Change password…": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Şifreyi değiştir…"
+          }
+        }
+      }
+    },
+    "Choose a photo…": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fotoğraf seç…"
+          }
+        }
+      }
+    },
+    "Colors": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Renkler"
+          }
+        }
+      }
+    },
+    "Colors for": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Renkler"
+          }
+        }
+      }
+    },
+    "Connected": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bağlı"
+          }
+        }
+      }
+    },
+    "Continue": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Devam"
+          }
+        }
+      }
+    },
+    "Copy feed address": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Feed adresini kopyala"
+          }
+        }
+      }
+    },
+    "Copy link": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bağlantıyı kopyala"
+          }
+        }
+      }
+    },
+    "Couldn't export: %@": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dışa aktarılamadı: %@"
+          }
+        }
+      }
+    },
+    "Couldn't get the full text": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tam metin alınamadı"
+          }
+        }
+      }
+    },
+    "Couldn't import: %@": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "İçe aktarılamadı: %@"
+          }
+        }
+      }
+    },
+    "Couldn't load articles": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Makaleler yüklenemedi"
+          }
+        }
+      }
+    },
+    "Couldn't load devices": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cihazlar yüklenemedi"
+          }
+        }
+      }
+    },
+    "Couldn't load invites": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Davetler yüklenemedi"
+          }
+        }
+      }
+    },
+    "Couldn't save the setting: %@": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ayar kaydedilemedi: %@"
+          }
+        }
+      }
+    },
+    "Create": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Oluştur"
+          }
+        }
+      }
+    },
+    "Create account": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hesap oluştur"
+          }
+        }
+      }
+    },
+    "Create an account": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hesap oluştur"
+          }
+        }
+      }
+    },
+    "Create an invite": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Davet oluştur"
+          }
+        }
+      }
+    },
+    "Current password": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mevcut şifre"
+          }
+        }
+      }
+    },
+    "Dark": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Koyu"
+          }
+        }
+      }
+    },
+    "Dark theme": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Koyu tema"
+          }
+        }
+      }
+    },
+    "Default": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Varsayılan"
+          }
+        }
+      }
+    },
+    "Default size": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Varsayılan boyut"
+          }
+        }
+      }
+    },
+    "Delete": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sil"
+          }
+        }
+      }
+    },
+    "Delete %@?": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ silinsin mi?"
+          }
+        }
+      }
+    },
+    "Delete category": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kategoriyi sil"
+          }
+        }
+      }
+    },
+    "Delete…": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sil…"
+          }
+        }
+      }
+    },
+    "Devices": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cihazlar"
+          }
+        }
+      }
+    },
+    "Dim": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Karartma"
+          }
+        }
+      }
+    },
+    "Download now": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Şimdi indir"
+          }
+        }
+      }
+    },
+    "Each code lets one person create an account on your server.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Her kod bir kişinin sunucunda hesap açmasını sağlar."
+          }
+        }
+      }
+    },
+    "Edit": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Düzenle"
+          }
+        }
+      }
+    },
+    "Edit feed": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Feed'i düzenle"
+          }
+        }
+      }
+    },
+    "Edit…": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Düzenle…"
+          }
+        }
+      }
+    },
+    "Every browser and phone signed in to your account. Swipe to sign one out.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hesabında oturum açık olan tüm tarayıcı ve telefonlar. Oturumu kapatmak için kaydır."
+          }
+        }
+      }
+    },
+    "Everything syncs through your Perch Server: feeds, read and starred articles, theme and colours. Changes made offline are sent when you're back.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Her şey Perch Server'ın üzerinden senkronlanır: feed'ler, okunan ve yıldızlı makaleler, tema ve renkler. Çevrimdışıyken yapılan değişiklikler bağlantı gelince gönderilir."
+          }
+        }
+      }
+    },
+    "Export subscriptions": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abonelikleri dışa aktar"
+          }
+        }
+      }
+    },
+    "Feed text": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Feed metni"
+          }
+        }
+      }
+    },
+    "Feeds": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Feed'ler"
+          }
+        }
+      }
+    },
+    "Feeds and reading history live on your own server, not someone else's.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Feed'lerin ve okuma geçmişin başkasının değil, kendi sunucunda durur."
+          }
+        }
+      }
+    },
+    "Filled buttons; their label colour is picked for contrast.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dolgulu düğmeler; yazı rengi okunaklı olacak şekilde seçilir."
+          }
+        }
+      }
+    },
+    "Font": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yazı tipi"
+          }
+        }
+      }
+    },
+    "Full text": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tam metin"
+          }
+        }
+      }
+    },
+    "Glass": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cam"
+          }
+        }
+      }
+    },
+    "Glass effect": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cam efekti"
+          }
+        }
+      }
+    },
+    "How see-through and blurred the panels are. Off gives solid panels and bars. iOS's own Reduce Transparency setting also makes them solid.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Panellerin ne kadar şeffaf ve bulanık olacağı. Kapalıyken paneller ve çubuklar düz renk olur. iOS'un Saydamlığı Azalt ayarı da onları düz yapar."
+          }
+        }
+      }
+    },
+    "I already have an account": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zaten hesabım var"
+          }
+        }
+      }
+    },
+    "Import & export": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "İçe ve dışa aktar"
+          }
+        }
+      }
+    },
+    "Import subscriptions…": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abonelikleri içe aktar…"
+          }
+        }
+      }
+    },
+    "In sync": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Senkron"
+          }
+        }
+      }
+    },
+    "Include images": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Resimleri de indir"
+          }
+        }
+      }
+    },
+    "Invite code": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Davet kodu"
+          }
+        }
+      }
+    },
+    "Invites": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Davetler"
+          }
+        }
+      }
+    },
+    "Its articles go too, except the ones you starred.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yıldızladıkların dışındaki makaleleri de silinir."
+          }
+        }
+      }
+    },
+    "Its feeds move to Uncategorized.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Feed'leri Kategorisiz'e taşınır."
+          }
+        }
+      }
+    },
+    "Keep": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sakla"
+          }
+        }
+      }
+    },
+    "Keep unread": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Okunmadı bırak"
+          }
+        }
+      }
+    },
+    "Larger": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Büyüt"
+          }
+        }
+      }
+    },
+    "Last refresh": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Son yenileme"
+          }
+        }
+      }
+    },
+    "Last refresh failed": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Son yenileme başarısız"
+          }
+        }
+      }
+    },
+    "Leave blank to use the feed's own title.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Feed'in kendi adını kullanmak için boş bırak."
+          }
+        }
+      }
+    },
+    "Light": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Açık"
+          }
+        }
+      }
+    },
+    "Light and dark keep their own colors. They sync with your account, so the extension and web reader match.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Açık ve koyu temanın renkleri ayrı tutulur. Hesabınla senkronlanır, böylece eklenti ve web okuyucu da aynı görünür."
+          }
+        }
+      }
+    },
+    "Light theme": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Açık tema"
+          }
+        }
+      }
+    },
+    "Line spacing": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Satır aralığı"
+          }
+        }
+      }
+    },
+    "Loading articles": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Makaleler yükleniyor"
+          }
+        }
+      }
+    },
+    "Mark all %lld articles in %@ as read?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Mark all %1$lld articles in %2$@ as read?"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%2$@ içindeki %1$lld makalenin hepsi okundu olarak işaretlensin mi?"
+          }
+        }
+      }
+    },
+    "Mark all as read": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hepsini okundu yap"
+          }
+        }
+      }
+    },
+    "Mark all in %@ as read?": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ içindekilerin hepsi okundu olarak işaretlensin mi?"
+          }
+        }
+      }
+    },
+    "Mark read": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Okundu yap"
+          }
+        }
+      }
+    },
+    "Name": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ad"
+          }
+        }
+      }
+    },
+    "New category": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yeni kategori"
+          }
+        }
+      }
+    },
+    "New category name": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yeni kategori adı"
+          }
+        }
+      }
+    },
+    "New category…": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yeni kategori…"
+          }
+        }
+      }
+    },
+    "New password": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yeni şifre"
+          }
+        }
+      }
+    },
+    "Next article": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sonraki makale"
+          }
+        }
+      }
+    },
+    "No accounts yet. The first one you create here is the admin.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Henüz hesap yok. Burada oluşturduğun ilk hesap yönetici olur."
+          }
+        }
+      }
+    },
+    "No articles yet": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Henüz makale yok"
+          }
+        }
+      }
+    },
+    "No starred articles": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yıldızlı makale yok"
+          }
+        }
+      }
+    },
+    "No unread articles here.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Burada okunmamış makale yok."
+          }
+        }
+      }
+    },
+    "Nothing to read yet": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Henüz okunacak bir şey yok"
+          }
+        }
+      }
+    },
+    "OK": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tamam"
+          }
+        }
+      }
+    },
+    "OPML, the format every feed reader understands.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Her feed okuyucunun anladığı OPML biçiminde."
+          }
+        }
+      }
+    },
+    "Off": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kapalı"
+          }
+        }
+      }
+    },
+    "Offline": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Çevrimdışı"
+          }
+        }
+      }
+    },
+    "Offline reading": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Çevrimdışı okuma"
+          }
+        }
+      }
+    },
+    "Offline · showing what's saved on this iPhone": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Çevrimdışı · bu iPhone'a kaydedilenler gösteriliyor"
+          }
+        }
+      }
+    },
+    "On": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Açık"
+          }
+        }
+      }
+    },
+    "On this iPhone": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu iPhone'da"
+          }
+        }
+      }
+    },
+    "Open in Safari": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Safari'de aç"
+          }
+        }
+      }
+    },
+    "Open website": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Siteyi aç"
+          }
+        }
+      }
+    },
+    "Password": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Şifre"
+          }
+        }
+      }
+    },
+    "Paste a feed, or any page that links to one. Your Perch Server finds and fetches it.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bir feed'i ya da ona bağlantı veren herhangi bir sayfayı yapıştır. Perch Server'ın onu bulup getirir."
+          }
+        }
+      }
+    },
+    "Perch": {
+      "shouldTranslate": false
+    },
+    "Perch %@": {
+      "shouldTranslate": false
+    },
+    "Perch couldn't read that image.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Perch bu resmi okuyamadı."
+          }
+        }
+      }
+    },
+    "Perch keeps your newest unread articles and every starred one on this iPhone, and refreshes them in the background. Images aren't downloaded in Low Data Mode.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Perch en yeni okunmamış makaleleri ve tüm yıldızlıları bu iPhone'da tutar, arka planda günceller. Düşük Veri Modu'nda resimler indirilmez."
+          }
+        }
+      }
+    },
+    "Pictures in article lists": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Makale listelerinde resimler"
+          }
+        }
+      }
+    },
+    "Pull down to fetch the latest.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "En yenileri getirmek için aşağı çek."
+          }
+        }
+      }
+    },
+    "Read": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Okundu"
+          }
+        }
+      }
+    },
+    "Read here, in the browser extension or on the web; it's all the same library.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Burada, tarayıcı eklentisinde ya da web'de oku; hepsi aynı kütüphane."
+          }
+        }
+      }
+    },
+    "Read with a link to the original site.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Asıl siteye bağlantıyla birlikte oku."
+          }
+        }
+      }
+    },
+    "Reading": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Okuma"
+          }
+        }
+      }
+    },
+    "Reading font": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Okuma yazı tipi"
+          }
+        }
+      }
+    },
+    "Recent and starred articles stay on your iPhone, pictures included.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yeni ve yıldızlı makaleler resimleriyle birlikte iPhone'unda durur."
+          }
+        }
+      }
+    },
+    "Refresh": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yenile"
+          }
+        }
+      }
+    },
+    "Remove": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kaldır"
+          }
+        }
+      }
+    },
+    "Remove photo": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fotoğrafı kaldır"
+          }
+        }
+      }
+    },
+    "Remove saved articles and images": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kayıtlı makaleleri ve resimleri sil"
+          }
+        }
+      }
+    },
+    "Remove saved articles?": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kayıtlı makaleler silinsin mi?"
+          }
+        }
+      }
+    },
+    "Rename": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yeniden adlandır"
+          }
+        }
+      }
+    },
+    "Rename category": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kategoriyi yeniden adlandır"
+          }
+        }
+      }
+    },
+    "Rename…": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yeniden adlandır…"
+          }
+        }
+      }
+    },
+    "Repeat new password": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yeni şifreyi tekrarla"
+          }
+        }
+      }
+    },
+    "Replace photo…": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fotoğrafı değiştir…"
+          }
+        }
+      }
+    },
+    "Reset dark theme colors": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Koyu tema renklerini sıfırla"
+          }
+        }
+      }
+    },
+    "Reset glass": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Camı sıfırla"
+          }
+        }
+      }
+    },
+    "Reset light theme colors": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Açık tema renklerini sıfırla"
+          }
+        }
+      }
+    },
+    "Sans": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sans"
+          }
+        }
+      }
+    },
+    "Save": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kaydet"
+          }
+        }
+      }
+    },
+    "Save articles for offline reading": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Makaleleri çevrimdışı okumak için kaydet"
+          }
+        }
+      }
+    },
+    "Search": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ara"
+          }
+        }
+      }
+    },
+    "Search %@": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ içinde ara"
+          }
+        }
+      }
+    },
+    "Search your articles": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Makalelerinde ara"
+          }
+        }
+      }
+    },
+    "Serif": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Serif"
+          }
+        }
+      }
+    },
+    "Set up your server": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sunucunu kur"
+          }
+        }
+      }
+    },
+    "Settings": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ayarlar"
+          }
+        }
+      }
+    },
+    "Show": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Göster"
+          }
+        }
+      }
+    },
+    "Show all articles": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tüm makaleleri göster"
+          }
+        }
+      }
+    },
+    "Shown behind every screen on this iPhone only. Panels turn translucent over it.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yalnız bu iPhone'da, her ekranın arkasında görünür. Paneller üzerinde yarı saydam olur."
+          }
+        }
+      }
+    },
+    "Sign in": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Giriş yap"
+          }
+        }
+      }
+    },
+    "Sign out": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Çıkış yap"
+          }
+        }
+      }
+    },
+    "Sign out of %@?": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ oturumu kapatılsın mı?"
+          }
+        }
+      }
+    },
+    "Signed in %@ · last seen %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Signed in %1$@ · last seen %2$@"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Giriş %1$@ · son görülme %2$@"
+          }
+        }
+      }
+    },
+    "Site or feed address": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Site ya da feed adresi"
+          }
+        }
+      }
+    },
+    "Smaller": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Küçült"
+          }
+        }
+      }
+    },
+    "Something went wrong": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bir şeyler ters gitti"
+          }
+        }
+      }
+    },
+    "Star": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yıldızla"
+          }
+        }
+      }
+    },
+    "Starred": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yıldızlı"
+          }
+        }
+      }
+    },
+    "Starred articles stay on your server. Changes not yet synced are kept.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yıldızlı makaleler sunucunda kalır. Henüz senkronlanmamış değişiklikler korunur."
+          }
+        }
+      }
+    },
+    "Storage": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Depolama"
+          }
+        }
+      }
+    },
+    "Swipe left on an article, or tap the star while reading, to keep it here.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Burada tutmak için makaleyi sola kaydır ya da okurken yıldıza dokun."
+          }
+        }
+      }
+    },
+    "Sync": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Senkron"
+          }
+        }
+      }
+    },
+    "System": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sistem"
+          }
+        }
+      }
+    },
+    "Text": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Metin"
+          }
+        }
+      }
+    },
+    "Text and borders adjust to stay readable on it.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Metin ve kenarlıklar okunaklı kalacak şekilde ayarlanır."
+          }
+        }
+      }
+    },
+    "That doesn't look like a server address.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu bir sunucu adresine benzemiyor."
+          }
+        }
+      }
+    },
+    "That server isn't a Perch Server.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu sunucu bir Perch Server değil."
+          }
+        }
+      }
+    },
+    "The Perch Journal · 2 min. ago": {
+      "shouldTranslate": false
+    },
+    "The address of the Perch Server you or a friend runs.": {
+      "extractionState": "manual",
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Senin ya da bir arkadaşının çalıştırdığı Perch Server'ın adresi."
+          }
+        }
+      }
+    },
+    "The address of the Perch Server you or a friend runs. On the simulator, the Mac's own server is %@.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Senin ya da bir arkadaşının çalıştırdığı Perch Server'ın adresi. Simülatörde Mac'in kendi sunucusu %@."
+          }
+        }
+      }
+    },
+    "The new passwords don't match.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yeni şifreler aynı değil."
+          }
+        }
+      }
+    },
+    "Theme": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tema"
+          }
+        }
+      }
+    },
+    "This server uses end-to-end encryption, which the iPhone app doesn't support yet.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu sunucu uçtan uca şifreleme kullanıyor; iPhone uygulaması bunu henüz desteklemiyor."
+          }
+        }
+      }
+    },
+    "Title": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ad"
+          }
+        }
+      }
+    },
+    "Titles and article text; secondary text is a softer shade.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Başlıklar ve makale metni; ikincil metin daha soluk bir tonda."
+          }
+        }
+      }
+    },
+    "Titles, authors and text, in every feed.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tüm feed'lerde başlık, yazar ve metin."
+          }
+        }
+      }
+    },
+    "Transparency": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Şeffaflık"
+          }
+        }
+      }
+    },
+    "Uncategorized": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kategorisiz"
+          }
+        }
+      }
+    },
+    "Unread": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Okunmamış"
+          }
+        }
+      }
+    },
+    "Unread dots, links, the tab bar and stars.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Okunmamış noktaları, bağlantılar, sekme çubuğu ve yıldızlar."
+          }
+        }
+      }
+    },
+    "Unstar": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yıldızı kaldır"
+          }
+        }
+      }
+    },
+    "Unsubscribe": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aboneliği bırak"
+          }
+        }
+      }
+    },
+    "Unsubscribe from %@?": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ aboneliği bırakılsın mı?"
+          }
+        }
+      }
+    },
+    "Unused": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kullanılmamış"
+          }
+        }
+      }
+    },
+    "Use at least 8 characters for your password.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Şifren en az 8 karakter olmalı."
+          }
+        }
+      }
+    },
+    "Use at least 8 characters.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "En az 8 karakter kullan."
+          }
+        }
+      }
+    },
+    "Used": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kullanılmış"
+          }
+        }
+      }
+    },
+    "Username": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kullanıcı adı"
+          }
+        }
+      }
+    },
+    "Waiting to sync": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Senkron bekleniyor"
+          }
+        }
+      }
+    },
+    "Welcome to Perch": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Perch'e hoş geldin"
+          }
+        }
+      }
+    },
+    "Your Perch Server": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Perch Server'ın"
+          }
+        }
+      }
+    },
+    "Yours": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Senin"
+          }
+        }
+      }
+    },
+    "perch.example.com": {
+      "shouldTranslate": false
+    },
+    "·": {
+      "shouldTranslate": false
+    }
+  },
+  "version": "1.0"
+}

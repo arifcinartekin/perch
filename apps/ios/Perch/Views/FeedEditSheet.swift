@@ -98,7 +98,7 @@ struct CategoryPicker: View {
   var body: some View {
     Picker("Category", selection: $selection) {
       ForEach(reader.categoryChoices) { c in
-        Text(c.name).tag(c.id)
+        Text(c.displayName).tag(c.id)
       }
       Text("New category…").tag(Self.newTag)
     }
