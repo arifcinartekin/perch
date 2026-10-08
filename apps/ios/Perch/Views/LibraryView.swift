@@ -1,14 +1,26 @@
 import PerchKit
 import SwiftUI
 
-/// The first screen: All Feeds, Starred, and every feed grouped by category,
-/// with unread counts. Glass bars float over the ember backdrop.
+/// The Feeds tab: All Feeds, Starred, and every feed grouped by category, with
+/// unread counts. Categories fold away; long-press a feed or tap a category's
+/// menu to edit, mark read, rename or delete.
 struct LibraryView: View {
   @Environment(Reader.self) private var reader
+  @Environment(\.theme) private var theme
   @State private var path = NavigationPath()
   @State private var adding = false
-  @State private var showingSettings = false
+  @State private var editing: Feed?
   @State private var removing: Feed?
+  @State private var naming: CategoryNaming?
+  @State private var deleting: PerchKit.Category?
+  @State private var markingRead: Scope?
+
+  /// The new-category / rename prompt.
+  struct CategoryNaming: Identifiable {
+    var category: PerchKit.Category?
+    var name: String
+    var id: String { category?.id ?? "new" }
+  }
 
   var body: some View {
     NavigationStack(path: $path) {
@@ -19,26 +31,26 @@ struct LibraryView: View {
         }
 
         ForEach(reader.groups, id: \.category.id) { group in
-          Section {
-            if group.feeds.count > 1 {
-              row(.category(group.category), icon: "folder")
-            }
+          Section(isExpanded: expanded(group.category)) {
             ForEach(group.feeds) { feed in
               row(.feed(feed), icon: nil)
+                .contextMenu { feedMenu(feed) }
                 .swipeActions {
                   Button("Unsubscribe", systemImage: "trash", role: .destructive) {
                     removing = feed
                   }
+                  Button("Edit", systemImage: "pencil") { editing = feed }
                 }
             }
           } header: {
-            Text(group.category.name)
+            categoryHeader(group.category, feeds: group.feeds)
           }
         }
       }
-      .listStyle(.insetGrouped)
+      .listStyle(.sidebar)
       .perchBackdrop()
       .overlay { emptyState }
+      .safeAreaInset(edge: .bottom) { OfflineNotice() }
       .refreshable { await reader.refresh() }
       .navigationTitle("Feeds")
       .toolbar {
@@ -50,9 +62,15 @@ struct LibraryView: View {
             .accessibilityLabel("Perch")
         }
         .sharedBackgroundVisibility(.hidden)
-        ToolbarItemGroup(placement: .topBarTrailing) {
-          Button("Add feed", systemImage: "plus") { adding = true }
-          Button("Settings", systemImage: "gearshape") { showingSettings = true }
+        ToolbarItem(placement: .topBarTrailing) {
+          Menu("Add", systemImage: "plus") {
+            Button("Add a feed", systemImage: "dot.radiowaves.up.forward") { adding = true }
+            Button("New category", systemImage: "folder.badge.plus") {
+              naming = CategoryNaming(name: "")
+            }
+          } primaryAction: {
+            adding = true
+          }
         }
       }
       .navigationDestination(for: Scope.self) { scope in
@@ -64,9 +82,9 @@ struct LibraryView: View {
       .sheet(isPresented: $adding) {
         AddFeedSheet { feed in path = NavigationPath([Scope.feed(feed)]) }
       }
-      .sheet(isPresented: $showingSettings) { SettingsView() }
+      .sheet(item: $editing) { feed in FeedEditSheet(feed: feed) }
       .confirmationDialog(
-        "Unsubscribe from \(removing?.displayTitle ?? "")?", isPresented: unsubscribing,
+        "Unsubscribe from \(removing?.displayTitle ?? "")?", isPresented: present($removing),
         titleVisibility: .visible
       ) {
         Button("Unsubscribe", role: .destructive) {
@@ -75,40 +93,51 @@ struct LibraryView: View {
       } message: {
         Text("Its articles go too, except the ones you starred.")
       }
-      #if DEBUG
-        .task { await openFromLaunchEnvironment() }
-      #endif
-      .alert("Couldn't reach your server", isPresented: hasError) {
+      .confirmationDialog(
+        "Delete \(deleting?.name ?? "")?", isPresented: present($deleting),
+        titleVisibility: .visible
+      ) {
+        Button("Delete category", role: .destructive) {
+          if let c = deleting { Task { await reader.deleteCategory(c) } }
+        }
+      } message: {
+        Text("Its feeds move to Uncategorized.")
+      }
+      .confirmationDialog(
+        "Mark all in \(markingRead?.title ?? "") as read?", isPresented: present($markingRead),
+        titleVisibility: .visible
+      ) {
+        Button("Mark all as read") {
+          if let scope = markingRead { Task { await reader.markAllRead(scope, upTo: .now) } }
+        }
+      }
+      .alert(
+        naming?.category == nil ? "New category" : "Rename category",
+        isPresented: present($naming)
+      ) {
+        TextField("Name", text: Binding(get: { naming?.name ?? "" }, set: { naming?.name = $0 }))
+        Button("Cancel", role: .cancel) {}
+        Button(naming?.category == nil ? "Create" : "Rename") { saveCategoryName() }
+      }
+      .alert("Something went wrong", isPresented: hasError) {
         Button("OK") { reader.error = nil }
       } message: {
         Text(reader.error ?? "")
       }
+      #if DEBUG
+        .task { await openFromLaunchEnvironment() }
+      #endif
     }
   }
 
-  #if DEBUG
-    /// Debug builds only, for simulator screenshots: PERCH_DEV_OPEN=all opens
-    /// All Feeds, =article its newest article.
-    private func openFromLaunchEnvironment() async {
-      guard let open = ProcessInfo.processInfo.environment["PERCH_DEV_OPEN"], !open.isEmpty,
-        path.isEmpty
-      else {
-        return
-      }
-      path.append(Scope.all)
-      guard open == "article",
-        let first = try? await reader.client.articles(.init(), limit: 1).items.first
-      else { return }
-      path.append(first)
-    }
-  #endif
+  // MARK: Rows
 
   private func row(_ scope: Scope, icon: String?) -> some View {
     NavigationLink(value: scope) {
       HStack(spacing: 12) {
         if let icon {
           Image(systemName: icon)
-            .foregroundStyle(Brand.ember)
+            .foregroundStyle(theme.accent)
             .frame(width: 26)
         } else if case .feed(let feed) = scope {
           FeedIcon(feed: feed)
@@ -126,11 +155,81 @@ struct LibraryView: View {
         if n > 0 {
           Text(n, format: .number)
             .font(.subheadline.monospacedDigit())
-            .foregroundStyle(.secondary)
+            .foregroundStyle(theme.muted)
         }
       }
     }
-    .listRowBackground(Rectangle().fill(.background.opacity(0.55)))
+    .surfaceRow()
+  }
+
+  @ViewBuilder
+  private func feedMenu(_ feed: Feed) -> some View {
+    Button("Edit…", systemImage: "pencil") { editing = feed }
+    Button("Mark all as read", systemImage: "checkmark.circle") { markingRead = .feed(feed) }
+    Button("Refresh", systemImage: "arrow.clockwise") {
+      Task { await reader.refresh(.feed(feed)) }
+    }
+    Button("Copy feed address", systemImage: "doc.on.doc") {
+      UIPasteboard.general.string = feed.url
+    }
+    if let error = feed.lastError {
+      Section("Last refresh failed") { Text(error) }
+    }
+    Divider()
+    Button("Unsubscribe", systemImage: "trash", role: .destructive) { removing = feed }
+  }
+
+  private func categoryHeader(_ category: PerchKit.Category, feeds: [Feed]) -> some View {
+    HStack {
+      Text(category.name)
+      Spacer()
+      let unread = reader.unread(.category(category))
+      if unread > 0, reader.isCollapsed(category) {
+        Text(unread, format: .number).monospacedDigit()
+      }
+      Menu {
+        NavigationLink(value: Scope.category(category)) {
+          Label("Show all articles", systemImage: "list.bullet")
+        }
+        Button("Mark all as read", systemImage: "checkmark.circle") {
+          markingRead = .category(category)
+        }
+        .disabled(unread == 0)
+        if category.id != uncategorizedId {
+          Button("Rename…", systemImage: "pencil") {
+            naming = CategoryNaming(category: category, name: category.name)
+          }
+          Button("Delete…", systemImage: "trash", role: .destructive) { deleting = category }
+        }
+      } label: {
+        Image(systemName: "ellipsis.circle")
+          .accessibilityLabel("\(category.name) options")
+      }
+      .disabled(feeds.isEmpty && category.id == uncategorizedId)
+    }
+  }
+
+  private func expanded(_ category: PerchKit.Category) -> Binding<Bool> {
+    Binding(
+      get: { !reader.isCollapsed(category) },
+      set: { reader.setCollapsed(category, !$0) })
+  }
+
+  private func saveCategoryName() {
+    guard let naming else { return }
+    let name = naming.name.trimmingCharacters(in: .whitespaces)
+    guard !name.isEmpty else { return }
+    Task {
+      if let category = naming.category {
+        await reader.renameCategory(category, to: name)
+      } else {
+        do {
+          _ = try await reader.addCategory(name)
+        } catch {
+          reader.error = error.localizedDescription
+        }
+      }
+    }
   }
 
   @ViewBuilder
@@ -147,36 +246,53 @@ struct LibraryView: View {
       } actions: {
         Button("Add a feed") { adding = true }
           .buttonStyle(.glassProminent)
-          .foregroundStyle(Brand.ink)
+          .tint(theme.button)
+          .foregroundStyle(theme.buttonContrast)
       }
       .padding(.top, 180)
     }
   }
 
-  private var unsubscribing: Binding<Bool> {
-    Binding(get: { removing != nil }, set: { if !$0 { removing = nil } })
+  private var hasError: Binding<Bool> {
+    Binding(get: { reader.error != nil }, set: { if !$0 { reader.error = nil } })
   }
 
-  private var hasError: Binding<Bool> {
-    // Only for the library itself; lists show their own errors inline.
-    Binding(
-      get: { reader.error != nil && !reader.loaded },
-      set: { if !$0 { reader.error = nil } })
-  }
+  #if DEBUG
+    /// Debug builds only, for simulator screenshots: PERCH_DEV_OPEN=all opens
+    /// All Feeds, =article its newest article, =article:<search> the newest match.
+    private func openFromLaunchEnvironment() async {
+      guard let open = ProcessInfo.processInfo.environment["PERCH_DEV_OPEN"],
+        open == "all" || open.hasPrefix("article"), path.isEmpty
+      else { return }
+      path.append(Scope.all)
+      // article, or article:<search> for the newest match.
+      let search = open.split(separator: ":", maxSplits: 1).dropFirst().first.map(String.init)
+      guard open.hasPrefix("article"),
+        let first = try? await reader.client.articles(.init(search: search), limit: 1).items.first
+      else { return }
+      path.append(first)
+    }
+  #endif
 }
 
-/// A feed's initial on an ember tile. No favicons: fetching them would tell
+/// A Binding<Bool> that is true while an optional is set, for dialogs.
+func present<T: Sendable>(_ value: Binding<T?>) -> Binding<Bool> {
+  Binding(get: { value.wrappedValue != nil }, set: { if !$0 { value.wrappedValue = nil } })
+}
+
+/// A feed's initial on an accent tile. No favicons: fetching them would tell
 /// every site which feeds you read, which the other Perch clients avoid too.
 struct FeedIcon: View {
+  @Environment(\.theme) private var theme
   let feed: Feed
   var size: CGFloat = 22
 
   var body: some View {
     Text(String(feed.displayTitle.prefix(1)).uppercased())
       .font(.system(size: size * 0.55, weight: .semibold, design: .rounded))
-      .foregroundStyle(Brand.ink)
+      .foregroundStyle(theme.accentContrast)
       .frame(width: size, height: size)
-      .background(Brand.ember.opacity(0.85), in: .rect(cornerRadius: size * 0.27))
+      .background(theme.accent.opacity(0.85), in: .rect(cornerRadius: size * 0.27))
       .frame(width: 26)
       .accessibilityHidden(true)
   }

@@ -4,6 +4,15 @@
 <dict>
 	<!-- A self-hosted server on the local network (or the Mac running the
 	     simulator) is often plain http; the public internet still needs https. -->
+	<!-- Background refresh keeps the offline copy up to date. -->
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<string>app.perch.ios.refresh</string>
+	</array>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+	</array>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsLocalNetworking</key>

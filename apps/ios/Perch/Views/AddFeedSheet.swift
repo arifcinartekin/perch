@@ -9,6 +9,7 @@ struct AddFeedSheet: View {
 
   @State private var url = ""
   @State private var categoryId = uncategorizedId
+  @State private var newCategory = ""
   @State private var busy = false
   @State private var error: String?
   @FocusState private var focused: Bool
@@ -25,16 +26,17 @@ struct AddFeedSheet: View {
             .focused($focused)
             .submitLabel(.done)
             .onSubmit(add)
+          PasteButton(payloadType: URL.self) { urls in
+            if let first = urls.first { url = first.absoluteString }
+          }
+          .labelStyle(.titleAndIcon)
         } footer: {
-          Text("Paste a feed, or any page that links to one. Perch Server finds and fetches it.")
+          Text(
+            "Paste a feed, or any page that links to one. Your Perch Server finds and fetches it.")
         }
 
-        if reader.library.categories.count > 1 {
-          Picker("Category", selection: $categoryId) {
-            ForEach(reader.groups, id: \.category.id) { group in
-              Text(group.category.name).tag(group.category.id)
-            }
-          }
+        Section("Category") {
+          CategoryPicker(selection: $categoryId, newCategory: $newCategory)
         }
 
         if let error {
@@ -72,7 +74,8 @@ struct AddFeedSheet: View {
     Task {
       defer { busy = false }
       do {
-        let feed = try await reader.addFeed(url: address, categoryId: categoryId)
+        let category = try await CategoryPicker.resolve(categoryId, newCategory, reader: reader)
+        let feed = try await reader.addFeed(url: address, categoryId: category)
         dismiss()
         onAdded(feed)
       } catch {

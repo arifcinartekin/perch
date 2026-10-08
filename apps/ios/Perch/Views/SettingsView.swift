@@ -1,77 +1,448 @@
 import PerchKit
 import SwiftUI
+import UniformTypeIdentifiers
 
-/// The account and the server. Theme, colours and the rest are edited in the
-/// extension or the web reader for now and follow the account here.
+/// The Settings tab. Reading and appearance follow the account (the same
+/// settings as the extension and web reader); offline reading and the
+/// wallpaper stay on this phone; account, devices, invites and OPML talk to
+/// the server.
 struct SettingsView: View {
   @Environment(Session.self) private var session
   @Environment(Reader.self) private var reader
-  @Environment(\.dismiss) private var dismiss
+  @Environment(\.theme) private var theme
   @State private var confirmingSignOut = false
+  @State private var changingPassword = false
+  @State private var importing = false
+  @State private var exported: ExportedFile?
+  @State private var exporting = false
+  @State private var message: String?
+  @State private var path = NavigationPath()
+
+  enum Page: String, Hashable { case appearance, offline, devices, invites }
 
   var body: some View {
-    NavigationStack {
+    NavigationStack(path: $path) {
       Form {
-        Section("Account") {
-          LabeledContent("Username", value: session.user?.username ?? "—")
-          if let server = session.server {
-            LabeledContent("Server", value: server.host() ?? server.absoluteString)
-          }
-          Button("Sign out", role: .destructive) { confirmingSignOut = true }
-        }
-
         Section {
-          LabeledContent("Theme", value: themeName)
-          LabeledContent(
-            "Reading font", value: reader.settings.readingFont == .serif ? "Serif" : "Sans")
-        } header: {
-          Text("Appearance")
-        } footer: {
-          Text("Synced from your account. Change them in the Perch extension or web reader.")
-        }
-
-        Section {
-          HStack {
-            Spacer()
-            VStack(spacing: 8) {
-              Image("PerchMark").resizable().scaledToFit().frame(width: 44)
-              Text("Perch \(version)").font(.footnote).foregroundStyle(.secondary)
+          HStack(spacing: 14) {
+            Image("PerchMark").resizable().scaledToFit().frame(width: 44)
+            VStack(alignment: .leading, spacing: 2) {
+              Text(session.user?.displayName ?? session.username ?? "—").font(.headline)
+              Text(serverLine).font(.footnote).foregroundStyle(theme.muted)
             }
-            Spacer()
           }
-          .listRowBackground(Color.clear)
+          .surfaceRow()
+        }
+
+        Section("Reading") {
+          Picker("Reading font", selection: readingFont) {
+            Text("Sans").tag(SyncedSettings.ReadingFont.sans)
+            Text("Serif").tag(SyncedSettings.ReadingFont.serif)
+          }
+          .surfaceRow()
+          NavigationLink(value: Page.appearance) {
+            Label("Appearance", systemImage: "paintpalette")
+          }
+          .surfaceRow()
+          NavigationLink(value: Page.offline) {
+            LabeledContent {
+              Text(reader.device.offlineEnabled ? "On" : "Off")
+            } label: {
+              Label("Offline reading", systemImage: "arrow.down.circle")
+            }
+          }
+          .surfaceRow()
+        }
+
+        Section {
+          LabeledContent {
+            Text(reader.isOffline ? "Offline" : "Connected")
+              .foregroundStyle(reader.isOffline ? .orange : theme.muted)
+          } label: {
+            Label("Sync", systemImage: "arrow.triangle.2.circlepath")
+          }
+          .surfaceRow()
+        } header: {
+          Text("Sync")
+        } footer: {
+          Text(
+            "Everything syncs through your Perch Server: feeds, read and starred articles, theme and colours. Changes made offline are sent when you're back."
+          )
+        }
+
+        Section("Account") {
+          Button("Change password…", systemImage: "key") { changingPassword = true }
+            .surfaceRow()
+          NavigationLink(value: Page.devices) {
+            Label("Devices", systemImage: "iphone.gen3")
+          }
+          .surfaceRow()
+          if session.user?.role == "admin" {
+            NavigationLink(value: Page.invites) {
+              Label("Invites", systemImage: "envelope.open")
+            }
+            .surfaceRow()
+          }
+          Button("Sign out", systemImage: "rectangle.portrait.and.arrow.right", role: .destructive)
+          {
+            confirmingSignOut = true
+          }
+          .surfaceRow()
+        }
+
+        Section {
+          Button("Export subscriptions", systemImage: "square.and.arrow.up") { export() }
+            .disabled(exporting)
+            .surfaceRow()
+          Button("Import subscriptions…", systemImage: "square.and.arrow.down") {
+            importing = true
+          }
+          .surfaceRow()
+        } header: {
+          Text("Import & export")
+        } footer: {
+          Text("OPML, the format every feed reader understands.")
+        }
+
+        Section {
+          Text("Perch \(version)")
+            .font(.footnote)
+            .foregroundStyle(theme.muted)
+            .frame(maxWidth: .infinity)
+            .listRowBackground(Color.clear)
         }
       }
+      .perchBackdrop()
       .navigationTitle("Settings")
-      .navigationBarTitleDisplayMode(.inline)
-      .toolbar {
-        ToolbarItem(placement: .confirmationAction) {
-          Button("Done", systemImage: "checkmark") { dismiss() }
+      .navigationDestination(for: Page.self) { page in
+        switch page {
+        case .appearance: AppearanceSettingsView()
+        case .offline: OfflineSettingsView()
+        case .devices: DevicesView()
+        case .invites: InvitesView()
         }
+      }
+      #if DEBUG
+        .onAppear {
+          // Simulator screenshots: PERCH_DEV_PAGE=appearance|offline|devices|invites.
+          if path.isEmpty,
+            let page = ProcessInfo.processInfo.environment["PERCH_DEV_PAGE"].flatMap(Page.init)
+          {
+            path.append(page)
+          }
+        }
+      #endif
+      .sheet(isPresented: $changingPassword) { ChangePasswordView() }
+      .sheet(item: $exported) { file in ShareSheet(items: [file.url]) }
+      .fileImporter(
+        isPresented: $importing,
+        allowedContentTypes: [UTType(filenameExtension: "opml") ?? .xml, .xml, .plainText]
+      ) { result in
+        if case .success(let url) = result { importOPML(url) }
+      }
+      .alert("Perch", isPresented: present($message)) {
+        Button("OK") {}
+      } message: {
+        Text(message ?? "")
       }
       .confirmationDialog(
-        "Sign out of \(session.server?.host() ?? "this server")?", isPresented: $confirmingSignOut,
-        titleVisibility: .visible
+        "Sign out of \(session.server?.host() ?? "this server")?",
+        isPresented: $confirmingSignOut, titleVisibility: .visible
       ) {
         Button("Sign out", role: .destructive) {
-          Task {
-            await session.signOut()
-            dismiss()
-          }
+          Task { await session.signOut() }
         }
+      } message: {
+        Text("Articles saved on this iPhone for offline reading are removed.")
       }
     }
   }
 
-  private var themeName: String {
-    switch reader.settings.theme {
-    case .light: "Light"
-    case .dark: "Dark"
-    default: "System"
-    }
+  private var serverLine: String {
+    let host = session.server?.host() ?? ""
+    return session.user?.role == "admin" ? "Admin of \(host)" : host
+  }
+
+  private var readingFont: Binding<SyncedSettings.ReadingFont> {
+    Binding(
+      get: { reader.settings.readingFont ?? .sans },
+      set: { font in Task { await reader.updateSettings(SyncedSettings(readingFont: font)) } })
   }
 
   private var version: String {
     Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? ""
+  }
+
+  private func export() {
+    exporting = true
+    Task {
+      defer { exporting = false }
+      do {
+        let data = try await reader.client.exportOPML()
+        let url = URL.temporaryDirectory.appending(path: "perch-subscriptions.opml")
+        try data.write(to: url, options: .atomic)
+        exported = ExportedFile(url: url)
+      } catch {
+        message = "Couldn't export: \(error.localizedDescription)"
+      }
+    }
+  }
+
+  private func importOPML(_ url: URL) {
+    Task {
+      let access = url.startAccessingSecurityScopedResource()
+      defer { if access { url.stopAccessingSecurityScopedResource() } }
+      do {
+        let data = try Data(contentsOf: url)
+        let result = try await reader.client.importOPML(data)
+        await reader.load()
+        message =
+          "Added \(result.added) feeds"
+          + (result.existing > 0 ? ", \(result.existing) were already here" : "")
+          + ". New feeds are fetched in the background."
+      } catch {
+        message = "Couldn't import: \(error.localizedDescription)"
+      }
+    }
+  }
+}
+
+struct ExportedFile: Identifiable {
+  let url: URL
+  var id: URL { url }
+}
+
+struct ShareSheet: UIViewControllerRepresentable {
+  let items: [Any]
+  func makeUIViewController(context: Context) -> UIActivityViewController {
+    UIActivityViewController(activityItems: items, applicationActivities: nil)
+  }
+  func updateUIViewController(_ vc: UIActivityViewController, context: Context) {}
+}
+
+// MARK: - Account
+
+struct ChangePasswordView: View {
+  @Environment(Session.self) private var session
+  @Environment(Reader.self) private var reader
+  @Environment(\.dismiss) private var dismiss
+  @State private var current = ""
+  @State private var new = ""
+  @State private var confirm = ""
+  @State private var busy = false
+  @State private var error: String?
+
+  var body: some View {
+    NavigationStack {
+      Form {
+        Section {
+          SecureField("Current password", text: $current).textContentType(.password)
+        }
+        Section {
+          SecureField("New password", text: $new).textContentType(.newPassword)
+          SecureField("Repeat new password", text: $confirm).textContentType(.newPassword)
+        } footer: {
+          Text(
+            "At least 8 characters. Your other devices are signed out and need the new password.")
+        }
+        if let error {
+          Section {
+            Label(error, systemImage: "exclamationmark.triangle.fill").foregroundStyle(.red)
+          }
+        }
+      }
+      .navigationTitle("Change password")
+      .navigationBarTitleDisplayMode(.inline)
+      .toolbar {
+        ToolbarItem(placement: .cancellationAction) {
+          Button("Cancel", systemImage: "xmark") { dismiss() }
+        }
+        ToolbarItem(placement: .confirmationAction) {
+          if busy {
+            ProgressView()
+          } else {
+            Button("Change", systemImage: "checkmark", action: save)
+              .disabled(current.isEmpty || new.isEmpty)
+          }
+        }
+      }
+    }
+  }
+
+  private func save() {
+    guard new.count >= 8 else {
+      error = "Use at least 8 characters."
+      return
+    }
+    guard new == confirm else {
+      error = "The new passwords don't match."
+      return
+    }
+    guard let username = session.user?.username ?? session.username else { return }
+    busy = true
+    error = nil
+    Task {
+      defer { busy = false }
+      do {
+        try await reader.client.changePassword(username: username, current: current, new: new)
+        dismiss()
+      } catch {
+        self.error = error.localizedDescription
+      }
+    }
+  }
+}
+
+struct DevicesView: View {
+  @Environment(Reader.self) private var reader
+  @Environment(\.theme) private var theme
+  @State private var devices: [Device]?
+  @State private var error: String?
+
+  var body: some View {
+    List {
+      if let devices {
+        Section {
+          ForEach(devices) { device in
+            VStack(alignment: .leading, spacing: 2) {
+              Text(device.current ? "\(device.name) (this iPhone)" : device.name)
+              Text(
+                "Signed in \(Self.date(device.createdAt)) · last seen \(Self.date(device.lastSeenAt))"
+              )
+              .font(.footnote)
+              .foregroundStyle(theme.muted)
+            }
+            .surfaceRow()
+            .swipeActions {
+              if !device.current {
+                Button("Sign out", role: .destructive) { revoke(device) }
+              }
+            }
+          }
+        } footer: {
+          Text("Every browser and phone signed in to your account. Swipe to sign one out.")
+        }
+      }
+    }
+    .perchBackdrop()
+    .overlay {
+      if devices == nil {
+        if let error {
+          ContentUnavailableView(
+            "Couldn't load devices", systemImage: "wifi.exclamationmark",
+            description: Text(error))
+        } else {
+          ProgressView()
+        }
+      }
+    }
+    .navigationTitle("Devices")
+    .task { await load() }
+    .refreshable { await load() }
+  }
+
+  private func load() async {
+    do {
+      devices = try await reader.client.devices()
+    } catch {
+      self.error = error.localizedDescription
+    }
+  }
+
+  private func revoke(_ device: Device) {
+    devices?.removeAll { $0.id == device.id }
+    Task {
+      try? await reader.client.revokeDevice(device.id)
+      await load()
+    }
+  }
+
+  static func date(_ ms: Double) -> String {
+    Date(timeIntervalSince1970: ms / 1000).formatted(.relative(presentation: .named))
+  }
+}
+
+struct InvitesView: View {
+  @Environment(Reader.self) private var reader
+  @Environment(\.theme) private var theme
+  @State private var invites: [Invite]?
+  @State private var error: String?
+  @State private var creating = false
+
+  var body: some View {
+    List {
+      Section {
+        Button("Create an invite", systemImage: "plus") { create() }
+          .disabled(creating)
+          .surfaceRow()
+      } footer: {
+        Text("Each code lets one person create an account on your server.")
+      }
+      if let invites {
+        let open = invites.filter { $0.usedBy == nil }
+        let used = invites.filter { $0.usedBy != nil }
+        if !open.isEmpty {
+          Section("Unused") {
+            ForEach(open) { invite in
+              HStack {
+                Text(invite.code).font(.body.monospaced()).textSelection(.enabled)
+                Spacer()
+                ShareLink(item: invite.code) { Image(systemName: "square.and.arrow.up") }
+                  .buttonStyle(.borderless)
+              }
+              .surfaceRow()
+              .swipeActions {
+                Button("Delete", role: .destructive) { delete(invite) }
+              }
+            }
+          }
+        }
+        if !used.isEmpty {
+          Section("Used") {
+            ForEach(used) { invite in
+              LabeledContent(invite.code) {
+                Text(invite.usedBy ?? "")
+              }
+              .font(.body.monospaced())
+              .surfaceRow()
+            }
+          }
+        }
+      }
+    }
+    .perchBackdrop()
+    .overlay {
+      if invites == nil, let error {
+        ContentUnavailableView(
+          "Couldn't load invites", systemImage: "wifi.exclamationmark", description: Text(error))
+      }
+    }
+    .navigationTitle("Invites")
+    .task { await load() }
+  }
+
+  private func load() async {
+    do {
+      invites = try await reader.client.invites()
+    } catch {
+      self.error = error.localizedDescription
+    }
+  }
+
+  private func create() {
+    creating = true
+    Task {
+      defer { creating = false }
+      _ = try? await reader.client.createInvite()
+      await load()
+    }
+  }
+
+  private func delete(_ invite: Invite) {
+    invites?.removeAll { $0.code == invite.code }
+    Task {
+      try? await reader.client.deleteInvite(invite.code)
+      await load()
+    }
   }
 }

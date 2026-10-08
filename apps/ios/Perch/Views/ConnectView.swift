@@ -60,7 +60,7 @@ struct ConnectView: View {
         .accessibilityLabel("Perch")
       Text("A calm, private reader for your feeds.")
         .font(.subheadline)
-        .foregroundStyle(Brand.secondaryText)
+        .foregroundStyle(.secondary)
     }
   }
 
@@ -84,7 +84,7 @@ struct ConnectView: View {
           "The address of the server you or a friend runs. On the simulator, the Mac's own server is http://localhost:8080."
       )
       .font(.footnote)
-      .foregroundStyle(Brand.secondaryText)
+      .foregroundStyle(.secondary)
       primaryButton("Continue", action: connect)
         .disabled(address.trimmingCharacters(in: .whitespaces).isEmpty)
     }
@@ -123,7 +123,7 @@ struct ConnectView: View {
             .font(.headline)
           Text(url.host() ?? url.absoluteString)
             .font(.footnote)
-            .foregroundStyle(Brand.secondaryText)
+            .foregroundStyle(.secondary)
         }
         Spacer()
         Button("Change") {
@@ -137,7 +137,7 @@ struct ConnectView: View {
       if info.needsSetup {
         Text("No accounts yet. The first one you create here is the admin.")
           .font(.footnote)
-          .foregroundStyle(Brand.secondaryText)
+          .foregroundStyle(.secondary)
       }
 
       TextField("Username", text: $username)
