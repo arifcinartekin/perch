@@ -31,12 +31,12 @@
         }
       }
     },
-    "Open Perch to sign in": {
+    "Open Perch to add feeds": {
       "localizations": {
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Giriş yapmak için Perch'ü aç"
+            "value": "Feed eklemek için Perch’ü açın"
           }
         }
       }

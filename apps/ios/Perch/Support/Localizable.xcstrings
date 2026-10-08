@@ -11,6 +11,34 @@
         }
       }
     },
+    "%lld feeds on this iPhone": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld feed on this iPhone"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld feeds on this iPhone"
+                }
+              }
+            }
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu iPhone'da %lld feed"
+          }
+        }
+      }
+    },
     "%lld min read": {
       "localizations": {
         "tr": {
@@ -50,16 +78,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Feed'lerin için sakin bir yer"
-          }
-        }
-      }
-    },
-    "A calm, private reader for your feeds.": {
-      "localizations": {
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Feed'lerin için sakin ve gizli bir okuyucu."
           }
         }
       }
@@ -220,6 +238,16 @@
         }
       }
     },
+    "Always": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Her zaman"
+          }
+        }
+      }
+    },
     "Appearance": {
       "localizations": {
         "tr": {
@@ -240,12 +268,12 @@
         }
       }
     },
-    "Articles saved on this iPhone for offline reading are removed.": {
+    "Articles saved on this iPhone for offline reading are removed, and Perch goes back to the library on this iPhone.": {
       "localizations": {
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Çevrimdışı okuma için bu iPhone'a kaydedilen makaleler silinir."
+            "value": "Çevrimdışı okumak için bu iPhone'a kaydedilen makaleler silinir ve Perch bu iPhone'daki kitaplığa döner."
           }
         }
       }
@@ -410,6 +438,16 @@
         }
       }
     },
+    "Connect to a Perch Server…": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Perch Sunucusuna bağlan…"
+          }
+        }
+      }
+    },
     "Connected": {
       "localizations": {
         "tr": {
@@ -456,6 +494,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Dışa aktarılamadı: %@"
+          }
+        }
+      }
+    },
+    "Couldn't find a feed there. Try the feed's own address.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Orada bir feed bulunamadı. Feed’in kendi adresini deneyin."
           }
         }
       }
@@ -666,6 +714,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Karartma"
+          }
+        }
+      }
+    },
+    "Download images": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Görselleri indir"
           }
         }
       }
@@ -1336,6 +1394,16 @@
         }
       }
     },
+    "Paste a feed, or any page that links to one. Perch finds the feed.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bir feed’i ya da ona bağlantı veren herhangi bir sayfayı yapıştırın. Perch feed’i bulur."
+          }
+        }
+      }
+    },
     "Paste a feed, or any page that links to one. Your Perch Server finds and fetches it.": {
       "localizations": {
         "tr": {
@@ -1368,6 +1436,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Perch en yeni okunmamış makaleleri ve tüm yıldızlıları bu iPhone'da tutar, arka planda günceller. Düşük Veri Modu'nda resimler indirilmez."
+          }
+        }
+      }
+    },
+    "Perch works on its own. With a server you or a friend runs, your feeds and what you've read follow you to the browser extension and the web.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Perch tek başına çalışır. Sizin ya da bir arkadaşınızın çalıştırdığı bir sunucuyla feed’leriniz ve okuduklarınız tarayıcı eklentisine ve web’e de gelir."
           }
         }
       }
@@ -1498,6 +1576,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Kayıtlı makaleler silinsin mi?"
+          }
+        }
+      }
+    },
+    "Remove saved images": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kaydedilen görselleri sil"
           }
         }
       }
@@ -1838,6 +1926,16 @@
         }
       }
     },
+    "Sync with a Perch Server": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Perch Sunucusuyla eşitle"
+          }
+        }
+      }
+    },
     "System": {
       "localizations": {
         "tr": {
@@ -1878,12 +1976,32 @@
         }
       }
     },
+    "That doesn't look like a web address.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu bir web adresine benzemiyor."
+          }
+        }
+      }
+    },
     "That server isn't a Perch Server.": {
       "localizations": {
         "tr": {
           "stringUnit": {
             "state": "translated",
             "value": "Bu sunucu bir Perch Server değil."
+          }
+        }
+      }
+    },
+    "The %lld feeds on this iPhone are added to the account.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu iPhone'daki %lld feed hesaba eklenir."
           }
         }
       }
@@ -1918,6 +2036,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Yeni şifreler aynı değil."
+          }
+        }
+      }
+    },
+    "The page didn't have article text Perch could pick out.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sayfada Perch’ün ayırabileceği bir makale metni yoktu."
+          }
+        }
+      }
+    },
+    "The site answered %@.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Site şu yanıtı verdi: %@."
           }
         }
       }
@@ -2118,6 +2256,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Perch Server'ın"
+          }
+        }
+      }
+    },
+    "Your library is on this iPhone, and Perch fetches the feeds itself. Connect to a Perch Server to read the same library in the browser extension and on the web.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kitaplığınız bu iPhone'da ve feed'leri Perch kendisi indiriyor. Aynı kitaplığı tarayıcı eklentisinde ve web'de okumak için bir Perch Sunucusuna bağlanın."
+          }
+        }
+      }
+    },
+    "Your library is on this iPhone, so every article can be read offline. Articles older than 60 days are removed, except starred ones. Images aren't downloaded in Low Data Mode.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kitaplığınız bu iPhone'da, yani her makale çevrimdışı okunabilir. 60 günden eski makaleler, yıldızlılar dışında silinir. Az Veri Modu'nda görseller indirilmez."
           }
         }
       }

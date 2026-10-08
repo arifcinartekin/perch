@@ -34,44 +34,37 @@ struct RootView: View {
   @Environment(Session.self) private var session
   @Environment(\.colorScheme) private var colorScheme
 
-  /// Before signing in there are no account settings: the default palette
-  /// for the system's light or dark mode.
-  private var signedOutTheme: AppTheme {
+  /// While restoring there are no settings yet: the default palette for the
+  /// system's light or dark mode.
+  private var defaultTheme: AppTheme {
     var theme = AppTheme.default
     theme.palette = Theme.palette(colorScheme == .dark ? .dark : .light)
     return theme
   }
 
   var body: some View {
-    switch session.phase {
-    case .restoring:
+    if session.phase != .restoring, let backend = session.backend, let store = session.store {
+      LibraryRoot(backend: backend, store: store, session: session)
+        // Another account, or the phone's own library, starts from scratch.
+        .id(ObjectIdentifier(store))
+    } else {
       Backdrop()
-        .environment(\.theme, signedOutTheme)
-    case .signedOut:
-      ConnectView()
-        .environment(\.theme, signedOutTheme)
-        .tint(Brand.ember)
-    case .signedIn:
-      if let client = session.client, let store = session.store {
-        SignedInView(client: client, store: store, session: session)
-          // A new session (other account or server) starts from scratch.
-          .id(ObjectIdentifier(client))
-      }
+        .environment(\.theme, defaultTheme)
     }
   }
 }
 
-/// Holds the Reader for one session, applies the account's look, and keeps
-/// things live while the app is active.
-private struct SignedInView: View {
+/// Holds the Reader for one library, applies its look, and keeps things live
+/// while the app is active.
+private struct LibraryRoot: View {
   @Environment(\.scenePhase) private var scenePhase
   @State private var reader: Reader
   @State private var system = SystemAppearance()
 
-  init(client: APIClient, store: OfflineStore, session: Session) {
+  init(backend: any ReaderBackend, store: OfflineStore, session: Session) {
     _reader = State(
       initialValue: Reader(
-        client: client, store: store,
+        backend: backend, store: store,
         onUnauthorized: { [weak session] in session?.sessionExpired() }))
   }
 

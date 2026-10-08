@@ -24,7 +24,7 @@ and set a background image for the full-screen reader with dim and blur controls
 
 **Sync (optional).** Connect a self-hosted Perch Server under **Settings → Sync** and your
 subscriptions, categories, read and starred articles, and settings follow you across browsers
-(and, soon, the mobile app). Your password never leaves the device — Perch derives a key from it
+(and the iPhone app). Your password never leaves the device — Perch derives a key from it
 with Argon2id and sends only that. The PIN and background image stay per device.
 
 It also does the things a local-first tool should: **export / import** your subscriptions (OPML
@@ -105,8 +105,9 @@ background refresher can fetch it. If you decline, the feed is still added but f
 
 Perch is an npm-workspaces monorepo. Everything that doesn't depend on a browser lives in
 `packages/core`, so the server shares the exact same parsing, ids and search as the
-extension. The iPhone app is Swift and talks to the server; its Swift port of the protocol
-(key derivation included) is tested against the TypeScript one. The reading app itself lives in `packages/reader` and runs twice:
+extension. The iPhone app is Swift: like the extension it works on its own, fetching feeds on
+the phone, or talks to a server. Its Swift ports of the protocol (key derivation included) and
+of the feed and article ids are tested against the TypeScript ones. The reading app itself lives in `packages/reader` and runs twice:
 in the extension over local storage, and on the web over the Perch Server API — one UI, two
 data layers behind the same `ReaderBackend` interface.
 
@@ -148,7 +149,7 @@ apps/
 │  │  ├─ backend.ts        the reader's data layer (ReaderBackend over local storage).
 │  │  └─ backup.ts …       JSON backup, messaging, badge, PIN lock.
 │  └─ tests/              Vitest: storage (fake-indexeddb), backup, and a jsdom smoke test.
-├─ ios/                    The iPhone and iPad app with widgets (SwiftUI, iOS 26+). See apps/ios/README.md.
+├─ ios/                    The iPhone and iPad app with widgets, local or synced (SwiftUI, iOS 26+). See apps/ios/README.md.
 │  ├─ Perch/               tabs and screens, session (Keychain), offline sync and image cache,
 │  │                       background refresh, live updates over Server-Sent Events.
 │  └─ PerchKit/            Swift package: API client and types, a port of core/theme.ts, the

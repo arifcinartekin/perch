@@ -4,14 +4,17 @@ import Observation
 import PerchKit
 import UIKit
 
-/// Which server we talk to and who is signed in. The server address and
-/// username live in UserDefaults, the session token in the Keychain, and each
-/// account's offline copy in its own folder.
+/// Where the library lives. Without an account it's on this phone (the app
+/// fetches the feeds itself); signed in to a Perch Server, it's the server's,
+/// synced with the other clients. The server address and username live in
+/// UserDefaults, the session token in the Keychain, and each account's
+/// offline copy in its own folder.
 @MainActor @Observable
 final class Session {
   enum Phase: Equatable {
     case restoring
-    case signedOut
+    /// No account: the library on this phone.
+    case local
     case signedIn
   }
 
@@ -19,8 +22,14 @@ final class Session {
   private(set) var server: URL?
   private(set) var username: String?
   private(set) var user: PublicUser?
+  /// The server, when signed in.
   private(set) var client: APIClient?
+  private(set) var backend: (any ReaderBackend)?
   private(set) var store: OfflineStore?
+
+  /// The app's session, for background refresh to use the same library
+  /// objects as the screens.
+  static weak var current: Session?
 
   nonisolated private static let serverKey = "perch.server"
   nonisolated private static let usernameKey = "perch.username"
@@ -28,6 +37,7 @@ final class Session {
   init() {
     server = UserDefaults.standard.url(forKey: Self.serverKey)
     username = UserDefaults.standard.string(forKey: Self.usernameKey)
+    Self.current = self
     Task { await restore() }
   }
 
@@ -35,10 +45,11 @@ final class Session {
   /// on the phone; only a 401 signs you out.
   private func restore() async {
     #if DEBUG
+      if devLocal() { return }
       if await devSignIn() { return }
     #endif
     guard let server, let username, let token = Keychain.token(for: server) else {
-      phase = .signedOut
+      openLocal()
       return
     }
     open(server: server, username: username, token: token)
@@ -52,16 +63,17 @@ final class Session {
   func signIn(server: URL, username: String, password: String) async throws {
     let res = try await APIClient(baseURL: server).login(
       username: username, password: password, deviceName: Self.deviceName)
-    adopt(server: server, res)
+    await adopt(server: server, res)
   }
 
   func register(server: URL, username: String, password: String, invite: String?) async throws {
     let res = try await APIClient(baseURL: server).register(
       username: username, password: password, invite: invite, deviceName: Self.deviceName)
-    adopt(server: server, res)
+    await adopt(server: server, res)
   }
 
-  /// Signs out here and removes this account's offline copy from the phone.
+  /// Signs out here and removes this account's offline copy from the phone;
+  /// the library on the phone comes back.
   func signOut() async {
     try? await client?.logout()
     if let server, let username {
@@ -76,30 +88,68 @@ final class Session {
     forget()
   }
 
-  private func adopt(server: URL, _ res: AuthResponse) {
+  /// Feeds added on the phone before signing in are subscribed on the server
+  /// too, so nothing is lost.
+  private func adopt(server: URL, _ res: AuthResponse) async {
+    let client = APIClient(baseURL: server, token: res.token)
+    if let local = backend as? LocalBackend, let library = try? await local.library(),
+      !library.feeds.isEmpty
+    {
+      _ = try? await client.importOPML(OPML.build(library))
+    }
     Keychain.setToken(res.token, for: server)
     UserDefaults.standard.set(server, forKey: Self.serverKey)
     UserDefaults.standard.set(res.user.username, forKey: Self.usernameKey)
     user = res.user
+    Glance.clear()
     open(server: server, username: res.user.username, token: res.token)
   }
 
   private func open(server: URL, username: String, token: String) {
     self.server = server
     self.username = username
-    store = try? OfflineStore(
-      url: Self.accountDirectory(server, username).appending(path: "offline.sqlite"))
-    client = APIClient(baseURL: server, token: token)
-    phase = store == nil ? .signedOut : .signedIn
+    guard
+      let store = try? OfflineStore(
+        url: Self.accountDirectory(server, username).appending(path: "offline.sqlite"))
+    else {
+      openLocal()
+      return
+    }
+    let client = APIClient(baseURL: server, token: token)
+    self.store = store
+    self.client = client
+    backend = client
+    phase = .signedIn
+  }
+
+  /// The library on this phone.
+  private func openLocal() {
+    client = nil
+    user = nil
+    if let store = try? OfflineStore(url: Self.localLibrary) {
+      self.store = store
+      backend = LocalBackend(store: store)
+    }
+    phase = .local
   }
 
   private func forget() {
     if let server { Keychain.setToken(nil, for: server) }
-    client = nil
-    store = nil
-    user = nil
-    phase = .signedOut
+    UserDefaults.standard.removeObject(forKey: Self.usernameKey)
+    username = nil
     Glance.clear()
+    openLocal()
+  }
+
+  /// The open library, for background refresh.
+  var library: (backend: any ReaderBackend, store: OfflineStore)? {
+    guard let backend, let store else { return nil }
+    return (backend, store)
+  }
+
+  /// Application Support/Local/library.sqlite: the library without an account.
+  nonisolated static var localLibrary: URL {
+    URL.applicationSupportDirectory.appending(path: "Local/library.sqlite")
   }
 
   /// Application Support/Accounts/<hash of server and username>.
@@ -110,19 +160,35 @@ final class Session {
       path: "Accounts/\(key)", directoryHint: .isDirectory)
   }
 
-  /// The signed-in account, for the background refresh task.
-  nonisolated static func savedAccount() -> (client: APIClient, store: OfflineStore)? {
+  /// The signed-in account, or the library on the phone, for the background
+  /// refresh task.
+  nonisolated static func savedLibrary() -> (backend: any ReaderBackend, store: OfflineStore)? {
     let defaults = UserDefaults.standard
-    guard let server = defaults.url(forKey: serverKey),
+    if let server = defaults.url(forKey: serverKey),
       let username = defaults.string(forKey: usernameKey),
       let token = Keychain.token(for: server),
       let store = try? OfflineStore(
         url: accountDirectory(server, username).appending(path: "offline.sqlite"))
-    else { return nil }
-    return (APIClient(baseURL: server, token: token), store)
+    {
+      return (APIClient(baseURL: server, token: token), store)
+    }
+    guard let store = try? OfflineStore(url: localLibrary) else { return nil }
+    return (LocalBackend(store: store), store)
   }
 
   #if DEBUG
+    /// Debug builds only: PERCH_DEV_LOCAL=1 signs out and opens the library
+    /// on the phone; =fresh empties it first, like a new install.
+    private func devLocal() -> Bool {
+      guard let mode = ProcessInfo.processInfo.environment["PERCH_DEV_LOCAL"] else { return false }
+      if let server { Keychain.setToken(nil, for: server) }
+      if mode == "fresh" {
+        try? FileManager.default.removeItem(at: Self.localLibrary.deletingLastPathComponent())
+      }
+      openLocal()
+      return true
+    }
+
     /// Debug builds only: sign in from the launch environment, for screenshots
     /// and UI checks on the simulator (`SIMCTL_CHILD_PERCH_DEV_SERVER=…` with
     /// `xcrun simctl launch`). Goes through the normal sign-in, Argon2 included.

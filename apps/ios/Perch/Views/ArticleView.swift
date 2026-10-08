@@ -135,7 +135,10 @@ struct ArticleView: View {
         fullText = try await reader.fullText(article)
         showFullText = true
       } catch {
-        fullTextError = error.localizedDescription
+        fullTextError =
+          error as? LocalBackend.Failure == .noArticleText
+          ? String(localized: "The page didn't have article text Perch could pick out.")
+          : error.localizedDescription
       }
     }
   }

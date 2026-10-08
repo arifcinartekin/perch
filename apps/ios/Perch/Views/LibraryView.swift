@@ -84,14 +84,7 @@ struct LibraryView: View {
     .toolbar {
       // No room for the logo beside the sidebar button on iPad.
       if selection == nil {
-        ToolbarItem(placement: .topBarLeading) {
-          Image("PerchLogo")
-            .resizable()
-            .scaledToFit()
-            .frame(width: 98, height: 30)
-            .accessibilityLabel("Perch")
-        }
-        .sharedBackgroundVisibility(.hidden)
+        LogoToolbarItem()
       }
       ToolbarItem(placement: .topBarTrailing) {
         Menu("Add", systemImage: "plus") {
@@ -277,7 +270,7 @@ struct LibraryView: View {
         Label {
           Text("Welcome to Perch")
         } icon: {
-          Image("PerchMark").resizable().scaledToFit().frame(width: 72)
+          PerchMark().frame(width: 72)
         }
       } description: {
         Text("Add your first feed: paste a site or feed address.")
@@ -317,7 +310,8 @@ struct LibraryView: View {
       // article, or article:<search> for the newest match.
       let search = open.split(separator: ":", maxSplits: 1).dropFirst().first.map(String.init)
       guard open.hasPrefix("article"),
-        let first = try? await reader.client.articles(.init(search: search), limit: 1).items.first
+        let first = try? await reader.backend.articles(.init(search: search), before: nil, limit: 1)
+          .items.first
       else { return }
       path.append(first)
     }

@@ -2,15 +2,17 @@ import PerchKit
 import SwiftUI
 import UniformTypeIdentifiers
 
-/// The Settings tab. Reading and appearance follow the account (the same
-/// settings as the extension and web reader); offline reading and the
-/// wallpaper stay on this phone; account, devices, invites and OPML talk to
-/// the server.
+/// The Settings tab. Reading and appearance follow the library (with a
+/// server, the same settings as the extension and web reader); offline
+/// reading and the wallpaper stay on this phone. Without a server, Sync
+/// offers to connect to one; with one, account, devices and invites talk to
+/// it.
 struct SettingsView: View {
   @Environment(Session.self) private var session
   @Environment(Reader.self) private var reader
   @Environment(\.theme) private var theme
   @State private var confirmingSignOut = false
+  @State private var connecting = false
   @State private var changingPassword = false
   @State private var importing = false
   @State private var exported: ExportedFile?
@@ -25,10 +27,16 @@ struct SettingsView: View {
       Form {
         Section {
           HStack(spacing: 14) {
-            Image("PerchMark").resizable().scaledToFit().frame(width: 44)
+            PerchMark().frame(width: 44)
             VStack(alignment: .leading, spacing: 2) {
-              Text(session.user?.displayName ?? session.username ?? "—").font(.headline)
-              Text(serverLine).font(.footnote).foregroundStyle(theme.muted)
+              if reader.isLocal {
+                Text("Perch").font(.headline)
+                Text("\(reader.library.feeds.count) feeds on this iPhone")
+                  .font(.footnote).foregroundStyle(theme.muted)
+              } else {
+                Text(session.user?.displayName ?? session.username ?? "—").font(.headline)
+                Text(serverLine).font(.footnote).foregroundStyle(theme.muted)
+              }
             }
           }
           .surfaceRow()
@@ -48,7 +56,7 @@ struct SettingsView: View {
           .surfaceRow()
           NavigationLink(value: Page.offline) {
             LabeledContent {
-              Text(reader.device.offlineEnabled ? "On" : "Off")
+              Text(reader.isLocal ? "Always" : reader.device.offlineEnabled ? "On" : "Off")
             } label: {
               Label("Offline reading", systemImage: "arrow.down.circle")
             }
@@ -69,40 +77,36 @@ struct SettingsView: View {
           )
         }
 
-        Section {
-          LabeledContent {
-            Text(reader.isOffline ? "Offline" : "Connected")
-              .foregroundStyle(reader.isOffline ? .orange : theme.muted)
-          } label: {
-            Label("Sync", systemImage: "arrow.triangle.2.circlepath")
-          }
-          .surfaceRow()
-        } header: {
-          Text("Sync")
-        } footer: {
-          Text(
-            "Everything syncs through your Perch Server: feeds, read and starred articles, theme and colours. Changes made offline are sent when you're back."
-          )
-        }
-
-        Section("Account") {
-          Button("Change password…", systemImage: "key") { changingPassword = true }
-            .surfaceRow()
-          NavigationLink(value: Page.devices) {
-            Label("Devices", systemImage: "iphone.gen3")
-          }
-          .surfaceRow()
-          if session.user?.role == "admin" {
-            NavigationLink(value: Page.invites) {
-              Label("Invites", systemImage: "envelope.open")
+        if reader.isLocal {
+          Section {
+            Button("Connect to a Perch Server…", systemImage: "arrow.triangle.2.circlepath") {
+              connecting = true
             }
             .surfaceRow()
+          } header: {
+            Text("Sync")
+          } footer: {
+            Text(
+              "Your library is on this iPhone, and Perch fetches the feeds itself. Connect to a Perch Server to read the same library in the browser extension and on the web."
+            )
           }
-          Button("Sign out", systemImage: "rectangle.portrait.and.arrow.right", role: .destructive)
-          {
-            confirmingSignOut = true
+        } else {
+          Section {
+            LabeledContent {
+              Text(reader.isOffline ? "Offline" : "Connected")
+                .foregroundStyle(reader.isOffline ? .orange : theme.muted)
+            } label: {
+              Label("Sync", systemImage: "arrow.triangle.2.circlepath")
+            }
+            .surfaceRow()
+          } header: {
+            Text("Sync")
+          } footer: {
+            Text(
+              "Everything syncs through your Perch Server: feeds, read and starred articles, theme and colours. Changes made offline are sent when you're back."
+            )
           }
-          .surfaceRow()
+          account
         }
 
         Section {
@@ -148,6 +152,9 @@ struct SettingsView: View {
         }
       #endif
       .sheet(isPresented: $changingPassword) { ChangePasswordView() }
+      .sheet(isPresented: $connecting) {
+        NavigationStack { ConnectView(localFeeds: reader.library.feeds.count) }
+      }
       .sheet(item: $exported) { file in ShareSheet(items: [file.url]) }
       .fileImporter(
         isPresented: $importing,
@@ -168,8 +175,31 @@ struct SettingsView: View {
           Task { await session.signOut() }
         }
       } message: {
-        Text("Articles saved on this iPhone for offline reading are removed.")
+        Text(
+          "Articles saved on this iPhone for offline reading are removed, and Perch goes back to the library on this iPhone."
+        )
       }
+    }
+  }
+
+  private var account: some View {
+    Section("Account") {
+      Button("Change password…", systemImage: "key") { changingPassword = true }
+        .surfaceRow()
+      NavigationLink(value: Page.devices) {
+        Label("Devices", systemImage: "iphone.gen3")
+      }
+      .surfaceRow()
+      if session.user?.role == "admin" {
+        NavigationLink(value: Page.invites) {
+          Label("Invites", systemImage: "envelope.open")
+        }
+        .surfaceRow()
+      }
+      Button("Sign out", systemImage: "rectangle.portrait.and.arrow.right", role: .destructive) {
+        confirmingSignOut = true
+      }
+      .surfaceRow()
     }
   }
 
@@ -218,7 +248,7 @@ struct SettingsView: View {
     Task {
       defer { exporting = false }
       do {
-        let data = try await reader.client.exportOPML()
+        let data = try await reader.backend.exportOPML()
         let url = URL.temporaryDirectory.appending(path: "perch-subscriptions.opml")
         try data.write(to: url, options: .atomic)
         exported = ExportedFile(url: url)
@@ -234,8 +264,10 @@ struct SettingsView: View {
       defer { if access { url.stopAccessingSecurityScopedResource() } }
       do {
         let data = try Data(contentsOf: url)
-        let result = try await reader.client.importOPML(data)
+        let result = try await reader.backend.importOPML(data)
         await reader.load()
+        // On the phone, the new feeds are fetched now.
+        if reader.isLocal { Task { await reader.refresh() } }
         message =
           result.existing > 0
           ? String(
@@ -328,7 +360,7 @@ struct ChangePasswordView: View {
     Task {
       defer { busy = false }
       do {
-        try await reader.client.changePassword(username: username, current: current, new: new)
+        try await reader.server?.changePassword(username: username, current: current, new: new)
         dismiss()
       } catch {
         self.error = error.localizedDescription
@@ -387,7 +419,7 @@ struct DevicesView: View {
 
   private func load() async {
     do {
-      devices = try await reader.client.devices()
+      devices = try await reader.server?.devices() ?? []
     } catch {
       self.error = error.localizedDescription
     }
@@ -396,7 +428,7 @@ struct DevicesView: View {
   private func revoke(_ device: Device) {
     devices?.removeAll { $0.id == device.id }
     Task {
-      try? await reader.client.revokeDevice(device.id)
+      try? await reader.server?.revokeDevice(device.id)
       await load()
     }
   }
@@ -467,7 +499,7 @@ struct InvitesView: View {
 
   private func load() async {
     do {
-      invites = try await reader.client.invites()
+      invites = try await reader.server?.invites() ?? []
     } catch {
       self.error = error.localizedDescription
     }
@@ -477,7 +509,7 @@ struct InvitesView: View {
     creating = true
     Task {
       defer { creating = false }
-      _ = try? await reader.client.createInvite()
+      _ = try? await reader.server?.createInvite()
       await load()
     }
   }
@@ -485,7 +517,7 @@ struct InvitesView: View {
   private func delete(_ invite: Invite) {
     invites?.removeAll { $0.code == invite.code }
     Task {
-      try? await reader.client.deleteInvite(invite.code)
+      try? await reader.server?.deleteInvite(invite.code)
       await load()
     }
   }

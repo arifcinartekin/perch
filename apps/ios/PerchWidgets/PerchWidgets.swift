@@ -87,6 +87,12 @@ struct UnreadWidgetView: View {
     return Color(hex: colorScheme == .dark ? snapshot.accentDark : snapshot.accentLight)
   }
 
+  /// The logo in the account's accent, like in the app.
+  private var mark: some View {
+    PerchMarkDrawing(
+      colors: LogoColors(dark: colorScheme == .dark, text: .primary, accent: accent))
+  }
+
   private var background: some View {
     ZStack {
       Color(.systemBackground)
@@ -131,7 +137,7 @@ struct UnreadWidgetView: View {
     default:
       VStack(alignment: .leading, spacing: 12) {
         HStack(alignment: .firstTextBaseline) {
-          Image("PerchMark").resizable().scaledToFit().frame(width: 22)
+          mark.frame(width: 22)
           Text("Unread").font(.headline)
           Spacer()
           Text(snapshot.unread, format: .number)
@@ -160,7 +166,7 @@ struct UnreadWidgetView: View {
 
   private func count(_ snapshot: WidgetSnapshot) -> some View {
     VStack(alignment: .leading, spacing: 0) {
-      Image("PerchMark").resizable().scaledToFit().frame(width: 26)
+      mark.frame(width: 26)
         .padding(.bottom, 4)
       Text(snapshot.unread, format: .number.notation(.compactName))
         .font(.system(size: 34, weight: .bold, design: .rounded))
@@ -213,9 +219,9 @@ struct UnreadWidgetView: View {
 
   private var signedOut: some View {
     VStack(spacing: 8) {
-      Image("PerchMark").resizable().scaledToFit().frame(width: 34)
+      mark.frame(width: 34)
       if family != .accessoryInline {
-        Text("Open Perch to sign in")
+        Text("Open Perch to add feeds")
           .font(.caption.weight(.medium))
           .multilineTextAlignment(.center)
           .foregroundStyle(.secondary)

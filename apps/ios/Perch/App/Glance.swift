@@ -14,13 +14,14 @@ enum Glance {
   /// Fetches the newest unread articles and the unread count, writes the
   /// widget snapshot, and (in the background, when allowed) notifies about
   /// articles not seen before.
-  static func update(client: APIClient, store: OfflineStore, counts: Counts? = nil, notify: Bool)
-    async
-  {
-    guard let page = try? await client.articles(.init(unreadOnly: true), limit: itemCount)
+  static func update(
+    backend: any ReaderBackend, store: OfflineStore, counts: Counts? = nil, notify: Bool
+  ) async {
+    guard
+      let page = try? await backend.articles(.init(unreadOnly: true), before: nil, limit: itemCount)
     else { return }
     var total = counts
-    if total == nil { total = try? await client.counts() }
+    if total == nil { total = try? await backend.counts() }
     guard let counts = total else { return }
     let saved = await store.snapshot()
     let titles = Dictionary(

@@ -41,6 +41,9 @@ struct AppTheme: Equatable {
   var button: Color { Color(hex: palette.button) }
   var buttonContrast: Color { Color(hex: palette.buttonContrast) }
   var colorScheme: ColorScheme { palette.scheme == .dark ? .dark : .light }
+  var logo: LogoColors {
+    LogoColors(dark: palette.scheme == .dark, text: text, accent: accent)
+  }
 
   /// The opacity of a surface's solid tint: 1 when glass is off, less as the
   /// user turns transparency up. `clear` is how see-through the surface is at
@@ -162,5 +165,38 @@ extension Color {
     ui.getRed(&r, green: &g, blue: &b, alpha: nil)
     func channel(_ v: CGFloat) -> Int { Int((min(1, max(0, v)) * 255).rounded()) }
     return String(format: "#%02x%02x%02x", channel(r), channel(g), channel(b))
+  }
+}
+
+/// The Perch wordmark at the top left of the main lists on iPhone.
+struct LogoToolbarItem: ToolbarContent {
+  var body: some ToolbarContent {
+    ToolbarItem(placement: .topBarLeading) {
+      PerchLogo()
+        .frame(width: 98, height: 30)
+    }
+    .sharedBackgroundVisibility(.hidden)
+  }
+}
+
+/// The bird in the current palette's text and accent, like the web reader's.
+struct PerchMark: View {
+  @Environment(\.theme) private var theme
+
+  var body: some View {
+    PerchMarkDrawing(colors: theme.logo)
+      .accessibilityHidden(true)
+  }
+}
+
+/// The bird and the wordmark in the current palette.
+struct PerchLogo: View {
+  @Environment(\.theme) private var theme
+
+  var body: some View {
+    PerchLogoDrawing(colors: theme.logo)
+      .accessibilityElement()
+      .accessibilityLabel("Perch")
+      .accessibilityAddTraits(.isImage)
   }
 }

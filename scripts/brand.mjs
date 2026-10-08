@@ -115,47 +115,13 @@ for (const dir of ICONSETS) {
   );
 }
 
-// The app's other assets: the logo and the mark as vector images with a dark
-// variant, and the accent colour.
+// The app's other assets: the accent colour. The logo and the mark are drawn
+// in SwiftUI (apps/ios/Shared/PerchLogoDrawing.swift) so they follow the
+// user's colours, like PerchLogo in packages/reader.
 const CATALOG = 'apps/ios/Perch/Assets.xcassets';
 const json = (value) => `${JSON.stringify(value, null, 2)}\n`;
 const INFO = { author: 'xcode', version: 1 };
 text(json({ info: INFO }), `${CATALOG}/Contents.json`);
-// The horizontal logo cropped to its drawing (same box as PerchLogo in packages/reader).
-const cropLogo = (svg) =>
-  svg.replace(
-    /viewBox="[^"]*" width="\d+" height="\d+"/,
-    'viewBox="88 106 1548 473" width="1548" height="473"',
-  );
-function vectorImage(name, light, dark, catalog = CATALOG) {
-  text(light, `${catalog}/${name}.imageset/${name}.svg`);
-  text(dark, `${catalog}/${name}.imageset/${name}-Dark.svg`);
-  text(
-    json({
-      images: [
-        { filename: `${name}.svg`, idiom: 'universal' },
-        {
-          appearances: [{ appearance: 'luminosity', value: 'dark' }],
-          filename: `${name}-Dark.svg`,
-          idiom: 'universal',
-        },
-      ],
-      info: INFO,
-      properties: { 'preserves-vector-representation': true },
-    }),
-    `${catalog}/${name}.imageset/Contents.json`,
-  );
-}
-vectorImage(
-  'PerchLogo',
-  cropLogo(src('perch-logo-horizontal-on-light.svg')),
-  cropLogo(src('perch-logo-horizontal-on-dark.svg')),
-);
-vectorImage('PerchMark', src('perch-mark-dark.svg'), src('perch-mark-light.svg'));
-// The widget extension has its own catalog.
-const WIDGET_CATALOG = 'apps/ios/PerchWidgets/Assets.xcassets';
-text(json({ info: INFO }), `${WIDGET_CATALOG}/Contents.json`);
-vectorImage('PerchMark', src('perch-mark-dark.svg'), src('perch-mark-light.svg'), WIDGET_CATALOG);
 text(
   json({
     colors: [

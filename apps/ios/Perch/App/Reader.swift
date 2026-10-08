@@ -27,13 +27,14 @@ extension PerchKit.Category {
   }
 }
 
-/// The signed-in library: feeds, categories, unread counts and the synced
-/// settings. Works from the offline store when the server can't be reached,
-/// queues read/star changes until it can, and follows the server's event
-/// stream while the app is open.
+/// The library: feeds, categories, unread counts and settings, from a Perch
+/// Server or kept on this phone. With a server it works from the offline
+/// store when the server can't be reached, queues read/star changes until it
+/// can, and follows the server's event stream while the app is open. On the
+/// phone it fetches the feeds itself, now and then while the app is open.
 @MainActor @Observable
 final class Reader {
-  let client: APIClient
+  let backend: any ReaderBackend
   let store: OfflineStore
   let device = DeviceSettings.shared
   private let onUnauthorized: @MainActor () -> Void
@@ -48,7 +49,12 @@ final class Reader {
   /// The last request couldn't reach the server; showing what's on the phone.
   private(set) var isOffline = false
   private(set) var downloading = false
+  /// Fetching feeds on the phone (no server).
+  private(set) var refreshing = false
   var error: String?
+  /// Bumped by every settings change shown, so a reply to an older save
+  /// doesn't overwrite a newer one.
+  private var settingsEdits = 0
 
   /// Bumped when articles change elsewhere (new articles, another device read
   /// some), so open lists know to reload.
@@ -59,12 +65,23 @@ final class Reader {
   private(set) var stateOverrides: [String: (read: Bool, starred: Bool)] = [:]
 
   private var lastDownload = Date.distantPast
-  private var sync: OfflineSync { OfflineSync(client: client, store: store) }
 
-  init(client: APIClient, store: OfflineStore, onUnauthorized: @escaping @MainActor () -> Void) {
-    self.client = client
+  init(
+    backend: any ReaderBackend, store: OfflineStore,
+    onUnauthorized: @escaping @MainActor () -> Void
+  ) {
+    self.backend = backend
     self.store = store
     self.onUnauthorized = onUnauthorized
+  }
+
+  /// The Perch Server, when signed in to one.
+  var server: APIClient? { backend as? APIClient }
+  /// The library is on this phone, without an account.
+  var isLocal: Bool { server == nil }
+
+  private var sync: OfflineSync? {
+    server.map { OfflineSync(client: $0, store: store) }
   }
 
   // MARK: Library
@@ -118,16 +135,26 @@ final class Reader {
       loaded = true
     }
     await load()
-    await downloadForOffline()
+    if isLocal {
+      await refreshIfStale()
+    } else {
+      await downloadForOffline()
+    }
   }
 
   func load() async {
+    let edits = settingsEdits
     await online {
-      try? await sync.flushPending()
-      async let library = client.library()
-      async let counts = client.counts()
-      async let settings = client.settings()
-      (self.library, self.counts, self.settings) = try await (library, counts, settings)
+      try? await sync?.flushPending()
+      let backend = self.backend
+      async let newLibrary = backend.library()
+      async let newCounts = backend.counts()
+      async let newSettings = backend.settings()
+      let (l, c, s) = try await (newLibrary, newCounts, newSettings)
+      library = l
+      counts = c
+      // A change made while this was loading wins.
+      if edits == settingsEdits { settings = s }
       stateOverrides = [:]
       loaded = true
       await store.saveSnapshot(library: self.library, counts: self.counts, settings: self.settings)
@@ -136,7 +163,7 @@ final class Reader {
 
   func reloadCounts() async {
     await online {
-      counts = try await client.counts()
+      counts = try await backend.counts()
       await store.saveCounts(counts)
     }
   }
@@ -147,7 +174,8 @@ final class Reader {
     if let saved = await store.article("\(feedId):\(id)") { return saved }
     var cursor: String?
     for _ in 0..<3 {
-      guard let page = try? await client.articles(.init(feed: feedId), before: cursor, limit: 100)
+      guard
+        let page = try? await backend.articles(.init(feed: feedId), before: cursor, limit: 100)
       else { return nil }
       if let hit = page.items.first(where: { $0.articleId == id }) { return hit }
       guard let next = page.next else { return nil }
@@ -162,22 +190,40 @@ final class Reader {
     glanceTask = Task {
       try? await Task.sleep(for: .seconds(2))
       guard !Task.isCancelled, !isOffline else { return }
-      await Glance.update(client: client, store: store, counts: counts, notify: false)
+      await Glance.update(backend: backend, store: store, counts: counts, notify: false)
     }
   }
 
-  /// Asks the server to fetch feeds now (everything, or one scope), then reloads.
+  /// Fetches feeds now (everything, or one scope): the server does it, or
+  /// without one, the phone. Then reloads.
   func refresh(_ scope: Scope = .all) async {
     let ids = feedIds(scope).map(Array.init)
-    await online { try await client.refresh(feeds: ids) }
+    if isLocal {
+      guard !refreshing else { return }
+      refreshing = true
+    }
+    defer { refreshing = false }
+    await online { try await backend.refresh(feeds: ids) }
     await load()
     articlesVersion += 1
-    await downloadForOffline(force: true)
+    if isLocal {
+      await prefetchImages()
+    } else {
+      await downloadForOffline(force: true)
+    }
   }
 
-  /// Keeps recent articles on the phone, at most every ten minutes unless forced.
+  /// On the phone: fetches the feeds when the last fetch is a while ago.
+  func refreshIfStale(after interval: TimeInterval = 15 * 60) async {
+    let oldest = library.feeds.map { $0.lastFetchedAt ?? 0 }.min() ?? .infinity
+    guard Date.now.timeIntervalSince1970 * 1000 - oldest > interval * 1000 else { return }
+    await refresh()
+  }
+
+  /// Keeps recent articles on the phone, at most every ten minutes unless
+  /// forced. (Without a server they're always on the phone.)
   func downloadForOffline(force: Bool = false) async {
-    guard device.offlineEnabled, !isOffline, !downloading,
+    guard let sync, device.offlineEnabled, !isOffline, !downloading,
       force || Date.now.timeIntervalSince(lastDownload) > 600
     else { return }
     downloading = true
@@ -188,10 +234,25 @@ final class Reader {
     } catch {}
   }
 
+  /// Without a server: the newest unread articles' images, so they show
+  /// offline too.
+  private func prefetchImages() async {
+    guard device.offlineImages else { return }
+    let articles = await store.articles(.init(unreadOnly: true), limit: 300)
+    var urls: [URL] = []
+    for article in articles {
+      let html = article.contentHtml ?? article.summaryHtml ?? ""
+      let base = article.url.flatMap(URL.init(string:))
+      urls += ImageCache.imageURLs(in: html, base: base).prefix(12)
+    }
+    await ImageCache.shared.prefetch(urls)
+    await ImageCache.shared.trim()
+  }
+
   // MARK: Library management
 
   func addFeed(url: String, categoryId: String?) async throws -> Feed {
-    let result = try await client.addFeed(url: url, categoryId: categoryId)
+    let result = try await backend.addFeed(url: url, categoryId: categoryId)
     await load()
     articlesVersion += 1
     return result.feed
@@ -199,13 +260,13 @@ final class Reader {
 
   func removeFeed(_ feed: Feed) async {
     library.feeds.removeAll { $0.id == feed.id }
-    await online { try await client.removeFeed(feed.id) }
+    await online { try await backend.removeFeed(feed.id) }
     await load()
   }
 
   func updateFeed(_ feed: Feed, title: String, categoryId: String) async throws {
     let trimmed = title.trimmingCharacters(in: .whitespaces)
-    try await client.updateFeed(
+    try await backend.updateFeed(
       feed.id,
       .init(
         categoryId: categoryId == feed.categoryId ? nil : categoryId,
@@ -214,18 +275,18 @@ final class Reader {
   }
 
   func addCategory(_ name: String) async throws -> PerchKit.Category {
-    let category = try await client.addCategory(name: name)
+    let category = try await backend.addCategory(name: name)
     await load()
     return category
   }
 
   func renameCategory(_ category: PerchKit.Category, to name: String) async {
-    await online { try await client.updateCategory(category.id, .init(name: name)) }
+    await online { try await backend.updateCategory(category.id, .init(name: name)) }
     await load()
   }
 
   func deleteCategory(_ category: PerchKit.Category) async {
-    await online { try await client.deleteCategory(category.id) }
+    await online { try await backend.deleteCategory(category.id) }
     await load()
   }
 
@@ -238,7 +299,7 @@ final class Reader {
       library.categories.append(c)
     }
     Task {
-      await online { try await client.updateCategory(category.id, .init(collapsed: collapsed)) }
+      await online { try await backend.updateCategory(category.id, .init(collapsed: collapsed)) }
     }
   }
 
@@ -249,16 +310,22 @@ final class Reader {
   // MARK: Settings
 
   /// Applies a change at once and saves it to the account. Only the keys set
-  /// in `patch` are sent.
+  /// in `patch` are sent. If something newer was shown meanwhile (another
+  /// colour picked while this was saving), that stays: the reply and a
+  /// failure only apply to the latest change.
   func updateSettings(_ patch: SyncedSettings, previousValue: SyncedSettings? = nil) async {
     let before = previousValue ?? settings
     previewSettings(patch)
+    let edit = settingsEdits
     do {
-      settings = try await client.saveSettings(patch)
+      let saved = try await backend.saveSettings(patch)
+      guard edit == settingsEdits else { return }
+      settings = saved
       await store.saveSnapshot(library: library, counts: counts, settings: settings)
     } catch let e as APIError where e.isUnauthorized {
       onUnauthorized()
     } catch {
+      guard edit == settingsEdits, !Task.isCancelled else { return }
       settings = before
       self.error = String(localized: "Couldn't save the setting: \(error.localizedDescription)")
     }
@@ -266,6 +333,7 @@ final class Reader {
 
   /// Shows a change without saving it, e.g. while a colour picker is dragged.
   func previewSettings(_ patch: SyncedSettings) {
+    settingsEdits += 1
     if let v = patch.theme { settings.theme = v }
     if let v = patch.readingFont { settings.readingFont = v }
     if let v = patch.appearance { settings.appearance = v }
@@ -298,7 +366,7 @@ final class Reader {
       }
     let upToMs = upTo.timeIntervalSince1970 * 1000
     do {
-      try await client.markAllRead(feed: feed, category: category, upTo: upTo)
+      try await backend.markAllRead(feed: feed, category: category, upTo: upTo)
       isOffline = false
     } catch let e as APIError where e.isNetwork {
       isOffline = true
@@ -343,10 +411,10 @@ final class Reader {
 
   private func send(_ ref: ArticleRef, read: Bool? = nil, starred: Bool? = nil) async {
     do {
-      try await client.setState([ref], read: read, starred: starred)
+      try await backend.setState([ref], read: read, starred: starred)
       if isOffline {
         isOffline = false
-        try? await sync.flushPending()
+        try? await sync?.flushPending()
       }
     } catch let e as APIError where e.isNetwork {
       isOffline = true
@@ -360,10 +428,11 @@ final class Reader {
 
   // MARK: Full text
 
-  /// From the phone if fetched before, else from the server (and kept).
+  /// From the phone if fetched before, else from the server or the site
+  /// (and kept).
   func fullText(_ article: Article) async throws -> FullText {
     if let cached = await store.fullText(article.id) { return cached }
-    let text = try await client.fullText(article.ref)
+    let text = try await backend.fullText(article.ref)
     await store.saveFullText(text, for: article.id)
     return text
   }
@@ -371,8 +440,17 @@ final class Reader {
   // MARK: Live updates
 
   /// Follows the server's event stream until cancelled, reconnecting with
-  /// backoff. Run while the app is in the foreground.
+  /// backoff. Run while the app is in the foreground. Without a server,
+  /// fetches the feeds every quarter of an hour instead.
   func listen() async {
+    guard let client = server else {
+      while !Task.isCancelled {
+        try? await Task.sleep(for: .seconds(60))
+        guard !Task.isCancelled else { return }
+        await refreshIfStale()
+      }
+      return
+    }
     var delay: Duration = .seconds(1)
     var lastCursor: String?
     while !Task.isCancelled {
@@ -478,7 +556,7 @@ final class ArticleList {
     loading = true
     defer { if gen == generation { loading = false } }
     do {
-      let page = try await reader.client.articles(query)
+      let page = try await reader.backend.articles(query)
       guard gen == generation else { return }
       items = page.items.map { reader.current($0) }
       next = page.next
@@ -486,7 +564,7 @@ final class ArticleList {
       fromDevice = false
       loadedAt = .now
       error = nil
-      await reader.store.store(page.items)
+      if !reader.isLocal { await reader.store.store(page.items) }
     } catch let e as APIError where e.isNetwork {
       let local = await reader.store.articles(localQuery)
       guard gen == generation else { return }
@@ -516,13 +594,13 @@ final class ArticleList {
     }
     guard let next else { return }
     do {
-      let page = try await reader.client.articles(query, before: next)
+      let page = try await reader.backend.articles(query, before: next)
       guard gen == generation else { return }
       let known = Set(items.map(\.id))
       items += page.items.filter { !known.contains($0.id) }
       self.next = page.next
       finished = page.next == nil
-      await reader.store.store(page.items)
+      if !reader.isLocal { await reader.store.store(page.items) }
     } catch {}
   }
 

@@ -4,9 +4,9 @@ import PerchKit
 import UIKit
 
 /// Keeps things fresh while the app is closed: iOS wakes it now and then
-/// (about every half hour at best) to send queued changes, download new
-/// articles for offline reading, update the widgets and notify about new
-/// articles.
+/// (about every half hour at best) to send queued changes and download new
+/// articles for offline reading (or, without a server, fetch the feeds),
+/// update the widgets and notify about new articles.
 enum BackgroundRefresh {
   static let identifier = "app.perch.ios.refresh"
 
@@ -32,17 +32,24 @@ enum BackgroundRefresh {
     }
   }
 
-  /// One refresh: send queued changes, download for offline reading, update
-  /// the widgets, notify.
+  /// One refresh: with a server, send queued changes and download for
+  /// offline reading; without one, fetch the feeds. Then update the widgets
+  /// and notify.
   @MainActor static func run() async {
     let device = DeviceSettings.shared
-    guard let account = Session.savedAccount() else { return }
-    let sync = OfflineSync(client: account.client, store: account.store)
-    try? await sync.flushPending()
-    if device.offlineEnabled {
-      try? await sync.download(limit: device.offlineLimit, images: device.offlineImages)
+    guard let (backend, store) = Session.current?.library ?? Session.savedLibrary() else {
+      return
     }
-    await Glance.update(client: account.client, store: account.store, notify: true)
+    if let client = backend as? APIClient {
+      let sync = OfflineSync(client: client, store: store)
+      try? await sync.flushPending()
+      if device.offlineEnabled {
+        try? await sync.download(limit: device.offlineLimit, images: device.offlineImages)
+      }
+    } else {
+      try? await backend.refresh(feeds: nil)
+    }
+    await Glance.update(backend: backend, store: store, notify: true)
   }
 
   #if DEBUG

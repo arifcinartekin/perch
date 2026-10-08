@@ -6,22 +6,27 @@ import SwiftUI
 struct ArticleListView: View {
   @Environment(Reader.self) private var reader
   @Environment(\.theme) private var theme
+  @Environment(\.horizontalSizeClass) private var sizeClass
   @State private var list: ArticleList
   @State private var confirmingMarkAll = false
   /// Bumped by swipe actions, for a tap of haptic feedback.
   @State private var swiped = 0
   @State private var addingFeed = false
+  @State private var connecting = false
   private let title: String
   /// The Search tab: nothing until you type.
   private let searchOnly: Bool
+  /// A tab's own list (Unread, Starred) shows the wordmark, like Feeds.
+  private let showsLogo: Bool
 
   init(
     scope: Scope, reader: Reader, unreadOnly: Bool = false, title: String? = nil,
-    searchOnly: Bool = false
+    searchOnly: Bool = false, showsLogo: Bool = false
   ) {
     _list = State(initialValue: ArticleList(scope: scope, reader: reader, unreadOnly: unreadOnly))
     self.title = title ?? scope.title
     self.searchOnly = searchOnly
+    self.showsLogo = showsLogo
   }
 
   var body: some View {
@@ -79,6 +84,10 @@ struct ArticleListView: View {
     .searchable(text: $list.search, prompt: searchOnly ? "Search your articles" : "Search \(title)")
     .refreshable { await reader.refresh(list.scope) }
     .toolbar {
+      // On iPad the list is a sidebar, with no room beside its button.
+      if showsLogo && sizeClass == .compact {
+        LogoToolbarItem()
+      }
       if !searchOnly {
         ToolbarItemGroup(placement: .topBarTrailing) {
           Menu {
@@ -102,6 +111,7 @@ struct ArticleListView: View {
       }
     }
     .sheet(isPresented: $addingFeed) { AddFeedSheet { _ in } }
+    .sheet(isPresented: $connecting) { NavigationStack { ConnectView() } }
     .confirmationDialog(
       "Mark all \(reader.unread(list.scope)) articles in \(title) as read?",
       isPresented: $confirmingMarkAll, titleVisibility: .visible
@@ -149,7 +159,7 @@ struct ArticleListView: View {
           Label {
             Text("Nothing to read yet")
           } icon: {
-            Image("PerchMark").resizable().scaledToFit().frame(width: 72)
+            PerchMark().frame(width: 72)
           }
         } description: {
           Text("Add a feed and its newest articles show up here.")
@@ -158,8 +168,13 @@ struct ArticleListView: View {
             .buttonStyle(.glassProminent)
             .tint(theme.button)
             .foregroundStyle(theme.buttonContrast)
+          if reader.isLocal {
+            Button("Sync with a Perch Server") { connecting = true }
+              .font(.subheadline.weight(.medium))
+              .foregroundStyle(theme.accentText)
+          }
         }
-      } else if list.loading {
+      } else if list.loading || reader.refreshing {
         SkeletonRows()
       } else if let error = list.error {
         ContentUnavailableView(

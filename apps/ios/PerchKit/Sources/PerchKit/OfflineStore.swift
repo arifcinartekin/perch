@@ -127,6 +127,47 @@ public actor OfflineStore {
     }
   }
 
+  /// Adds articles not stored yet and leaves known ones (and their read and
+  /// star state) alone. For the on-device library, where this store is the
+  /// only copy. Returns how many were new.
+  @discardableResult
+  public func insertNew(_ articles: [Article]) -> Int {
+    guard !articles.isEmpty else { return 0 }
+    let now = Date.now.timeIntervalSince1970
+    var added = 0
+    transaction {
+      for a in articles {
+        let inserted = run(
+          """
+          INSERT INTO articles (id, feed_id, published_at, read, starred, search, json, stored_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(id) DO NOTHING
+          """,
+          .text(a.id), .text(a.feedId), .double(a.publishedAt), .int(a.read ? 1 : 0),
+          .int(a.starred ? 1 : 0), .text(Self.searchText(a)), .blob(Self.encode(a)), .double(now))
+        if inserted, sqlite3_changes(db) > 0 { added += 1 }
+      }
+    }
+    return added
+  }
+
+  /// A feed's articles, when unsubscribing; starred ones can stay.
+  public func deleteArticles(feedId: String, keepStarred: Bool) {
+    run(
+      "DELETE FROM articles WHERE feed_id = ?\(keepStarred ? " AND starred = 0" : "")",
+      .text(feedId))
+    run("DELETE FROM fulltext WHERE id NOT IN (SELECT id FROM articles)")
+  }
+
+  /// Drops articles published before `cutoff` (epoch ms), except starred ones.
+  public func prune(before cutoff: Double) {
+    run("DELETE FROM articles WHERE starred = 0 AND published_at < ?", .double(cutoff))
+    run("DELETE FROM fulltext WHERE id NOT IN (SELECT id FROM articles)")
+  }
+
+  public func starredCount() -> Int {
+    pairs("SELECT 'n', COUNT(*) FROM articles WHERE starred = 1").first?.1 ?? 0
+  }
+
   public func article(_ id: String) -> Article? {
     first("SELECT json FROM articles WHERE id = ?", .text(id))
   }
@@ -269,6 +310,18 @@ public actor OfflineStore {
   static func fold(_ s: String) -> String {
     s.folding(options: [.caseInsensitive, .diacriticInsensitive, .widthInsensitive], locale: nil)
       .replacing("ı", with: "i")
+  }
+
+  // MARK: Values
+
+  /// A JSON value kept beside the articles (the on-device library uses this
+  /// for feeds, categories and settings).
+  public func load<T: Decodable>(_ key: String) -> T? {
+    value(forKey: key)
+  }
+
+  public func save<T: Encodable>(_ value: T, key: String) {
+    setValue(value, forKey: key)
   }
 
   // MARK: SQLite

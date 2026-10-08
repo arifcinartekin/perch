@@ -1,7 +1,8 @@
 import PerchKit
 import SwiftUI
 
-/// Subscribe to a feed by its address, or a site's: the server finds the feed.
+/// Subscribe to a feed by its address, or a site's: the server (or, without
+/// one, the phone) finds the feed.
 struct AddFeedSheet: View {
   @Environment(Reader.self) private var reader
   @Environment(\.dismiss) private var dismiss
@@ -31,8 +32,13 @@ struct AddFeedSheet: View {
           }
           .labelStyle(.titleAndIcon)
         } footer: {
-          Text(
-            "Paste a feed, or any page that links to one. Your Perch Server finds and fetches it.")
+          if reader.isLocal {
+            Text("Paste a feed, or any page that links to one. Perch finds the feed.")
+          } else {
+            Text(
+              "Paste a feed, or any page that links to one. Your Perch Server finds and fetches it."
+            )
+          }
         }
 
         Section("Category") {
@@ -79,8 +85,21 @@ struct AddFeedSheet: View {
         dismiss()
         onAdded(feed)
       } catch {
-        self.error = error.localizedDescription
+        self.error = Self.message(error)
       }
+    }
+  }
+
+  static func message(_ error: Error) -> String {
+    switch error {
+    case LocalBackend.Failure.noFeed:
+      String(localized: "Couldn't find a feed there. Try the feed's own address.")
+    case LocalBackend.Failure.badAddress:
+      String(localized: "That doesn't look like a web address.")
+    case LocalBackend.Failure.unreachable(let why):
+      String(localized: "The site answered \(why).")
+    default:
+      error.localizedDescription
     }
   }
 }

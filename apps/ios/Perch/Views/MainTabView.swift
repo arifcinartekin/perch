@@ -29,7 +29,8 @@ struct MainTabView: View {
       Tab("Unread", systemImage: "tray.full", value: .unread) {
         ReadingColumns {
           ArticleListView(
-            scope: .all, reader: reader, unreadOnly: true, title: String(localized: "Unread"))
+            scope: .all, reader: reader, unreadOnly: true, title: String(localized: "Unread"),
+            showsLogo: true)
         }
       }
       .badge(reader.unread(.all))
@@ -44,7 +45,7 @@ struct MainTabView: View {
 
       Tab("Starred", systemImage: "star", value: .starred) {
         ReadingColumns {
-          ArticleListView(scope: .starred, reader: reader)
+          ArticleListView(scope: .starred, reader: reader, showsLogo: true)
         }
       }
 
@@ -137,9 +138,7 @@ struct NoArticleSelected: View {
 
   var body: some View {
     VStack(spacing: 14) {
-      Image("PerchMark")
-        .resizable()
-        .scaledToFit()
+      PerchMark()
         .frame(width: 84)
         .opacity(0.5)
       Text("Choose an article to read")

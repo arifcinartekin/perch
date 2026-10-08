@@ -1,11 +1,16 @@
 import PerchKit
 import SwiftUI
 
-/// Connect to a Perch Server, then sign in or create an account. The password
-/// is stretched on the device; only the derived auth key is sent.
+/// Connect to a Perch Server, then sign in or create an account, from
+/// Settings: the app works without one, and a server adds sync with the
+/// other clients. The password is stretched on the device; only the derived
+/// auth key is sent.
 struct ConnectView: View {
   @Environment(Session.self) private var session
   @Environment(\.theme) private var theme
+  @Environment(\.dismiss) private var dismiss
+  /// How many feeds the phone's library has; they're added to the account.
+  var localFeeds = 0
 
   @State private var address =
     UserDefaults.standard.url(forKey: "perch.server")?.absoluteString ?? ""
@@ -48,7 +53,7 @@ struct ConnectView: View {
         }
       }
       .padding(.horizontal, 20)
-      .padding(.top, 72)
+      .padding(.top, 8)
       .padding(.bottom, 24)
       .frame(maxWidth: 480)
       .frame(maxWidth: .infinity)
@@ -57,25 +62,32 @@ struct ConnectView: View {
     .scrollBounceBehavior(.basedOnSize)
     .foregroundStyle(theme.text)
     .background { Backdrop() }
+    .toolbar {
+      ToolbarItem(placement: .cancellationAction) {
+        Button("Cancel", systemImage: "xmark") { dismiss() }
+      }
+    }
   }
 
   private var header: some View {
     VStack(spacing: 16) {
-      Image("PerchLogo")
-        .resizable()
-        .scaledToFit()
-        .frame(height: 60)
+      PerchLogo()
+        .frame(height: 48)
         .background {
           Circle()
-            .fill(Brand.ember.opacity(0.28))
-            .frame(width: 180, height: 180)
+            .fill(theme.accent.opacity(0.28))
+            .frame(width: 160, height: 160)
             .blur(radius: 60)
         }
-        .accessibilityLabel("Perch")
-      Text("A calm, private reader for your feeds.")
-        .font(.title3.weight(.medium))
+      Text("Sync with a Perch Server")
+        .font(.title2.weight(.semibold))
         .multilineTextAlignment(.center)
-        .foregroundStyle(theme.muted)
+      Text(
+        "Perch works on its own. With a server you or a friend runs, your feeds and what you've read follow you to the browser extension and the web."
+      )
+      .font(.subheadline)
+      .multilineTextAlignment(.center)
+      .foregroundStyle(theme.muted)
     }
   }
 
@@ -101,7 +113,7 @@ struct ConnectView: View {
     HStack(alignment: .top, spacing: 14) {
       Image(systemName: symbol)
         .font(.title3)
-        .foregroundStyle(Brand.ember)
+        .foregroundStyle(theme.accent)
         .frame(width: 28)
       VStack(alignment: .leading, spacing: 2) {
         Text(title).font(.subheadline.weight(.semibold))
@@ -136,6 +148,9 @@ struct ConnectView: View {
         #else
           Text("The address of the Perch Server you or a friend runs.")
         #endif
+        if localFeeds > 0 {
+          Text("The \(localFeeds) feeds on this iPhone are added to the account.")
+        }
       }
       .font(.footnote)
       .foregroundStyle(theme.muted)
@@ -264,15 +279,15 @@ struct ConnectView: View {
     Button(action: action) {
       ZStack {
         Text(title).opacity(busy ? 0 : 1)
-        if busy { ProgressView().tint(Brand.ink) }
+        if busy { ProgressView().tint(theme.buttonContrast) }
       }
       .font(.body.weight(.semibold))
-      .foregroundStyle(Brand.ink)
+      .foregroundStyle(theme.buttonContrast)
       .frame(maxWidth: .infinity)
       .padding(.vertical, 6)
     }
     .buttonStyle(.glassProminent)
-    .tint(Brand.ember)
+    .tint(theme.button)
     .disabled(busy)
   }
 
