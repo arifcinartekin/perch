@@ -9,6 +9,11 @@
 # Safe to run again.
 set -euo pipefail
 
+# Everything runs from main, so bash has read the whole script before any of
+# it runs: through `curl | bash`, a command reading stdin would otherwise
+# swallow the rest of the script.
+main() {
+
 DOMAIN="${1:-}"
 REPO="${PERCH_REPO:-https://github.com/arifcinartekin/perch.git}"
 BRANCH="${PERCH_BRANCH:-main}"
@@ -110,3 +115,6 @@ it becomes the admin, so don't leave the page open to someone else first.
   backup:  sudo $DIR/deploy/backup.sh     (daily, kept 14 days in $DATA/backups)
   logs:    sudo docker compose -f $DIR/deploy/compose.yml logs -f perch
 EOF
+}
+
+main "$@" </dev/null

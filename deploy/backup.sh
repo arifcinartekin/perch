@@ -17,7 +17,7 @@ fi
 docker compose -f "$DIR/deploy/compose.yml" exec -T perch node -e "
   const db = require('better-sqlite3')('/data/perch.db', { fileMustExist: true });
   db.backup('/data/backups/$name').then(() => db.close(), (e) => { console.error(e); process.exit(1); });
-"
+" </dev/null
 gzip -9 "$DATA/backups/$name"
 find "$DATA/backups" -name 'perch-*.db.gz' -mtime "+$KEEP_DAYS" -delete
 echo "$(date -u +%FT%TZ) $DATA/backups/$name.gz ($(du -h "$DATA/backups/$name.gz" | cut -f1))"

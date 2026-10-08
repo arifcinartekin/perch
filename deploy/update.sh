@@ -17,7 +17,7 @@ fi
 
 printf 'Waiting for Perch'
 for _ in $(seq 1 60); do
-  if "${COMPOSE[@]}" exec -T perch wget -qO- http://127.0.0.1:8080/healthz >/dev/null 2>&1; then
+  if "${COMPOSE[@]}" exec -T perch wget -qO- http://127.0.0.1:8080/healthz </dev/null >/dev/null 2>&1; then
     echo " ok"
     exit 0
   fi
