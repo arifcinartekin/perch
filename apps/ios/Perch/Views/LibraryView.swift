@@ -3,8 +3,12 @@ import SwiftUI
 
 /// The Feeds tab: All Feeds, Starred, and every feed grouped by category, with
 /// unread counts. Categories fold away; long-press a feed or tap a category's
-/// menu to edit, mark read, rename or delete.
+/// menu to edit, mark read, rename or delete. On iPhone it pushes the article
+/// list; on iPad it's the sidebar and sets `selection` instead.
 struct LibraryView: View {
+  /// Set when this is the iPad sidebar.
+  var selection: Binding<Scope?>?
+
   @Environment(Reader.self) private var reader
   @Environment(\.theme) private var theme
   @State private var path = NavigationPath()
@@ -23,37 +27,63 @@ struct LibraryView: View {
   }
 
   var body: some View {
-    NavigationStack(path: $path) {
-      List {
-        Section {
-          row(.all, icon: "tray.full")
-          row(.starred, icon: "star")
-        }
-
-        ForEach(reader.groups, id: \.category.id) { group in
-          Section(isExpanded: expanded(group.category)) {
-            ForEach(group.feeds) { feed in
-              row(.feed(feed), icon: nil)
-                .contextMenu { feedMenu(feed) }
-                .swipeActions {
-                  Button("Unsubscribe", systemImage: "trash", role: .destructive) {
-                    removing = feed
-                  }
-                  Button("Edit", systemImage: "pencil") { editing = feed }
-                }
-            }
-          } header: {
-            categoryHeader(group.category, feeds: group.feeds)
+    if selection != nil {
+      library
+    } else {
+      NavigationStack(path: $path) {
+        library
+          .navigationDestination(for: Scope.self) { scope in
+            ArticleListView(scope: scope, reader: reader)
           }
-        }
+          .navigationDestination(for: Article.self) { article in
+            ArticleView(article: article)
+          }
       }
-      .listStyle(.sidebar)
-      .perchBackdrop()
-      .overlay { emptyState }
-      .safeAreaInset(edge: .bottom) { OfflineNotice() }
-      .refreshable { await reader.refresh() }
-      .navigationTitle("Feeds")
-      .toolbar {
+    }
+  }
+
+  @ViewBuilder
+  private var rows: some View {
+    Section {
+      row(.all, icon: "tray.full")
+      row(.starred, icon: "star")
+    }
+
+    ForEach(reader.groups, id: \.category.id) { group in
+      Section(isExpanded: expanded(group.category)) {
+        ForEach(group.feeds) { feed in
+          row(.feed(feed), icon: nil)
+            .contextMenu { feedMenu(feed) }
+            .swipeActions {
+              Button("Unsubscribe", systemImage: "trash", role: .destructive) {
+                removing = feed
+              }
+              Button("Edit", systemImage: "pencil") { editing = feed }
+            }
+        }
+      } header: {
+        categoryHeader(group.category, feeds: group.feeds)
+      }
+    }
+  }
+
+  private var library: some View {
+    Group {
+      if let selection {
+        List(selection: selection) { rows }
+      } else {
+        List { rows }
+      }
+    }
+    .listStyle(.sidebar)
+    .perchBackdrop()
+    .overlay { emptyState }
+    .safeAreaInset(edge: .bottom) { OfflineNotice() }
+    .refreshable { await reader.refresh() }
+    .navigationTitle("Feeds")
+    .toolbar {
+      // No room for the logo beside the sidebar button on iPad.
+      if selection == nil {
         ToolbarItem(placement: .topBarLeading) {
           Image("PerchLogo")
             .resizable()
@@ -62,71 +92,73 @@ struct LibraryView: View {
             .accessibilityLabel("Perch")
         }
         .sharedBackgroundVisibility(.hidden)
-        ToolbarItem(placement: .topBarTrailing) {
-          Menu("Add", systemImage: "plus") {
-            Button("Add a feed", systemImage: "dot.radiowaves.up.forward") { adding = true }
-            Button("New category", systemImage: "folder.badge.plus") {
-              naming = CategoryNaming(name: "")
-            }
-          } primaryAction: {
-            adding = true
+      }
+      ToolbarItem(placement: .topBarTrailing) {
+        Menu("Add", systemImage: "plus") {
+          Button("Add a feed", systemImage: "dot.radiowaves.up.forward") { adding = true }
+          Button("New category", systemImage: "folder.badge.plus") {
+            naming = CategoryNaming(name: "")
           }
+        } primaryAction: {
+          adding = true
         }
       }
-      .navigationDestination(for: Scope.self) { scope in
-        ArticleListView(scope: scope, reader: reader)
+    }
+    .sheet(isPresented: $adding) {
+      AddFeedSheet { feed in show(.feed(feed)) }
+    }
+    .sheet(item: $editing) { feed in FeedEditSheet(feed: feed) }
+    .confirmationDialog(
+      "Unsubscribe from \(removing?.displayTitle ?? "")?", isPresented: present($removing),
+      titleVisibility: .visible
+    ) {
+      Button("Unsubscribe", role: .destructive) {
+        if let feed = removing { Task { await reader.removeFeed(feed) } }
       }
-      .navigationDestination(for: Article.self) { article in
-        ArticleView(article: article)
+    } message: {
+      Text("Its articles go too, except the ones you starred.")
+    }
+    .confirmationDialog(
+      "Delete \(deleting?.name ?? "")?", isPresented: present($deleting),
+      titleVisibility: .visible
+    ) {
+      Button("Delete category", role: .destructive) {
+        if let c = deleting { Task { await reader.deleteCategory(c) } }
       }
-      .sheet(isPresented: $adding) {
-        AddFeedSheet { feed in path = NavigationPath([Scope.feed(feed)]) }
+    } message: {
+      Text("Its feeds move to Uncategorized.")
+    }
+    .confirmationDialog(
+      "Mark all in \(markingRead?.title ?? "") as read?", isPresented: present($markingRead),
+      titleVisibility: .visible
+    ) {
+      Button("Mark all as read") {
+        if let scope = markingRead { Task { await reader.markAllRead(scope, upTo: .now) } }
       }
-      .sheet(item: $editing) { feed in FeedEditSheet(feed: feed) }
-      .confirmationDialog(
-        "Unsubscribe from \(removing?.displayTitle ?? "")?", isPresented: present($removing),
-        titleVisibility: .visible
-      ) {
-        Button("Unsubscribe", role: .destructive) {
-          if let feed = removing { Task { await reader.removeFeed(feed) } }
-        }
-      } message: {
-        Text("Its articles go too, except the ones you starred.")
-      }
-      .confirmationDialog(
-        "Delete \(deleting?.name ?? "")?", isPresented: present($deleting),
-        titleVisibility: .visible
-      ) {
-        Button("Delete category", role: .destructive) {
-          if let c = deleting { Task { await reader.deleteCategory(c) } }
-        }
-      } message: {
-        Text("Its feeds move to Uncategorized.")
-      }
-      .confirmationDialog(
-        "Mark all in \(markingRead?.title ?? "") as read?", isPresented: present($markingRead),
-        titleVisibility: .visible
-      ) {
-        Button("Mark all as read") {
-          if let scope = markingRead { Task { await reader.markAllRead(scope, upTo: .now) } }
-        }
-      }
-      .alert(
-        naming?.category == nil ? "New category" : "Rename category",
-        isPresented: present($naming)
-      ) {
-        TextField("Name", text: Binding(get: { naming?.name ?? "" }, set: { naming?.name = $0 }))
-        Button("Cancel", role: .cancel) {}
-        Button(naming?.category == nil ? "Create" : "Rename") { saveCategoryName() }
-      }
-      .alert("Something went wrong", isPresented: hasError) {
-        Button("OK") { reader.error = nil }
-      } message: {
-        Text(reader.error ?? "")
-      }
-      #if DEBUG
-        .task { await openFromLaunchEnvironment() }
-      #endif
+    }
+    .alert(
+      naming?.category == nil ? "New category" : "Rename category",
+      isPresented: present($naming)
+    ) {
+      TextField("Name", text: Binding(get: { naming?.name ?? "" }, set: { naming?.name = $0 }))
+      Button("Cancel", role: .cancel) {}
+      Button(naming?.category == nil ? "Create" : "Rename") { saveCategoryName() }
+    }
+    .alert("Something went wrong", isPresented: hasError) {
+      Button("OK") { reader.error = nil }
+    } message: {
+      Text(reader.error ?? "")
+    }
+    #if DEBUG
+      .task { await openFromLaunchEnvironment() }
+    #endif
+  }
+
+  private func show(_ scope: Scope) {
+    if let selection {
+      selection.wrappedValue = scope
+    } else {
+      path = NavigationPath([scope])
     }
   }
 
@@ -159,7 +191,13 @@ struct LibraryView: View {
         }
       }
     }
-    .surfaceRow()
+    // Rows draw their own background, so the sidebar's selection is drawn
+    // here too.
+    .listRowBackground(
+      ZStack {
+        Surface()
+        if selection?.wrappedValue == scope { theme.accent.opacity(0.2) }
+      })
   }
 
   @ViewBuilder
@@ -269,10 +307,11 @@ struct LibraryView: View {
         if let feed = reader.library.feeds.first(where: {
           $0.displayTitle.lowercased().hasPrefix(prefix)
         }) {
-          path.append(Scope.feed(feed))
+          show(.feed(feed))
         }
         return
       }
+      guard selection == nil else { return }
       guard open == "all" || open.hasPrefix("article") else { return }
       path.append(Scope.all)
       // article, or article:<search> for the newest match.

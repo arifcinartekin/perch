@@ -350,6 +350,16 @@
         }
       }
     },
+    "Choose an article to read": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Okumak için bir makale seç"
+          }
+        }
+      }
+    },
     "Colors": {
       "localizations": {
         "tr": {

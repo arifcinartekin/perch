@@ -6,6 +6,8 @@ Glass.
 
 - **Tabs:** Unread, Feeds, Starred, Settings and Search. The tab bar tucks away while you
   scroll.
+- **iPad:** the same tabs, with split views: feeds, articles and the article side by side in
+  Feeds, and the list beside the article in Unread, Starred and Search.
 - **Lists:** each row has the feed, a short summary and the article's first picture (from the
   image cache, so it shows offline too; can be turned off). Swipe a row to read or star it.
 - **Reading:** stars, keep unread, the site's full text, share, Safari, and the next article.
@@ -103,4 +105,4 @@ TEST_RUNNER_PERCH_DEV_PASSWORD=… xcodebuild test -scheme Perch -destination 'p
 
 ## Not yet
 
-iPad layout, widgets, notifications, and end-to-end encrypted servers.
+Widgets, notifications, and end-to-end encrypted servers.

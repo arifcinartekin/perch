@@ -48,7 +48,10 @@ final class ReaderUITests: XCTestCase {
 
   func testReading() throws {
     let app = launch(["PERCH_DEV_TAB": "feeds", "PERCH_DEV_OPEN": env["PERCH_UI_FEED"] ?? "all"])
-    let firstRow = app.collectionViews.cells.firstMatch
+    // On iPad the feeds sidebar comes first, then the article list.
+    let lists = app.collectionViews
+    let isPad = UIDevice.current.userInterfaceIdiom == .pad
+    let firstRow = (isPad ? lists.element(boundBy: 1) : lists.firstMatch).cells.firstMatch
     XCTAssertTrue(firstRow.waitForExistence(timeout: 20))
     shot("list")
     firstRow.tap()
@@ -59,13 +62,14 @@ final class ReaderUITests: XCTestCase {
     shot("reader")
 
     // Scrolling into the article hides the bars; scrolling back brings them.
-    // Short drags, so even a short article doesn't reach its end (where the
-    // bars come back too).
+    // On iPhone, scrolling into the article hides the bars and scrolling
+    // back brings them; short drags, so even a short article doesn't reach
+    // its end (where the bars come back too). On iPad they stay.
     let page = app.webViews.firstMatch
     drag(page, from: 0.7, to: 0.55)
     sleep(1)
     shot("reader-scrolled")
-    XCTAssertFalse(star.isHittable, "bars should hide while reading down")
+    XCTAssertEqual(star.isHittable, isPad, "bars hide while reading down on iPhone only")
     drag(page, from: 0.5, to: 0.6)
     sleep(1)
     XCTAssertTrue(star.isHittable, "bars should come back on scrolling up")

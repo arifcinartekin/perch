@@ -10,6 +10,7 @@ import WebKit
 struct ArticleView: View {
   @Environment(Reader.self) private var reader
   @Environment(\.theme) private var theme
+  @Environment(\.horizontalSizeClass) private var sizeClass
   @State private var article: Article
   /// The list it was opened from, for "next".
   private let list: ArticleList?
@@ -47,7 +48,8 @@ struct ArticleView: View {
         if url.scheme == "http" || url.scheme == "https" { safari = SafariTarget(url: url) }
       },
       onScrollDirection: { down in
-        guard down != barsHidden else { return }
+        // On iPad the article shares the screen with the list; its bars stay.
+        guard sizeClass == .compact, down != barsHidden else { return }
         withAnimation(.easeInOut(duration: 0.25)) { barsHidden = down }
       }
     )
@@ -59,8 +61,9 @@ struct ArticleView: View {
     .background { Backdrop() }
     .navigationTitle(reader.feed(article.feedId)?.displayTitle ?? "")
     .toolbarTitleDisplayMode(.inline)
-    // The article's own bar takes the tab bar's place while reading.
-    .toolbar(.hidden, for: .tabBar)
+    // On iPhone the article's own bar takes the tab bar's place while
+    // reading; on iPad the tabs stay, with the list beside the article.
+    .toolbar(sizeClass == .compact ? .hidden : .automatic, for: .tabBar)
     .toolbarVisibility(barsHidden ? .hidden : .visible, for: .navigationBar, .bottomBar)
     .statusBarHidden(barsHidden)
     .toolbar {
@@ -425,7 +428,8 @@ enum ArticleHTML {
       :root { color-scheme: \(p.scheme.rawValue); --text: \(p.text); --muted: \(p.textMuted); --link: \(p.accentText); --rule: \(rule); --code: \(code); \(styleSlot) }
       html { -webkit-text-size-adjust: 100%; }
       body { margin: 0; padding: 12px 20px 120px; background: transparent; color: var(--text); font-family: \(font); font-size: var(--size, 17px); line-height: var(--leading, 1.6); overflow-wrap: anywhere; }
-      header { margin: 8px 0 22px; }
+      header, article { max-width: 42em; margin-left: auto; margin-right: auto; }
+      header { margin-top: 8px; margin-bottom: 22px; }
       .meta { font: 600 13px/1.4 -apple-system, system-ui; color: var(--muted); margin: 0 0 8px; }
       h1.title { font: 700 calc(var(--size, 17px) * 1.5)/1.2 -apple-system, system-ui; letter-spacing: -0.01em; margin: 0; }
       h1.title a { color: inherit; text-decoration: none; }
