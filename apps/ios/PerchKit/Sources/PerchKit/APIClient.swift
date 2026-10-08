@@ -15,6 +15,8 @@ public struct APIError: Error, LocalizedError, Sendable {
 
   public var errorDescription: String? { message }
   public var isUnauthorized: Bool { status == 401 }
+  /// The server couldn't be reached at all (offline, DNS, timeout).
+  public var isNetwork: Bool { code == "network" }
 }
 
 /// The Perch Server HTTP API (/api/v1) for one server and, once signed in, one
@@ -199,6 +201,113 @@ public final class APIClient: Sendable {
     return res.settings
   }
 
+  /// Keys that changed; the server replaces each one whole.
+  public func saveSettings(_ patch: SyncedSettings) async throws -> SyncedSettings {
+    struct Res: Decodable { var settings: SyncedSettings }
+    let res: Res = try await send("reader/settings", method: "PUT", body: patch)
+    return res.settings
+  }
+
+  // MARK: Library management
+
+  public struct FeedPatch: Encodable, Sendable {
+    public var categoryId: String?
+    /// "" clears the custom title.
+    public var customTitle: String?
+    public init(categoryId: String? = nil, customTitle: String? = nil) {
+      self.categoryId = categoryId
+      self.customTitle = customTitle
+    }
+  }
+
+  public func updateFeed(_ id: String, _ patch: FeedPatch) async throws {
+    let _: Ignored = try await send("reader/feeds/\(id.pathSafe)", method: "PATCH", body: patch)
+  }
+
+  public func addCategory(name: String) async throws -> Category {
+    struct Res: Decodable { var category: Category }
+    let res: Res = try await send("reader/categories", body: ["name": name])
+    return res.category
+  }
+
+  public struct CategoryPatch: Encodable, Sendable {
+    public var name: String?
+    public var collapsed: Bool?
+    public init(name: String? = nil, collapsed: Bool? = nil) {
+      self.name = name
+      self.collapsed = collapsed
+    }
+  }
+
+  public func updateCategory(_ id: String, _ patch: CategoryPatch) async throws {
+    let _: Ignored = try await send(
+      "reader/categories/\(id.pathSafe)", method: "PATCH", body: patch)
+  }
+
+  /// Its feeds move to Uncategorized.
+  public func deleteCategory(_ id: String) async throws {
+    let _: Ignored = try await send(
+      "reader/categories/\(id.pathSafe)", method: "DELETE", body: nil as String?)
+  }
+
+  public func exportOPML() async throws -> Data {
+    try await raw("reader/opml", method: "GET")
+  }
+
+  public func importOPML(_ data: Data) async throws -> OpmlImportResult {
+    try decode(await raw("reader/opml", body: data, contentType: "text/x-opml"))
+  }
+
+  // MARK: Account
+
+  /// Re-derives the current key with the account's salt and a new one with a
+  /// fresh salt. The server signs out every other device.
+  public func changePassword(username: String, current: String, new: String) async throws {
+    struct Prelogin: Decodable {
+      var salt: String
+      var kdf: KdfParams
+    }
+    struct Body: Encodable {
+      var authKey, newAuthKey, salt: String
+      var kdf: KdfParams
+    }
+    let pre: Prelogin = try await send("auth/prelogin", body: ["username": username])
+    let old = try await KeyDerivation.derive(password: current, salt: pre.salt, params: pre.kdf)
+    let salt = KeyDerivation.newSalt()
+    let next = try await KeyDerivation.derive(password: new, salt: salt, params: .default)
+    let _: Ignored = try await send(
+      "auth/password",
+      body: Body(authKey: old.authKey, newAuthKey: next.authKey, salt: salt, kdf: .default))
+  }
+
+  public func devices() async throws -> [Device] {
+    struct Res: Decodable { var devices: [Device] }
+    let res: Res = try await get("devices")
+    return res.devices
+  }
+
+  public func revokeDevice(_ id: String) async throws {
+    let _: Ignored = try await send(
+      "devices/\(id.pathSafe)", method: "DELETE", body: nil as String?)
+  }
+
+  public func invites() async throws -> [Invite] {
+    struct Res: Decodable { var invites: [Invite] }
+    let res: Res = try await get("admin/invites")
+    return res.invites
+  }
+
+  public func createInvite() async throws -> String {
+    struct Res: Decodable { var code: String }
+    let res: Res = try await send("admin/invites", body: [String: String]())
+    return res.code
+  }
+
+  public func deleteInvite(_ code: String) async throws {
+    let _: Ignored = try await send(
+      "admin/invites/\(code.pathSafe)", method: "DELETE", body: nil as String?)
+  }
+
   // MARK: Plumbing
 
   private struct Ignored: Decodable {}
@@ -214,6 +323,25 @@ public final class APIClient: Sendable {
   private func send<T: Decodable, B: Encodable>(
     _ path: String, method: String = "POST", query: [URLQueryItem] = [], body: B?
   ) async throws -> T {
+    let data = try body.map { try JSONEncoder().encode($0) }
+    return try decode(
+      await raw(path, method: method, query: query, body: data, contentType: "application/json"))
+  }
+
+  private func decode<T: Decodable>(_ data: Data) throws -> T {
+    do {
+      return try JSONDecoder().decode(T.self, from: data)
+    } catch {
+      throw APIError(
+        status: 200, code: "bad-response",
+        message: "The server sent a response Perch couldn't read. Is this a Perch server?")
+    }
+  }
+
+  private func raw(
+    _ path: String, method: String = "POST", query: [URLQueryItem] = [], body: Data? = nil,
+    contentType: String = "application/json"
+  ) async throws -> Data {
     var url = baseURL.appending(path: "api/v1/" + path, directoryHint: .notDirectory)
     if !query.isEmpty { url.append(queryItems: query) }
     var req = URLRequest(url: url)
@@ -222,8 +350,8 @@ public final class APIClient: Sendable {
     req.setValue("application/json", forHTTPHeaderField: "Accept")
     if let token { req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization") }
     if let body {
-      req.setValue("application/json", forHTTPHeaderField: "Content-Type")
-      req.httpBody = try JSONEncoder().encode(body)
+      req.setValue(contentType, forHTTPHeaderField: "Content-Type")
+      req.httpBody = body
     }
 
     let (data, response): (Data, URLResponse)
@@ -240,13 +368,7 @@ public final class APIClient: Sendable {
         message: body?.message ?? body?.error
           ?? HTTPURLResponse.localizedString(forStatusCode: status))
     }
-    do {
-      return try JSONDecoder().decode(T.self, from: data)
-    } catch {
-      throw APIError(
-        status: status, code: "bad-response",
-        message: "The server sent a response Perch couldn't read. Is this a Perch server?")
-    }
+    return data
   }
 }
 

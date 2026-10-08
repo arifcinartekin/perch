@@ -197,32 +197,55 @@ public struct ArticlePage: Codable, Sendable {
   public var next: String?
 }
 
-/// The synced settings the app reads. Unknown keys are ignored.
+/// The settings that follow the account (SyncedSettings in core). Unknown keys
+/// are ignored; saving sends only the keys that changed.
 public struct SyncedSettings: Codable, Sendable, Equatable {
-  public enum Theme: String, Codable, Sendable { case system, light, dark }
-  public enum ReadingFont: String, Codable, Sendable { case sans, serif }
-
-  public struct Glass: Codable, Sendable, Equatable {
-    public var enabled: Bool
-    public var transparency: Double
-    public var blur: Double
-  }
+  public enum Theme: String, Codable, Sendable, CaseIterable { case system, light, dark }
+  public enum ReadingFont: String, Codable, Sendable, CaseIterable { case sans, serif }
 
   public var theme: Theme?
   public var readingFont: ReadingFont?
-  public var glass: Glass?
+  public var appearance: Appearance?
+  public var glass: GlassSettings?
 
-  public init(theme: Theme? = nil, readingFont: ReadingFont? = nil, glass: Glass? = nil) {
+  public init(
+    theme: Theme? = nil, readingFont: ReadingFont? = nil, appearance: Appearance? = nil,
+    glass: GlassSettings? = nil
+  ) {
     self.theme = theme
     self.readingFont = readingFont
+    self.appearance = appearance
     self.glass = glass
   }
 
   public init(from decoder: Decoder) throws {
-    // Lenient: a value from a newer client shouldn't break the whole settings object.
+    // Lenient: a value from a newer client shouldn't break the whole object.
     let c = try decoder.container(keyedBy: CodingKeys.self)
     theme = try? c.decodeIfPresent(Theme.self, forKey: .theme)
     readingFont = try? c.decodeIfPresent(ReadingFont.self, forKey: .readingFont)
-    glass = try? c.decodeIfPresent(Glass.self, forKey: .glass)
+    appearance = try? c.decodeIfPresent(Appearance.self, forKey: .appearance)
+    glass = try? c.decodeIfPresent(GlassSettings.self, forKey: .glass)
   }
+}
+
+public struct Device: Codable, Sendable, Identifiable, Hashable {
+  public var id: String
+  public var name: String
+  public var createdAt: Double
+  public var lastSeenAt: Double
+  public var current: Bool
+}
+
+public struct Invite: Codable, Sendable, Identifiable, Hashable {
+  public var code: String
+  public var createdAt: Double
+  public var usedBy: String?
+  public var usedAt: Double?
+  public var id: String { code }
+}
+
+public struct OpmlImportResult: Codable, Sendable {
+  public var added: Int
+  public var existing: Int
+  public var categories: Int
 }
