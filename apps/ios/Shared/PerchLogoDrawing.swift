@@ -111,12 +111,17 @@ private enum LogoPaths {
     Path(ellipseIn: CGRect(x: x - r, y: y - r, width: 2 * r, height: 2 * r))
   }
 
-  /// A quarter circle from straight up round to the right, about (214, 330),
-  /// like the SVG's "A r r 0 0 1".
-  static func wave(_ r: CGFloat) -> Path {
+  /// Quarter circles from straight up round to the right, about (214, 330),
+  /// like the SVG's "M 214 330-r A r r 0 0 1 214+r 330". Each starts with its
+  /// own move, so no line joins one to the next.
+  static func wave(_ radii: CGFloat...) -> Path {
     var p = Path()
-    p.addRelativeArc(
-      center: CGPoint(x: 214, y: 330), radius: r, startAngle: .degrees(-90), delta: .degrees(90))
+    for r in radii {
+      p.move(to: CGPoint(x: 214, y: 330 - r))
+      p.addArc(
+        tangent1End: CGPoint(x: 214 + r, y: 330 - r), tangent2End: CGPoint(x: 214 + r, y: 330),
+        radius: r)
+    }
     return p
   }
 
@@ -125,8 +130,7 @@ private enum LogoPaths {
       polygon([CGPoint(x: 362, y: 132), CGPoint(x: 462, y: 168), CGPoint(x: 372, y: 192)]),
       with: .color(c.accent))
     context.fill(body, with: .color(c.body))
-    var waves = wave(64)
-    waves.addPath(wave(114))
+    let waves = wave(64, 114)
     context.stroke(
       waves, with: .color(c.accent), style: StrokeStyle(lineWidth: 15, lineCap: .round))
     context.fill(circle(214, 330, 14), with: .color(c.accent))
