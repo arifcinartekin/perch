@@ -25,6 +25,40 @@ enum Keychain {
     SecItemAdd(query as CFDictionary, nil)
   }
 
+  // MARK: Sync chain
+
+  private static let chainService = "app.perch.chain"
+
+  /// The chain this phone is in, with its code: the code is the key to
+  /// everything the chain syncs, so it lives here rather than in the library.
+  static func chain() -> ChainAccount? {
+    var query = chainQuery
+    query[kSecReturnData as String] = true
+    query[kSecMatchLimit as String] = kSecMatchLimitOne
+    var item: CFTypeRef?
+    guard SecItemCopyMatching(query as CFDictionary, &item) == errSecSuccess,
+      let data = item as? Data
+    else { return nil }
+    return try? JSONDecoder().decode(ChainAccount.self, from: data)
+  }
+
+  static func setChain(_ account: ChainAccount?) {
+    SecItemDelete(chainQuery as CFDictionary)
+    guard let account, let data = try? JSONEncoder().encode(account) else { return }
+    var query = chainQuery
+    query[kSecValueData as String] = data
+    query[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
+    SecItemAdd(query as CFDictionary, nil)
+  }
+
+  private static var chainQuery: [String: Any] {
+    [
+      kSecClass as String: kSecClassGenericPassword,
+      kSecAttrService as String: chainService,
+      kSecAttrAccount as String: "chain",
+    ]
+  }
+
   private static func base(_ server: URL) -> [String: Any] {
     [
       kSecClass as String: kSecClassGenericPassword,

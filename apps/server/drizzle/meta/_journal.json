@@ -22,6 +22,13 @@
       "when": 1791403445663,
       "tag": "0002_fulltext",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1791505246680,
+      "tag": "0003_chains",
+      "breakpoints": true
     }
   ]
 }

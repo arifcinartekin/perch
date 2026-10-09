@@ -36,6 +36,8 @@ extension PerchKit.Category {
 final class Reader {
   let backend: any ReaderBackend
   let store: OfflineStore
+  /// The sync chain, for the library on this phone.
+  let chain: ChainLink?
   let device = DeviceSettings.shared
   private let onUnauthorized: @MainActor () -> Void
 
@@ -65,13 +67,15 @@ final class Reader {
   private(set) var stateOverrides: [String: (read: Bool, starred: Bool)] = [:]
 
   private var lastDownload = Date.distantPast
+  private var chainTask: Task<Void, Never>?
 
   init(
-    backend: any ReaderBackend, store: OfflineStore,
+    backend: any ReaderBackend, store: OfflineStore, chain: ChainLink? = nil,
     onUnauthorized: @escaping @MainActor () -> Void
   ) {
     self.backend = backend
     self.store = store
+    self.chain = chain
     self.onUnauthorized = onUnauthorized
   }
 
@@ -136,6 +140,7 @@ final class Reader {
     }
     await load()
     if isLocal {
+      await syncChain()
       await refreshIfStale()
     } else {
       await downloadForOffline()
@@ -207,9 +212,41 @@ final class Reader {
     await load()
     articlesVersion += 1
     if isLocal {
+      chainSoon()
       await prefetchImages()
     } else {
       await downloadForOffline(force: true)
+    }
+  }
+
+  // MARK: Sync chain
+
+  /// A round with the chain, then whatever it brought: the library and
+  /// lists reload, and feeds added on other devices are fetched.
+  func syncChain() async {
+    guard let chain, chain.isOn, let local = backend as? LocalBackend,
+      let result = await chain.sync(local)
+    else { return }
+    guard result.pulled > 0 || !result.newFeedIds.isEmpty else { return }
+    await load()
+    articlesVersion += 1
+    if !result.newFeedIds.isEmpty {
+      refreshing = true
+      try? await local.refresh(feeds: result.newFeedIds)
+      refreshing = false
+      await load()
+      articlesVersion += 1
+    }
+  }
+
+  /// A moment after a change here, so a few taps go out together.
+  func chainSoon() {
+    guard chain?.isOn == true else { return }
+    chainTask?.cancel()
+    chainTask = Task {
+      try? await Task.sleep(for: .seconds(2))
+      guard !Task.isCancelled else { return }
+      await syncChain()
     }
   }
 
@@ -255,6 +292,7 @@ final class Reader {
     let result = try await backend.addFeed(url: url, categoryId: categoryId)
     await load()
     articlesVersion += 1
+    chainSoon()
     return result.feed
   }
 
@@ -262,6 +300,7 @@ final class Reader {
     library.feeds.removeAll { $0.id == feed.id }
     await online { try await backend.removeFeed(feed.id) }
     await load()
+    chainSoon()
   }
 
   func updateFeed(_ feed: Feed, title: String, categoryId: String) async throws {
@@ -272,22 +311,26 @@ final class Reader {
         categoryId: categoryId == feed.categoryId ? nil : categoryId,
         customTitle: trimmed == (feed.customTitle ?? "") ? nil : trimmed))
     await load()
+    chainSoon()
   }
 
   func addCategory(_ name: String) async throws -> PerchKit.Category {
     let category = try await backend.addCategory(name: name)
     await load()
+    chainSoon()
     return category
   }
 
   func renameCategory(_ category: PerchKit.Category, to name: String) async {
     await online { try await backend.updateCategory(category.id, .init(name: name)) }
     await load()
+    chainSoon()
   }
 
   func deleteCategory(_ category: PerchKit.Category) async {
     await online { try await backend.deleteCategory(category.id) }
     await load()
+    chainSoon()
   }
 
   func setCollapsed(_ category: PerchKit.Category, _ collapsed: Bool) {
@@ -300,6 +343,7 @@ final class Reader {
     }
     Task {
       await online { try await backend.updateCategory(category.id, .init(collapsed: collapsed)) }
+      chainSoon()
     }
   }
 
@@ -322,6 +366,7 @@ final class Reader {
       guard edit == settingsEdits else { return }
       settings = saved
       await store.saveSnapshot(library: library, counts: counts, settings: settings)
+      chainSoon()
     } catch let e as APIError where e.isUnauthorized {
       onUnauthorized()
     } catch {
@@ -387,6 +432,7 @@ final class Reader {
       await reloadCounts()
     }
     articlesVersion += 1
+    chainSoon()
   }
 
   /// The article with any change made on this device since it was loaded.
@@ -412,6 +458,7 @@ final class Reader {
   private func send(_ ref: ArticleRef, read: Bool? = nil, starred: Bool? = nil) async {
     do {
       try await backend.setState([ref], read: read, starred: starred)
+      chainSoon()
       if isOffline {
         isOffline = false
         try? await sync?.flushPending()
@@ -447,6 +494,7 @@ final class Reader {
       while !Task.isCancelled {
         try? await Task.sleep(for: .seconds(60))
         guard !Task.isCancelled else { return }
+        await syncChain()
         await refreshIfStale()
       }
       return

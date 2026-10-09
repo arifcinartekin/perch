@@ -22,10 +22,18 @@ Power users can make it their own under **Settings → Appearance**: pick the ba
 button colours (separately for the light and dark theme — text contrast adjusts automatically),
 and set a background image for the full-screen reader with dim and blur controls.
 
-**Sync (optional).** Connect a self-hosted Perch Server under **Settings → Sync** and your
-subscriptions, categories, read and starred articles, and settings follow you across browsers
-(and the iPhone app). Your password never leaves the device — Perch derives a key from it
-with Argon2id and sends only that. The PIN and background image stay per device.
+**Sync (optional).** Under **Settings → Sync**, either way, your subscriptions, categories, read
+and starred articles, and settings follow you across browsers and the iPhone app. The PIN and
+background image stay per device.
+
+- **Sync chain — no account.** Start a chain on one device and enter its code (or scan its QR
+  code) on the others. Records are encrypted on your devices with keys derived from the code;
+  the relay that passes them on (`sync.perch.ws` by default, or any Perch Server with
+  `PERCH_CHAIN` on) sees neither your feeds nor what you read. Every device fetches the feeds
+  itself.
+- **Perch Server account.** Sign in to a server, such as one you run yourself; it fetches the
+  feeds for you and serves the web reader. Your password never leaves the device — Perch
+  derives a key from it with Argon2id and sends only that.
 
 It also does the things a local-first tool should: **export / import** your subscriptions (OPML
 or a full JSON backup), and an optional **6-digit PIN** to keep a passer-by out of your reader.
@@ -122,6 +130,7 @@ packages/
 │  ├─ src/api.ts           Perch Server request / response types.
 │  ├─ src/username.ts      username rules and look-alike folding.
 │  ├─ src/sync.ts          sync records, protocol types, hybrid logical clock.
+│  ├─ src/chain.ts         sync chains: the code, key derivation, sealed records.
 │  ├─ src/opml.ts          OPML import / export.
 │  ├─ src/search.ts        accent-insensitive article search.
 │  ├─ src/theme.ts         custom colour palettes.
@@ -145,7 +154,8 @@ apps/
 │  │  ├─ feeds/            refresh orchestration (conditional GET, upsert, prune).
 │  │  ├─ readability/      reader-page-only full-text fetch + @mozilla/readability + sanitise.
 │  │  ├─ permissions/      runtime host-permission helpers.
-│  │  ├─ sync/             Perch Server sign-in, sync engine (pull → merge → push), triggers.
+│  │  ├─ sync/             Perch Server sign-in and sync chains, sync engine (pull → merge →
+│  │  │                    push), triggers.
 │  │  ├─ backend.ts        the reader's data layer (ReaderBackend over local storage).
 │  │  └─ backup.ts …       JSON backup, messaging, badge, PIN lock.
 │  └─ tests/              Vitest: storage (fake-indexeddb), backup, and a jsdom smoke test.
@@ -163,6 +173,7 @@ apps/
    ├─ src/reader/          reader API: articles, search, read state, OPML, settings.
    ├─ src/fulltext/        Readability (linkedom) for the web reader, cached per article.
    ├─ src/sync/            sync records (last writer wins), change feed, Server-Sent Events.
+   ├─ src/chain/           the relay for sync chains: sealed records it can order, not read.
    ├─ src/db/              Drizzle schema (SQLite); migrations in drizzle/.
    └─ tests/               Vitest against an in-memory database and a local feed server.
 ```

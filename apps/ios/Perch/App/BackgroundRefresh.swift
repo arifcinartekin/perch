@@ -46,8 +46,11 @@ enum BackgroundRefresh {
       if device.offlineEnabled {
         try? await sync.download(limit: device.offlineLimit, images: device.offlineImages)
       }
-    } else {
-      try? await backend.refresh(feeds: nil)
+    } else if let local = backend as? LocalBackend {
+      // Changes from the chain first, so feeds added elsewhere are fetched too.
+      _ = await ChainLink.syncSaved(local)
+      try? await local.refresh(feeds: nil)
+      _ = await ChainLink.syncSaved(local)
     }
     await Glance.update(backend: backend, store: store, notify: true)
   }

@@ -102,6 +102,16 @@
         }
       }
     },
+    "A sync chain keeps this iPhone, your browsers and your other devices in step: feeds, categories, read and starred articles, theme and colours. Everything is encrypted on your devices with the chain's code; the relay that passes it on can't read your feeds or what you read.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Senkron zinciri bu iPhone'u, tarayıcılarınızı ve diğer cihazlarınızı eşit tutar: feed'ler, kategoriler, okunan ve yıldızlı makaleler, tema ve renkler. Her şey cihazlarınızda zincirin koduyla şifrelenir; bunu ileten aktarıcı feed'lerinizi ya da ne okuduğunuzu göremez."
+          }
+        }
+      }
+    },
     "Accent": {
       "localizations": {
         "tr": {
@@ -128,6 +138,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ekle"
+          }
+        }
+      }
+    },
+    "Add a device": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cihaz ekle"
           }
         }
       }
@@ -248,6 +268,16 @@
         }
       }
     },
+    "Anyone with this code can read and change what the chain syncs. Only show it to your own devices.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu koda sahip herkes zincirin senkronladıklarını okuyup değiştirebilir. Yalnızca kendi cihazlarınıza gösterin."
+          }
+        }
+      }
+    },
     "Appearance": {
       "localizations": {
         "tr": {
@@ -358,6 +388,16 @@
         }
       }
     },
+    "Chain code": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zincir kodu"
+          }
+        }
+      }
+    },
     "Change": {
       "localizations": {
         "tr": {
@@ -418,6 +458,16 @@
         }
       }
     },
+    "Code": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kod"
+          }
+        }
+      }
+    },
     "Colors": {
       "localizations": {
         "tr": {
@@ -464,6 +514,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Devam"
+          }
+        }
+      }
+    },
+    "Copied": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kopyalandı"
+          }
+        }
+      }
+    },
+    "Copy code": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kodu kopyala"
           }
         }
       }
@@ -554,6 +624,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Davetler yüklenemedi"
+          }
+        }
+      }
+    },
+    "Couldn't reach the relay. Check your connection.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aktarıcıya ulaşılamadı. Bağlantınızı kontrol edin."
           }
         }
       }
@@ -688,6 +768,36 @@
         }
       }
     },
+    "Delete chain": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zinciri sil"
+          }
+        }
+      }
+    },
+    "Delete chain…": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zinciri sil…"
+          }
+        }
+      }
+    },
+    "Delete this chain?": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu zincir silinsin mi?"
+          }
+        }
+      }
+    },
     "Delete…": {
       "localizations": {
         "tr": {
@@ -778,12 +888,42 @@
         }
       }
     },
+    "Encrypted, through %@.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Şifreli, %@ üzerinden."
+          }
+        }
+      }
+    },
+    "Error": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hata"
+          }
+        }
+      }
+    },
     "Every browser and phone signed in to your account. Swipe to sign one out.": {
       "localizations": {
         "tr": {
           "stringUnit": {
             "state": "translated",
             "value": "Hesabında oturum açık olan tüm tarayıcı ve telefonlar. Oturumu kapatmak için kaydır."
+          }
+        }
+      }
+    },
+    "Every device in it stops syncing. Feeds, articles and settings stay on each one.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zincirdeki her cihazın senkronu durur. Feed'ler, makaleler ve ayarlar her cihazda kalır."
           }
         }
       }
@@ -938,6 +1078,16 @@
         }
       }
     },
+    "In the browser extension: Settings → Sync chain → Join, then enter the code. On another iPhone, scan the QR code with the Camera.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tarayıcı eklentisinde: Ayarlar → Senkron zinciri → Katıl, ardından kodu girin. Başka bir iPhone'da QR kodunu Kamera ile okutun."
+          }
+        }
+      }
+    },
     "Include images": {
       "localizations": {
         "tr": {
@@ -984,6 +1134,36 @@
           "stringUnit": {
             "state": "translated",
             "value": "Feed'leri Kategorisiz'e taşınır."
+          }
+        }
+      }
+    },
+    "Join": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Katıl"
+          }
+        }
+      }
+    },
+    "Join a chain": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zincire katıl"
+          }
+        }
+      }
+    },
+    "Join a chain…": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zincire katıl…"
           }
         }
       }
@@ -1044,6 +1224,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Feed'in kendi adını kullanmak için boş bırak."
+          }
+        }
+      }
+    },
+    "Leave chain": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zincirden ayrıl"
+          }
+        }
+      }
+    },
+    "Leaving stops syncing on this iPhone. Deleting removes the chain from the relay and stops it on every device. Your library stays on each device either way.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ayrılmak bu iPhone'da senkronu durdurur. Silmek zinciri aktarıcıdan kaldırır ve her cihazda durdurur. Her iki durumda da kitaplığınız her cihazda kalır."
           }
         }
       }
@@ -1394,6 +1594,16 @@
         }
       }
     },
+    "Paste": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yapıştır"
+          }
+        }
+      }
+    },
     "Paste a feed, or any page that links to one. Perch finds the feed.": {
       "localizations": {
         "tr": {
@@ -1470,6 +1680,16 @@
         }
       }
     },
+    "QR code for joining the chain": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zincire katılmak için QR kodu"
+          }
+        }
+      }
+    },
     "Read": {
       "localizations": {
         "tr": {
@@ -1536,6 +1756,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Yenile"
+          }
+        }
+      }
+    },
+    "Relay address": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aktarıcı adresi"
+          }
+        }
+      }
+    },
+    "Relay: %@": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aktarıcı: %@"
           }
         }
       }
@@ -1896,6 +2136,26 @@
         }
       }
     },
+    "Start a chain": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zincir başlat"
+          }
+        }
+      }
+    },
+    "Started in the browser extension? Choose Join and enter its code, or scan its QR code with the Camera app. Each device fetches the feeds itself.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zinciri tarayıcı eklentisinde mi başlattınız? Katıl'ı seçip kodunu girin ya da QR kodunu Kamera uygulamasıyla okutun. Her cihaz feed'leri kendisi indirir."
+          }
+        }
+      }
+    },
     "Storage": {
       "localizations": {
         "tr": {
@@ -1922,6 +2182,36 @@
           "stringUnit": {
             "state": "translated",
             "value": "Senkron"
+          }
+        }
+      }
+    },
+    "Sync chain": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Senkron zinciri"
+          }
+        }
+      }
+    },
+    "Sync chains are for the library on this iPhone. Sign out of your Perch Server in Settings to use one.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Senkron zincirleri bu iPhone'daki kitaplık içindir. Kullanmak için Ayarlar'dan Perch Sunucunuzdan çıkış yapın."
+          }
+        }
+      }
+    },
+    "Sync now": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Şimdi senkronla"
           }
         }
       }
@@ -1966,6 +2256,16 @@
         }
       }
     },
+    "That code isn't complete or has a typo. It has 28 letters and digits.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kod eksik ya da yanlış yazılmış. 28 harf ve rakamdan oluşur."
+          }
+        }
+      }
+    },
     "That doesn't look like a server address.": {
       "localizations": {
         "tr": {
@@ -2002,6 +2302,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Bu iPhone'daki %lld feed hesaba eklenir."
+          }
+        }
+      }
+    },
+    "The 28-letter code shown where the chain was started. Your feeds here and the chain's are merged.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zincirin başlatıldığı yerde gösterilen 28 karakterlik kod. Buradaki feed'lerinizle zincirinkiler birleştirilir."
           }
         }
       }
@@ -2066,6 +2376,46 @@
           "stringUnit": {
             "state": "translated",
             "value": "Tema"
+          }
+        }
+      }
+    },
+    "There's no chain with this code.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu koda sahip bir zincir yok."
+          }
+        }
+      }
+    },
+    "This chain was deleted on another device.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu zincir başka bir cihazda silindi."
+          }
+        }
+      }
+    },
+    "This iPhone is already in a sync chain. Leave it in Settings → Sync chain first.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu iPhone zaten bir senkron zincirinde. Önce Ayarlar → Senkron zinciri'nden ayrılın."
+          }
+        }
+      }
+    },
+    "This server doesn't relay sync chains.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu sunucu senkron zincirlerini aktarmıyor."
           }
         }
       }
@@ -2190,6 +2540,16 @@
         }
       }
     },
+    "Use another relay": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Başka bir aktarıcı kullan"
+          }
+        }
+      }
+    },
     "Use at least 8 characters for your password.": {
       "localizations": {
         "tr": {
@@ -2260,12 +2620,12 @@
         }
       }
     },
-    "Your library is on this iPhone, and Perch fetches the feeds itself. Connect to a Perch Server to read the same library in the browser extension and on the web.": {
+    "Your library is on this iPhone, and Perch fetches the feeds itself. A sync chain keeps it in step with your other devices without an account; a Perch Server also lets you read on the web.": {
       "localizations": {
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Kitaplığınız bu iPhone'da ve feed'leri Perch kendisi indiriyor. Aynı kitaplığı tarayıcı eklentisinde ve web'de okumak için bir Perch Sunucusuna bağlanın."
+            "value": "Kitaplığınız bu iPhone'da ve feed'leri Perch kendisi indiriyor. Senkron zinciri onu hesap olmadan diğer cihazlarınızla eşit tutar; Perch Sunucusu ise web'de okumanızı da sağlar."
           }
         }
       }
@@ -2276,6 +2636,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Kitaplığınız bu iPhone'da, yani her makale çevrimdışı okunabilir. 60 günden eski makaleler, yıldızlılar dışında silinir. Az Veri Modu'nda görseller indirilmez."
+          }
+        }
+      }
+    },
+    "Your library on every device, no account": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hesap olmadan, kitaplığınız tüm cihazlarınızda"
+          }
+        }
+      }
+    },
+    "Your library stays on this iPhone.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kitaplığınız bu iPhone'da kalır."
           }
         }
       }

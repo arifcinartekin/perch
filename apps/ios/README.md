@@ -3,7 +3,8 @@
 A native SwiftUI feed reader. Like the extension it needs no account: it opens straight into an
 empty library, you add feeds, and the phone fetches them itself. Connect a
 [Perch Server](../server/README.md) under Settings → Sync and the library is the server's,
-kept in sync with the extension and the web reader. iOS 26 or later, so the tab bar, toolbars
+kept in sync with the extension and the web reader. Or, without any account, put the phone's
+library in a sync chain with your other devices. iOS 26 or later, so the tab bar, toolbars
 and sheets are Liquid Glass.
 
 - **Without a server:** feeds, categories, read and starred articles and settings live on the
@@ -12,6 +13,13 @@ and sheets are Liquid Glass.
   open and in background refresh, and keeps 60 days of articles (starred ones for good). Full
   text comes from the article's page. Feed and article ids are the ones `packages/core` gives,
   so connecting a server later adds the same feeds (read and starred state stay on the phone).
+- **Sync chain:** Settings → Sync → Sync chain starts a chain (on `sync.perch.ws`) or joins one
+  by its code; scanning a chain's QR code with the Camera opens the app ready to join. Feeds,
+  categories, read and starred articles, theme and colours sync with the extension and other
+  phones; each device still fetches the feeds itself. The code lives in the Keychain, and the
+  relay only sees encrypted records (see `PerchKit/Chain.swift` and
+  `LocalBackend+Chain.swift`, the Swift side of `packages/core/src/chain.ts` and the
+  extension's sync engine).
 
 - **Tabs:** Unread, Feeds, Starred, Settings and Search. The tab bar tucks away while you
   scroll.
@@ -116,7 +124,9 @@ cd apps/ios/PerchKit && swift test
 
 These include the phone library: parsing each feed format, ids checked against
 `packages/core`, discovery, OPML, and adding, refreshing and unsubscribing against stubbed
-HTTP. Add `PERCH_TEST_SERVER=http://localhost:8080 PERCH_TEST_USER=… PERCH_TEST_PASSWORD=…` to
+HTTP, and sync chains: the code, keys and sealed records against vectors shared with the
+TypeScript tests (each side opens what the other sealed), and two phone libraries syncing
+through an in-memory relay. Add `PERCH_TEST_SERVER=http://localhost:8080 PERCH_TEST_USER=… PERCH_TEST_PASSWORD=…` to
 also run the live tests (sign in, library, state, events, sign out) against a running server.
 
 Debug builds can open the phone library (`SIMCTL_CHILD_PERCH_DEV_LOCAL=1`, or `=fresh` for an
@@ -139,7 +149,10 @@ TEST_RUNNER_PERCH_DEV_PASSWORD=… xcodebuild test -scheme Perch -destination 'p
 
 `TEST_RUNNER_PERCH_SHOTS=<folder>` also saves its screenshots there. With
 `TEST_RUNNER_PERCH_UI_SITE=daringfireball.net` (any site with a feed; needs the internet) it also
-starts an empty phone library, adds the site and opens an article.
+starts an empty phone library, adds the site and opens an article. With
+`TEST_RUNNER_PERCH_UI_CHAIN=<perch://chain link>` (a chain holding a feed, on a relay the
+simulator can reach) it joins the chain from its link, checks the feed arrived, stars an
+article and opens the code for adding a device.
 
 ## Not yet
 

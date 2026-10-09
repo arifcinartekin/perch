@@ -26,6 +26,8 @@ final class Session {
   private(set) var client: APIClient?
   private(set) var backend: (any ReaderBackend)?
   private(set) var store: OfflineStore?
+  /// Sync without an account, for the library on this phone.
+  let chain = ChainLink()
 
   /// The app's session, for background refresh to use the same library
   /// objects as the screens.
@@ -127,8 +129,10 @@ final class Session {
     client = nil
     user = nil
     if let store = try? OfflineStore(url: Self.localLibrary) {
+      let local = LocalBackend(store: store)
       self.store = store
-      backend = LocalBackend(store: store)
+      backend = local
+      Task { await chain.prepare(local) }
     }
     phase = .local
   }
@@ -178,12 +182,15 @@ final class Session {
 
   #if DEBUG
     /// Debug builds only: PERCH_DEV_LOCAL=1 signs out and opens the library
-    /// on the phone; =fresh empties it first, like a new install.
+    /// on the phone; =fresh empties it first and leaves any chain, like a new
+    /// install.
     private func devLocal() -> Bool {
       guard let mode = ProcessInfo.processInfo.environment["PERCH_DEV_LOCAL"] else { return false }
       if let server { Keychain.setToken(nil, for: server) }
       if mode == "fresh" {
         try? FileManager.default.removeItem(at: Self.localLibrary.deletingLastPathComponent())
+        Keychain.setChain(nil)
+        chain.forgetForTesting()
       }
       openLocal()
       return true

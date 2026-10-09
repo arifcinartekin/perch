@@ -13,7 +13,10 @@ export const SYNC_KEYS = {
   outbox: 'perch:sync:outbox',
 } as const;
 
-export interface SyncAccount {
+/** Signed in to an account on a Perch Server. */
+export interface ServerAccount {
+  /** Absent on accounts saved before chains existed. */
+  kind?: 'server';
   /** Server origin, e.g. "https://reader.example.com". */
   server: string;
   username: string;
@@ -21,6 +24,20 @@ export interface SyncAccount {
   /** This device's clock id; random, stable while signed in. */
   node: string;
 }
+
+/** In a sync chain (no account): records go through a relay, encrypted. */
+export interface ChainAccount {
+  kind: 'chain';
+  /** The relay's origin, e.g. "https://sync.perch.ws". */
+  server: string;
+  /** The chain's code; everything else is derived from it. */
+  code: string;
+  node: string;
+}
+
+export type SyncAccount = ServerAccount | ChainAccount;
+
+export const isChain = (account: SyncAccount): account is ChainAccount => account.kind === 'chain';
 
 export interface SyncStatus {
   /** Highest server version applied here. */

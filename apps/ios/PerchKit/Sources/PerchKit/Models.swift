@@ -13,6 +13,8 @@ public struct ServerInfo: Codable, Sendable, Equatable {
   public var mode: ServerMode
   public var signup: SignupPolicy
   public var community: Bool
+  /// Relays sync chains; absent on older servers.
+  public var chain: Bool?
   /// No accounts yet: the first one to register becomes the admin.
   public var needsSetup: Bool
 }

@@ -232,3 +232,38 @@ export const syncRecords = sqliteTable(
     uniqueIndex('sync_records_version').on(t.userId, t.version),
   ],
 );
+
+// ---------------------------------------------------------------------------
+// Sync chains (@perch/core/chain): sync without an account
+// ---------------------------------------------------------------------------
+
+/** One per chain. The relay knows a chain only by the hash of its token. */
+export const chains = sqliteTable('chains', {
+  /** SHA-256 (base64url) of the bearer token the devices derive from its code. */
+  id: text('id').primaryKey(),
+  createdAt: integer('created_at').notNull().default(now),
+  lastSeenAt: integer('last_seen_at').notNull().default(now),
+});
+
+/** Encrypted records: the relay can order them, not read them. */
+export const chainRecords = sqliteTable(
+  'chain_records',
+  {
+    chainId: text('chain_id')
+      .notNull()
+      .references(() => chains.id, { onDelete: 'cascade' }),
+    /** Opaque slot (an HMAC of "type:id"). */
+    key: text('key').notNull(),
+    hlc: text('hlc').notNull(),
+    deleted: integer('deleted', { mode: 'boolean' }).notNull().default(false),
+    /** Read, unstarred state; forgotten after 60 days. */
+    ephemeral: integer('ephemeral', { mode: 'boolean' }).notNull().default(false),
+    blob: text('blob').notNull(),
+    version: integer('version').notNull(),
+    updatedAt: integer('updated_at').notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.chainId, t.key] }),
+    uniqueIndex('chain_records_version').on(t.chainId, t.version),
+  ],
+);

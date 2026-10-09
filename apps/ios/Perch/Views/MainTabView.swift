@@ -10,6 +10,14 @@ struct MainTabView: View {
   @State private var tab: TabID = Self.initialTab
   /// An article opened from a widget or notification.
   @State private var linked: Article?
+  @State private var joiningChain: JoinRequest?
+
+  /// A chain to join, from a scanned QR code.
+  struct JoinRequest: Identifiable {
+    var server: URL
+    var code: String
+    var id: String { code }
+  }
   private let links = DeepLinks.shared
 
   enum TabID: String, Hashable { case unread, feeds, starred, settings, search }
@@ -73,11 +81,19 @@ struct MainTabView: View {
       }
     }
     .task(id: links.pending) { await openLink() }
+    .sheet(item: $joiningChain) { request in
+      NavigationStack { JoinChainView(server: request.server, code: request.code) }
+    }
   }
 
   private func openLink() async {
     guard let url = links.pending else { return }
     links.pending = nil
+    // A scanned chain QR code: offer to join.
+    if let chain = ChainCode.parseLink(url) {
+      joiningChain = JoinRequest(server: chain.server, code: chain.code)
+      return
+    }
     tab = .unread
     guard let (feedId, articleId) = WidgetSnapshot.article(in: url) else { return }
     linked = await reader.article(feedId: feedId, id: articleId)

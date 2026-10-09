@@ -14,6 +14,7 @@ import { adminRoutes, authRoutes, deviceRoutes } from './auth/routes';
 import { readerRoutes } from './reader/routes';
 import { SyncService } from './sync/service';
 import { syncRoutes } from './sync/routes';
+import { chainRoutes } from './chain/routes';
 
 export const VERSION = '0.1.0';
 
@@ -61,6 +62,7 @@ export function createApp(ctx: AppContext) {
       mode: ctx.config.mode,
       signup: ctx.config.signup,
       community: ctx.config.community,
+      chain: ctx.config.chain,
       needsSetup: users_ === 0,
     });
   });
@@ -69,6 +71,7 @@ export function createApp(ctx: AppContext) {
   api.route('/admin', adminRoutes(ctx));
   api.route('/reader', readerRoutes(ctx));
   api.route('/sync', syncRoutes(ctx));
+  api.route('/chain', chainRoutes(ctx));
 
   app.route(API_PREFIX, api);
   app.get('/healthz', (c) => c.text('ok'));

@@ -17,12 +17,14 @@ import { PENDING_STATES_KEY, deleteArticlesForFeed } from '../storage/articles';
 import { getFeeds, saveFeeds } from '../storage/feeds';
 import { getSettings, saveSettings } from '../storage/settings';
 import { hasHostPermission } from '../permissions/host';
+import { chainApi } from './chain';
 import { ServerError, syncApi } from './client';
 import {
   getAccount,
   getOutbox,
   getShadow,
   getStatus,
+  isChain,
   saveOutbox,
   saveShadow,
   setStatus,
@@ -76,9 +78,14 @@ async function runSync(): Promise<SyncResult | null> {
     await setStatus({ cursor, hlc: hlc.now(), lastSyncAt: Date.now(), lastError: undefined });
     return result;
   } catch (err) {
-    const signedOut = err instanceof ServerError && err.status === 401;
+    const chainGone = err instanceof ServerError && err.code === 'chain-not-found';
+    const signedOut = (err instanceof ServerError && err.status === 401) || chainGone;
     await setStatus({
-      lastError: signedOut ? 'Your session ended. Sign in again.' : (err as Error).message,
+      lastError: chainGone
+        ? 'This chain was deleted on another device.'
+        : signedOut
+          ? 'Your session ended. Sign in again.'
+          : (err as Error).message,
       signedOut: signedOut || undefined,
       hlc: hlc.now(),
     });
@@ -90,8 +97,11 @@ async function runSync(): Promise<SyncResult | null> {
 // Pull
 // ---------------------------------------------------------------------------
 
+/** The account's server, or the chain's relay with records sealed and opened. */
+const apiFor = (account: SyncAccount) => (isChain(account) ? chainApi(account) : syncApi(account));
+
 async function pull(account: SyncAccount, hlc: Hlc, since: number, result: SyncResult) {
-  const api = syncApi(account);
+  const api = apiFor(account);
   let cursor = since;
   for (;;) {
     const page = await api.changes(cursor);
@@ -294,7 +304,7 @@ async function push(account: SyncAccount, hlc: Hlc): Promise<number> {
   }
   if (outgoing.length === 0) return 0;
 
-  const api = syncApi(account);
+  const api = apiFor(account);
   let pushed = 0;
   for (let i = 0; i < outgoing.length; i += PUSH_BATCH) {
     const batch = outgoing.slice(i, i + PUSH_BATCH);

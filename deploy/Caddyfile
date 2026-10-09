@@ -7,6 +7,8 @@
 	}
 }
 
-{$PERCH_DOMAIN} {
+# The relay for sync chains can have its own name (e.g. sync.perch.ws); it's
+# the same server, so it simply answers there too.
+{$PERCH_DOMAIN} {$PERCH_SYNC_DOMAIN} {
 	reverse_proxy perch:8080
 }

@@ -22,6 +22,10 @@ The script installs Docker, opens only ports 22, 80 and 443, turns on automatic 
 updates, switches SSH to keys only (if a key is installed), checks Perch out to `/opt/perch`,
 builds and starts it, and schedules a daily backup. Running it again is safe.
 
+Add a second name, e.g. `… | sudo bash -s -- app.perch.ws sync.perch.ws`, to also relay sync
+chains (sync without an account) there; point its DNS at the same server first. Running the
+script again with it turns that on for an existing install.
+
 Then open `https://app.perch.ws` straight away and create the first account; it becomes the
 admin. Sign-up is by invite after that (`PERCH_SIGNUP` in `/opt/perch/deploy/.env`).
 

@@ -44,6 +44,7 @@ open http://localhost:5173 — Vite proxies `/api` to the server.
 | `PERCH_FETCH_ALLOW_PRIVATE` | `false`            | Allow feeds on private / loopback addresses.                                             |
 | `PERCH_FETCH_ALLOW_HOSTS`   |                    | Comma-separated hostnames allowed to resolve to private addresses (e.g. `nas.local`).    |
 | `PERCH_TRUST_PROXY`         | `false`            | Use `X-Forwarded-For` for rate limiting. Only behind a proxy you control.                |
+| `PERCH_CHAIN`               | `false`            | Relay sync chains (sync without an account) for anyone. See below.                       |
 | `PERCH_WEB_ROOT`            | `apps/web/dist`    | Folder with the built web reader. The Docker image sets it.                              |
 
 ## How it works
@@ -65,6 +66,13 @@ open http://localhost:5173 — Vite proxies `/api` to the server.
   clock for each key and numbers changes per account, so a client asks for "everything after
   version N". Changes made through the reader API become records too, so every device sees
   them. Read state older than 60 days and tombstones older than 90 are forgotten.
+- **Sync chains** (`PERCH_CHAIN=true`). Devices without an account sync through the server as a
+  relay. A chain is known only by the SHA-256 of a token its devices derive from the chain's
+  code; records arrive encrypted (AES-256-GCM) under opaque slot names (an HMAC of the record
+  key), so the server orders them per slot by clock and passes them on without seeing feeds,
+  categories, settings or read state (`@perch/core/chain`). It forgets read, unstarred state
+  after 60 days, deletions after 90 and chains unused for 180, caps a chain at 100 000 records,
+  and limits new chains to 10 an hour per address.
 - **Retention.** Each feed keeps its newest 200 articles plus anything from the last 90 days.
   Starred articles are never pruned, even after you unsubscribe.
 
@@ -92,6 +100,8 @@ All endpoints live under `/api/v1` and speak JSON. The request and response type
 | `GET/PUT /reader/settings`                                           | Settings that follow the account           |
 | `GET /sync/changes?since=&limit=` · `POST /sync/push`                | Sync records after a version, send changes |
 | `GET /sync/events`                                                   | Server-Sent Events: the account changed    |
+| `POST /chain` · `DELETE /chain`                                      | Start (or check) a sync chain, delete it   |
+| `GET /chain/changes?since=&limit=` · `POST /chain/push`              | Sealed chain records after a version, send |
 
 ## Development
 

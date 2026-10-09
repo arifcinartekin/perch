@@ -20,16 +20,21 @@ public actor LocalBackend: ReaderBackend {
 
   public let store: OfflineStore
   private let session: URLSession
-  private var state: Saved?
+  // Internal, not private: the chain engine (LocalBackend+Chain.swift) works
+  // on them too.
+  var state: Saved?
+  /// In a sync chain: read and star changes are queued to go out.
+  var chainOn = false
+  var chainRun: Task<ChainSyncResult, Error>?
 
-  private struct Saved: Codable {
+  struct Saved: Codable {
     var library = Library()
     var settings = SyncedSettings()
     /// Per feed: validators for conditional requests.
     var validators: [String: Validators] = [:]
   }
 
-  private struct Validators: Codable {
+  struct Validators: Codable {
     var etag: String?
     var lastModified: String?
 
@@ -57,14 +62,14 @@ public actor LocalBackend: ReaderBackend {
     session = URLSession(configuration: config)
   }
 
-  private func load() async -> Saved {
+  func load() async -> Saved {
     if let state { return state }
     let saved: Saved = await store.load(Self.key) ?? Saved()
     state = saved
     return saved
   }
 
-  private func update(_ change: (inout Saved) -> Void) async {
+  func update(_ change: (inout Saved) -> Void) async {
     var s = await load()
     change(&s)
     state = s
@@ -124,6 +129,7 @@ public actor LocalBackend: ReaderBackend {
   public func setState(_ refs: [ArticleRef], read: Bool?, starred: Bool?) async throws {
     for ref in refs {
       await store.setState("\(ref.feedId):\(ref.id)", read: read, starred: starred)
+      if chainOn { await store.enqueue(ref, read: read, starred: starred) }
     }
   }
 
@@ -133,7 +139,10 @@ public actor LocalBackend: ReaderBackend {
     if let category {
       ids = Set(await load().library.feeds.filter { $0.categoryId == category }.map(\.id))
     }
-    await store.markRead(feedIds: ids, upTo: upTo.timeIntervalSince1970 * 1000)
+    let marked = await store.markRead(feedIds: ids, upTo: upTo.timeIntervalSince1970 * 1000)
+    if chainOn {
+      for ref in marked { await store.enqueue(ref, read: true) }
+    }
   }
 
   // MARK: Fetching
@@ -194,6 +203,7 @@ public actor LocalBackend: ReaderBackend {
       }
       s.validators.merge(newValidators) { _, new in new }
     }
+    await applyParkedStates()
   }
 
   private struct Fetched: Sendable {
@@ -271,6 +281,7 @@ public actor LocalBackend: ReaderBackend {
       s.library.feeds.append(feed)
       s.validators[id] = validators
     }
+    await applyParkedStates()
     return .init(feed: feed, created: true)
   }
 

@@ -2,8 +2,10 @@
 # Sets up a fresh Ubuntu 24.04 server for Perch. Run as root (or with sudo):
 #
 #   curl -fsSL https://raw.githubusercontent.com/arifcinartekin/perch/main/deploy/setup.sh \
-#     | sudo bash -s -- app.perch.ws
+#     | sudo bash -s -- app.perch.ws [sync.perch.ws]
 #
+# The optional second name serves the relay for sync chains (sync without an
+# account) from the same server.
 # Installs Docker, opens only SSH/HTTP/HTTPS, turns on security updates, checks
 # out Perch to /opt/perch, starts it behind Caddy and schedules a daily backup.
 # Safe to run again.
@@ -15,13 +17,14 @@ set -euo pipefail
 main() {
 
 DOMAIN="${1:-}"
+SYNC_DOMAIN="${2:-}"
 REPO="${PERCH_REPO:-https://github.com/arifcinartekin/perch.git}"
 BRANCH="${PERCH_BRANCH:-main}"
 DIR=/opt/perch
 DATA=/var/lib/perch
 
 if [[ -z "$DOMAIN" ]]; then
-  echo "usage: setup.sh <domain>   e.g. setup.sh app.perch.ws" >&2
+  echo "usage: setup.sh <domain> [sync domain]   e.g. setup.sh app.perch.ws sync.perch.ws" >&2
   exit 1
 fi
 if [[ $EUID -ne 0 ]]; then
@@ -85,15 +88,26 @@ step "Configuration"
 mkdir -p "$DATA/backups"
 chown -R 1000:1000 "$DATA" # the image runs as user node (1000)
 ENV="$DIR/deploy/.env"
-if [[ -f "$ENV" ]]; then
-  sed -i "s/^PERCH_DOMAIN=.*/PERCH_DOMAIN=$DOMAIN/" "$ENV"
-else
+if [[ ! -f "$ENV" ]]; then
   cat >"$ENV" <<EOF
 PERCH_DOMAIN=$DOMAIN
 PERCH_SIGNUP=invite
 PERCH_FETCH_INTERVAL_MIN=30
 PERCH_DATA=$DATA
 EOF
+fi
+# Set (or replace) a line in .env.
+set_env() {
+  if grep -q "^$1=" "$ENV"; then
+    sed -i "s|^$1=.*|$1=$2|" "$ENV"
+  else
+    echo "$1=$2" >>"$ENV"
+  fi
+}
+set_env PERCH_DOMAIN "$DOMAIN"
+if [[ -n "$SYNC_DOMAIN" ]]; then
+  set_env PERCH_SYNC_DOMAIN "$SYNC_DOMAIN"
+  set_env PERCH_CHAIN true
 fi
 chmod 600 "$ENV"
 

@@ -16,6 +16,8 @@ export interface ServerInfo {
   mode: ServerMode;
   signup: SignupPolicy;
   community: boolean;
+  /** Relays sync chains (sync without an account; see chain.ts). */
+  chain?: boolean;
   /** No accounts yet: the first account to register becomes the admin. */
   needsSetup: boolean;
 }

@@ -12,6 +12,8 @@ export interface Config {
   publicUrl?: string;
   signup: SignupPolicy;
   community: boolean;
+  /** Relay sync chains (sync without an account) for anyone who asks. */
+  chain: boolean;
   /** Minutes between refreshes of the same feed. */
   fetchIntervalMin: number;
   /** Allow fetching feeds on private / loopback addresses (home-network feeds). */
@@ -64,6 +66,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     publicUrl: env.PERCH_PUBLIC_URL?.replace(/\/+$/, '') || undefined,
     signup: oneOf('PERCH_SIGNUP', env.PERCH_SIGNUP, ['open', 'invite', 'closed'], 'invite'),
     community: bool(env.PERCH_COMMUNITY, false),
+    chain: bool(env.PERCH_CHAIN, false),
     fetchIntervalMin: int(env.PERCH_FETCH_INTERVAL_MIN, 30, 5, 24 * 60),
     fetchAllowPrivate: bool(env.PERCH_FETCH_ALLOW_PRIVATE, false),
     fetchAllowHosts: (env.PERCH_FETCH_ALLOW_HOSTS ?? '')

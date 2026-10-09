@@ -208,11 +208,16 @@ public actor OfflineStore {
   }
 
   /// Marks stored articles read, as the server did for "mark all read".
-  public func markRead(feedIds: Set<String>?, upTo: Double) {
+  /// Returns the ones that changed.
+  @discardableResult
+  public func markRead(feedIds: Set<String>?, upTo: Double) -> [ArticleRef] {
+    var marked: [ArticleRef] = []
     for a in articles(Query(feedIds: feedIds, unreadOnly: true), limit: 100_000)
     where a.publishedAt <= upTo {
       setState(a.id, read: true)
+      marked.append(a.ref)
     }
+    return marked
   }
 
   /// Unread and starred articles the device knows of, for offline counts.

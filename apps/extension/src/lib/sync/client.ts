@@ -2,7 +2,7 @@ import { API_PREFIX } from '@perch/core/api';
 import type { ApiError, AuthResponse, PreloginResponse, ServerInfo } from '@perch/core/api';
 import { DEFAULT_KDF, deriveKeys, newSalt } from '@perch/core/auth';
 import type { SyncChangesResponse, SyncPushResponse, SyncRecord } from '@perch/core/sync';
-import type { SyncAccount } from './state';
+import type { ServerAccount } from './state';
 
 // HTTP calls to a Perch Server. The extension page that signs in needs host
 // permission for the server's origin; that's also what lets these requests
@@ -77,7 +77,7 @@ export async function signIn(
   server: string,
   username: string,
   password: string,
-): Promise<SyncAccount> {
+): Promise<ServerAccount> {
   const pre = await call<PreloginResponse>(server, '/auth/prelogin', { body: { username } });
   const { authKey } = await deriveKeys(password, pre.salt, pre.kdf);
   const res = await call<AuthResponse>(server, '/auth/login', {
@@ -91,7 +91,7 @@ export async function signUp(
   username: string,
   password: string,
   invite?: string,
-): Promise<SyncAccount> {
+): Promise<ServerAccount> {
   const salt = newSalt();
   const { authKey } = await deriveKeys(password, salt, DEFAULT_KDF);
   const res = await call<AuthResponse>(server, '/auth/register', {
@@ -107,11 +107,11 @@ export async function signUp(
   return { server, username: res.user.username, token: res.token, node: randomNode() };
 }
 
-export async function signOutRemote(account: SyncAccount): Promise<void> {
+export async function signOutRemote(account: ServerAccount): Promise<void> {
   await call(account.server, '/auth/logout', { token: account.token, body: {} }).catch(() => {});
 }
 
-export function syncApi(account: SyncAccount) {
+export function syncApi(account: ServerAccount) {
   const token = account.token;
   return {
     changes: (since: number, limit = 500) =>

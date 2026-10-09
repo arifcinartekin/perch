@@ -20,7 +20,7 @@ struct SettingsView: View {
   @State private var message: String?
   @State private var path = NavigationPath()
 
-  enum Page: String, Hashable { case appearance, offline, devices, invites }
+  enum Page: String, Hashable { case appearance, offline, devices, invites, chain }
 
   var body: some View {
     NavigationStack(path: $path) {
@@ -79,6 +79,14 @@ struct SettingsView: View {
 
         if reader.isLocal {
           Section {
+            NavigationLink(value: Page.chain) {
+              LabeledContent {
+                Text(session.chain.isOn ? "On" : "Off")
+              } label: {
+                Label("Sync chain", systemImage: "link")
+              }
+            }
+            .surfaceRow()
             Button("Connect to a Perch Server…", systemImage: "arrow.triangle.2.circlepath") {
               connecting = true
             }
@@ -87,7 +95,7 @@ struct SettingsView: View {
             Text("Sync")
           } footer: {
             Text(
-              "Your library is on this iPhone, and Perch fetches the feeds itself. Connect to a Perch Server to read the same library in the browser extension and on the web."
+              "Your library is on this iPhone, and Perch fetches the feeds itself. A sync chain keeps it in step with your other devices without an account; a Perch Server also lets you read on the web."
             )
           }
         } else {
@@ -139,6 +147,7 @@ struct SettingsView: View {
         case .offline: OfflineSettingsView()
         case .devices: DevicesView()
         case .invites: InvitesView()
+        case .chain: ChainSettingsView()
         }
       }
       #if DEBUG
