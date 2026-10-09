@@ -32,6 +32,7 @@ services:
       PERCH_SYNC_DOMAIN: ${PERCH_SYNC_DOMAIN:-}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./sync:/srv/sync:ro # the page a browser sees on the sync domain
       - caddy-data:/data
       - caddy-config:/config
 

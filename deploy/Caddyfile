@@ -7,8 +7,33 @@
 	}
 }
 
-# The relay for sync chains can have its own name (e.g. sync.perch.ws); it's
-# the same server, so it simply answers there too.
+# The relay for sync chains can have its own name (e.g. sync.perch.ws). It's the
+# same server, but there it answers only the chain API: no web app, no sign-in,
+# no sign-up, just a page saying what the address is.
 {$PERCH_DOMAIN} {$PERCH_SYNC_DOMAIN} {
-	reverse_proxy perch:8080
+	@sync host {$PERCH_SYNC_DOMAIN:sync.invalid}
+	handle @sync {
+		# /server lets the apps check that this is a relay before joining.
+		@relay path /api/v1/chain /api/v1/chain/* /api/v1/server
+		handle @relay {
+			reverse_proxy perch:8080
+		}
+		handle /api/* {
+			header Content-Type application/json
+			respond `{"error":"not-found","message":"This address only relays sync chains"}` 404
+		}
+		handle {
+			header {
+				Content-Security-Policy "default-src 'none'; img-src 'self'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+				Referrer-Policy no-referrer
+				X-Content-Type-Options nosniff
+			}
+			root * /srv/sync
+			try_files {path} /index.html
+			file_server
+		}
+	}
+	handle {
+		reverse_proxy perch:8080
+	}
 }

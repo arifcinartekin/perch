@@ -24,7 +24,9 @@ builds and starts it, and schedules a daily backup. Running it again is safe.
 
 Add a second name, e.g. `… | sudo bash -s -- app.perch.ws sync.perch.ws`, to also relay sync
 chains (sync without an account) there; point its DNS at the same server first. Running the
-script again with it turns that on for an existing install.
+script again with it turns that on for an existing install. That name answers only the chain
+API: no web app and no sign-in there, and a browser gets a short page (`deploy/sync/`) saying
+what the address is.
 
 Then open `https://app.perch.ws` straight away and create the first account; it becomes the
 admin. Sign-up is by invite after that (`PERCH_SIGNUP` in `/opt/perch/deploy/.env`).
