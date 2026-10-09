@@ -1,0 +1,584 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Perch — a calm, private feed reader</title>
+    <meta
+      name="description"
+      content="Perch is a privacy-first reader for RSS, Atom and JSON feeds — in your browser, on your iPhone and on the web. Local by default, synced if you want."
+    />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#f7f5f0" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0e1118" media="(prefers-color-scheme: dark)" />
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+    <meta property="og:title" content="Perch — a calm, private feed reader" />
+    <meta
+      property="og:description"
+      content="RSS, Atom and JSON feeds in your browser, on your iPhone and on the web. Local by default, synced if you want."
+    />
+    <meta property="og:image" content="https://perch.ws/assets/icon.png" />
+    <meta property="og:url" content="https://perch.ws/" />
+    <meta name="twitter:card" content="summary" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <!-- The page behind the glass: slow ember and dusk glows. -->
+    <div class="sky" aria-hidden="true">
+      <span class="glow glow-1"></span>
+      <span class="glow glow-2"></span>
+      <span class="glow glow-3"></span>
+    </div>
+
+    <header class="nav-wrap">
+      <nav class="nav glass" aria-label="Main">
+        <a class="brand" href="#top" aria-label="Perch home">
+          <svg class="logo" viewBox="88 106 1548 473" aria-hidden="true">
+            <use href="#perch-logo" />
+          </svg>
+        </a>
+        <div class="nav-links">
+          <a href="#features" data-i18n="nav.features">Features</a>
+          <a href="#sync" data-i18n="nav.sync">Sync</a>
+          <a href="#privacy" data-i18n="nav.privacy">Privacy</a>
+        </div>
+        <div class="nav-actions">
+          <button class="lang" type="button" data-lang-toggle aria-label="Türkçe">TR</button>
+          <a
+            class="icon-link"
+            href="https://github.com/arifcinartekin/perch"
+            aria-label="Perch on GitHub"
+          >
+            <svg viewBox="0 0 16 16" aria-hidden="true"><use href="#gh" /></svg>
+          </a>
+          <a class="btn btn-primary btn-sm" href="https://app.perch.ws" data-i18n="nav.open"
+            >Open app</a
+          >
+        </div>
+      </nav>
+    </header>
+
+    <main id="top">
+      <!-- Hero -->
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow reveal" data-i18n="hero.eyebrow">Open source · No account needed</p>
+          <h1 class="reveal">
+            <span data-i18n="hero.title1">Your feeds, calmly.</span>
+            <span class="accent" data-i18n="hero.title2">And only yours.</span>
+          </h1>
+          <p class="lede reveal" data-i18n="hero.lede">
+            Perch is a privacy-first reader for RSS, Atom and JSON feeds — in your browser, on your
+            iPhone and on the web. Local by default, synced if you want, and never watching what you
+            read.
+          </p>
+          <div class="cta reveal">
+            <a class="btn btn-primary" href="https://app.perch.ws">
+              <span data-i18n="hero.open">Open the web app</span>
+              <svg viewBox="0 0 20 20" aria-hidden="true"><use href="#arrow" /></svg>
+            </a>
+            <a class="btn btn-glass" href="https://github.com/arifcinartekin/perch">
+              <svg viewBox="0 0 16 16" aria-hidden="true"><use href="#gh" /></svg>
+              <span data-i18n="hero.github">View on GitHub</span>
+            </a>
+          </div>
+          <ul class="platforms reveal" aria-label="Platforms">
+            <li data-i18n="hero.p1">Chrome, Edge, Brave & Firefox</li>
+            <li data-i18n="hero.p2">iPhone & iPad</li>
+            <li data-i18n="hero.p3">Web</li>
+          </ul>
+          <p class="soon reveal" data-i18n="hero.soon">
+            Store releases are on their way; the code is ready to build today.
+          </p>
+        </div>
+
+        <!-- A sketch of the reader, not a screenshot: made-up feeds. -->
+        <div class="hero-art" aria-hidden="true">
+          <div class="window glass">
+            <div class="window-bar">
+              <span></span><span></span><span></span>
+              <div class="url">app.perch.ws</div>
+            </div>
+            <div class="window-body">
+              <aside class="mock-side">
+                <div class="mock-item active"><i class="ic inbox"></i>All Feeds<b>24</b></div>
+                <div class="mock-item"><i class="ic star"></i>Starred</div>
+                <div class="mock-head">Tech</div>
+                <div class="mock-item"><i class="fav f1">F</i>Field Notes<b>6</b></div>
+                <div class="mock-item"><i class="fav f2">Q</i>The Quiet Web<b>3</b></div>
+                <div class="mock-head">Science</div>
+                <div class="mock-item"><i class="fav f3">N</i>Night Sky Journal<b>2</b></div>
+                <div class="mock-item"><i class="fav f4">T</i>Tidepool<b>13</b></div>
+              </aside>
+              <div class="mock-list">
+                <article class="mock-row unread">
+                  <div>
+                    <small>Field Notes · 12 min</small>
+                    <strong>Why slow software feels faster</strong>
+                    <p>Latency, attention and the small joys of tools that wait for you.</p>
+                  </div>
+                  <span class="thumb t1"></span>
+                </article>
+                <article class="mock-row unread">
+                  <div>
+                    <small>Night Sky Journal · 1 h</small>
+                    <strong>A comet worth staying up for</strong>
+                    <p>Where to look this week, and what binoculars will show you.</p>
+                  </div>
+                  <span class="thumb t2"></span>
+                </article>
+                <article class="mock-row">
+                  <div>
+                    <small>The Quiet Web · 3 h</small>
+                    <strong>Bring back the blogroll</strong>
+                    <p>Following people, not platforms.</p>
+                  </div>
+                  <span class="thumb t3"></span>
+                </article>
+                <article class="mock-row">
+                  <div>
+                    <small>Tidepool · 5 h</small>
+                    <strong>Notes from a rocky shore</strong>
+                    <p>Anemones, crabs and the patience of low tide.</p>
+                  </div>
+                  <span class="thumb t4"></span>
+                </article>
+              </div>
+            </div>
+          </div>
+
+          <div class="phone glass">
+            <div class="phone-notch"></div>
+            <small>Field Notes</small>
+            <strong>Why slow software feels faster</strong>
+            <span class="line w90"></span>
+            <span class="line w100"></span>
+            <span class="line w80"></span>
+            <span class="line w95"></span>
+            <span class="line w60"></span>
+            <div class="phone-bar">
+              <i class="ic star on"></i><i class="ic circle"></i><i class="ic share"></i>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Features -->
+      <section id="features" class="section">
+        <div class="section-head reveal">
+          <p class="eyebrow" data-i18n="features.eyebrow">Made for reading</p>
+          <h2 data-i18n="features.title">
+            Everything a feed reader should be. Nothing it shouldn’t.
+          </h2>
+        </div>
+        <div class="grid">
+          <article class="card glass reveal">
+            <span class="badge"
+              ><svg viewBox="0 0 24 24"><use href="#i-book" /></svg
+            ></span>
+            <h3 data-i18n="f1.t">Reads like a book</h3>
+            <p data-i18n="f1.d">
+              Full articles load by themselves, in a calm, uncluttered layout with sans or serif
+              type. No mode to switch, no button to press.
+            </p>
+          </article>
+          <article class="card glass reveal">
+            <span class="badge"
+              ><svg viewBox="0 0 24 24"><use href="#i-device" /></svg
+            ></span>
+            <h3 data-i18n="f2.t">Local by default</h3>
+            <p data-i18n="f2.d">
+              Feeds, read state and settings live on your device. No account, no telemetry, no
+              third-party backend.
+            </p>
+          </article>
+          <article class="card glass reveal">
+            <span class="badge"
+              ><svg viewBox="0 0 24 24"><use href="#i-shield" /></svg
+            ></span>
+            <h3 data-i18n="f3.t">No scary permissions</h3>
+            <p data-i18n="f3.d">
+              The extension asks for no site access when you install it. It reaches only the sites
+              you add, one at a time.
+            </p>
+          </article>
+          <article class="card glass reveal">
+            <span class="badge"
+              ><svg viewBox="0 0 24 24"><use href="#i-rss" /></svg
+            ></span>
+            <h3 data-i18n="f4.t">Finds the feed for you</h3>
+            <p data-i18n="f4.d">
+              On any site, open Perch: it reads the feed links the page names, or tries the usual
+              places. RSS, Atom and JSON Feed all work.
+            </p>
+          </article>
+          <article class="card glass reveal">
+            <span class="badge"
+              ><svg viewBox="0 0 24 24"><use href="#i-palette" /></svg
+            ></span>
+            <h3 data-i18n="f5.t">Yours to shape</h3>
+            <p data-i18n="f5.d">
+              Light and dark themes, your own accent and button colours, frosted glass and a
+              background picture of your choice.
+            </p>
+          </article>
+          <article class="card glass reveal">
+            <span class="badge"
+              ><svg viewBox="0 0 24 24"><use href="#i-code" /></svg
+            ></span>
+            <h3 data-i18n="f6.t">Open source, self-hostable</h3>
+            <p data-i18n="f6.d">
+              MIT licensed. Run your own Perch Server with a single script — or don’t run one at
+              all.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <!-- Sync -->
+      <section id="sync" class="section sync">
+        <div class="sync-copy reveal">
+          <p class="eyebrow" data-i18n="sync.eyebrow">Sync chains</p>
+          <h2 data-i18n="sync.title">Sync without an account.</h2>
+          <p class="lede" data-i18n="sync.lede">
+            Start a chain on one device and scan its QR code on the next. Everything is encrypted on
+            your devices with a key only they hold; the relay in between passes it on without being
+            able to read it.
+          </p>
+          <ol class="steps">
+            <li>
+              <b>1</b>
+              <div>
+                <h3 data-i18n="s1.t">Start a chain</h3>
+                <p data-i18n="s1.d">On any device: Settings → Sync → Start a chain.</p>
+              </div>
+            </li>
+            <li>
+              <b>2</b>
+              <div>
+                <h3 data-i18n="s2.t">Scan or type the code</h3>
+                <p data-i18n="s2.d">
+                  Point your iPhone’s camera at the QR code, or enter the 28-character code in
+                  another browser.
+                </p>
+              </div>
+            </li>
+            <li>
+              <b>3</b>
+              <div>
+                <h3 data-i18n="s3.t">Read anywhere</h3>
+                <p data-i18n="s3.d">
+                  Subscriptions, read and starred articles, theme and colours follow you.
+                </p>
+              </div>
+            </li>
+          </ol>
+          <p class="aside glass" data-i18n="sync.account">
+            Prefer an account? Sign in to a Perch Server — ours at app.perch.ws, or one you run
+            yourself — and read on the web too.
+          </p>
+        </div>
+
+        <div class="chain-art reveal" aria-hidden="true">
+          <svg class="chain-lines" viewBox="0 0 400 400">
+            <path id="l1" d="M200 200 L80 90" />
+            <path id="l2" d="M200 200 L320 90" />
+            <path id="l3" d="M200 200 L200 340" />
+            <!-- Encrypted bits travelling between the devices and the relay. -->
+            <g class="packets">
+              <rect x="-5" y="-5" width="10" height="10" rx="3">
+                <animateMotion dur="3.2s" repeatCount="indefinite">
+                  <mpath href="#l1" />
+                </animateMotion>
+                <animate
+                  attributeName="opacity"
+                  values="0;1;1;0"
+                  keyTimes="0;0.15;0.85;1"
+                  dur="3.2s"
+                  repeatCount="indefinite"
+                />
+              </rect>
+              <rect x="-5" y="-5" width="10" height="10" rx="3">
+                <animateMotion
+                  dur="3.2s"
+                  begin="-1.1s"
+                  repeatCount="indefinite"
+                  keyPoints="1;0"
+                  keyTimes="0;1"
+                  calcMode="linear"
+                >
+                  <mpath href="#l2" />
+                </animateMotion>
+                <animate
+                  attributeName="opacity"
+                  values="0;1;1;0"
+                  keyTimes="0;0.15;0.85;1"
+                  dur="3.2s"
+                  begin="-1.1s"
+                  repeatCount="indefinite"
+                />
+              </rect>
+              <rect x="-5" y="-5" width="10" height="10" rx="3">
+                <animateMotion dur="3.2s" begin="-2.2s" repeatCount="indefinite">
+                  <mpath href="#l3" />
+                </animateMotion>
+                <animate
+                  attributeName="opacity"
+                  values="0;1;1;0"
+                  keyTimes="0;0.15;0.85;1"
+                  dur="3.2s"
+                  begin="-2.2s"
+                  repeatCount="indefinite"
+                />
+              </rect>
+            </g>
+          </svg>
+          <div class="node relay glass">
+            <svg viewBox="0 0 24 24"><use href="#i-lock" /></svg>
+            <span>sync.perch.ws</span>
+            <small data-i18n="sync.relay">sees only ciphertext</small>
+          </div>
+          <div class="node n1 glass">
+            <svg viewBox="0 0 24 24"><use href="#i-laptop" /></svg><span>Firefox</span>
+          </div>
+          <div class="node n2 glass">
+            <svg viewBox="0 0 24 24"><use href="#i-browser" /></svg><span>Chrome</span>
+          </div>
+          <div class="node n3 glass">
+            <svg viewBox="0 0 24 24"><use href="#i-phone" /></svg><span>iPhone</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Privacy -->
+      <section id="privacy" class="section">
+        <div class="privacy glass reveal">
+          <div>
+            <p class="eyebrow" data-i18n="privacy.eyebrow">Privacy you can check</p>
+            <h2 data-i18n="privacy.title">Built to know as little as possible.</h2>
+            <a class="btn btn-glass" href="https://github.com/arifcinartekin/perch">
+              <svg viewBox="0 0 16 16" aria-hidden="true"><use href="#gh" /></svg>
+              <span data-i18n="privacy.code">Read the code</span>
+            </a>
+          </div>
+          <ul class="checks">
+            <li data-i18n="pv1">No analytics, no ads, no trackers — this page included.</li>
+            <li data-i18n="pv2">
+              Your password never leaves your device: Perch derives a key from it with Argon2id and
+              sends only that.
+            </li>
+            <li data-i18n="pv3">
+              Sync chains are end-to-end encrypted; even feed addresses are hidden from the relay.
+            </li>
+            <li data-i18n="pv4">
+              No favicons are fetched — they would tell each site what you follow.
+            </li>
+            <li data-i18n="pv5">Articles render with scripts switched off.</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- Closing call -->
+      <section class="section closing reveal">
+        <svg class="mark" viewBox="39 53 440 440" aria-hidden="true">
+          <use href="#perch-bird" />
+        </svg>
+        <h2 data-i18n="end.title">Find a quiet place to read.</h2>
+        <div class="cta center">
+          <a class="btn btn-primary" href="https://app.perch.ws">
+            <span data-i18n="hero.open">Open the web app</span>
+            <svg viewBox="0 0 20 20" aria-hidden="true"><use href="#arrow" /></svg>
+          </a>
+          <a class="btn btn-glass" href="https://github.com/arifcinartekin/perch">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><use href="#gh" /></svg>
+            <span data-i18n="end.star">Star on GitHub</span>
+          </a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        <svg class="logo small" viewBox="88 106 1548 473" aria-hidden="true">
+          <use href="#perch-logo" />
+        </svg>
+        <p data-i18n="footer.line">© 2026 Perch contributors · MIT License</p>
+        <nav aria-label="Footer">
+          <a href="https://app.perch.ws" data-i18n="footer.app">Web app</a>
+          <a href="https://github.com/arifcinartekin/perch">GitHub</a>
+          <button type="button" class="lang" data-lang-toggle aria-label="Türkçe">TR</button>
+        </nav>
+      </div>
+    </footer>
+
+    <!-- Shared drawings. The logo follows the page's colours, like the apps'. -->
+    <svg width="0" height="0" style="position: absolute" aria-hidden="true">
+      <defs>
+        <g id="perch-bird">
+          <polygon points="362,132 462,168 372,192" style="fill: var(--accent)" />
+          <path
+            d="M 392 176 C 392 120 352 84 304 84 C 252 84 214 118 208 164 C 150 188 96 250 56 330 L 172 336 C 188 388 232 416 284 416 C 350 416 400 366 404 296 C 406 262 394 236 380 222 C 388 210 392 194 392 176 Z"
+            style="fill: var(--text)"
+          />
+          <g fill="none" style="stroke: var(--accent)" stroke-width="15" stroke-linecap="round">
+            <path d="M 214 266 A 64 64 0 0 1 278 330" />
+            <path d="M 214 216 A 114 114 0 0 1 328 330" />
+          </g>
+          <circle cx="214" cy="330" r="14" style="fill: var(--accent)" />
+          <circle cx="338" cy="150" r="10" style="fill: var(--logo-eye)" />
+          <g style="stroke: var(--text)" stroke-width="10" stroke-linecap="round">
+            <line x1="262" y1="410" x2="262" y2="440" />
+            <line x1="312" y1="410" x2="312" y2="440" />
+          </g>
+          <rect x="96" y="436" width="340" height="26" rx="13" style="fill: var(--logo-perch)" />
+        </g>
+        <g id="perch-logo">
+          <use href="#perch-bird" transform="translate(40 30)" />
+          <g
+            transform="translate(660 292)"
+            fill="none"
+            style="stroke: var(--text)"
+            stroke-width="38"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M 0 20 L 0 260" />
+            <circle cx="80" cy="100" r="80" />
+            <path d="M 226 100 L 386 100 A 80 80 0 1 0 367.3 151.4" />
+            <path d="M 452 20 L 452 180" />
+            <path d="M 452 100 A 80 80 0 0 1 532 20" />
+            <path d="M 723.3 48.6 A 80 80 0 1 0 723.3 151.4" />
+            <path d="M 789 -60 L 789 180" />
+            <path d="M 789 100 A 80 80 0 0 1 949 100 L 949 180" />
+          </g>
+        </g>
+        <path
+          id="gh"
+          fill="currentColor"
+          d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"
+        />
+        <path
+          id="arrow"
+          d="M4 10h11M11 5l5 5-5 5"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+        <g
+          id="i-book"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.7"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path
+            d="M3 5.5C5.5 4 8.5 4 12 6c3.5-2 6.5-2 9-.5V19c-2.5-1.5-5.5-1.5-9 .5-3.5-2-6.5-2-9-.5Z"
+          />
+          <path d="M12 6v13.5" />
+        </g>
+        <g
+          id="i-device"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.7"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <rect x="3" y="4" width="18" height="12" rx="2" />
+          <path d="M8 20h8M12 16v4" />
+          <path d="M9.5 10.5 11 12l3.5-3.5" />
+        </g>
+        <g
+          id="i-shield"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.7"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M12 3 4.5 6v5.5c0 4.5 3.2 8.2 7.5 9.5 4.3-1.3 7.5-5 7.5-9.5V6Z" />
+          <path d="m9 12 2 2 4-4" />
+        </g>
+        <g id="i-rss" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+          <path d="M5 11a8 8 0 0 1 8 8M5 5a14 14 0 0 1 14 14" />
+          <circle cx="6" cy="18" r="1.4" fill="currentColor" stroke="none" />
+        </g>
+        <g
+          id="i-palette"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.7"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path
+            d="M12 3a9 9 0 1 0 0 18c1.4 0 2-1 1.5-2.2-.6-1.4.3-2.8 1.8-2.8H17a4 4 0 0 0 4-4c0-5-4-9-9-9Z"
+          />
+          <circle cx="7.5" cy="11" r="1.1" fill="currentColor" stroke="none" />
+          <circle cx="10" cy="7" r="1.1" fill="currentColor" stroke="none" />
+          <circle cx="14.5" cy="7" r="1.1" fill="currentColor" stroke="none" />
+        </g>
+        <g
+          id="i-code"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="m8 8-4 4 4 4M16 8l4 4-4 4M13.5 5l-3 14" />
+        </g>
+        <g
+          id="i-lock"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.7"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <rect x="5" y="10.5" width="14" height="10" rx="2" />
+          <path d="M8 10.5V7.5a4 4 0 0 1 8 0v3" />
+        </g>
+        <g
+          id="i-laptop"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.7"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <rect x="4" y="5" width="16" height="11" rx="1.5" />
+          <path d="M2 19h20" />
+        </g>
+        <g
+          id="i-browser"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.7"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <rect x="3" y="4" width="18" height="16" rx="2" />
+          <path d="M3 8.5h18M6.5 6.3h.01M9 6.3h.01" />
+        </g>
+        <g
+          id="i-phone"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.7"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <rect x="7" y="2.5" width="10" height="19" rx="2.5" />
+          <path d="M11 18.5h2" />
+        </g>
+      </defs>
+    </svg>
+
+    <script src="/script.js" defer></script>
+  </body>
+</html>
