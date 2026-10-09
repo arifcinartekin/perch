@@ -59,6 +59,7 @@ const TR = {
   pv3: 'Senkron zincirleri uçtan uca şifrelidir; feed adresleri bile aktarıcıdan gizlenir.',
   pv4: 'Site simgeleri indirilmez — her siteye neyi takip ettiğinizi söylerlerdi.',
   pv5: 'Makaleler betikler kapalıyken gösterilir.',
+  pv6: 'perch.ws, Cloudflare Pages üzerinden sunulur; Cloudflare her ziyareti herhangi bir web barındırıcısı gibi işler. Uygulama (app.perch.ws) ve senkron aktarıcısı (sync.perch.ws) Cloudflare’den geçmez: cihazlarınız doğrudan sunucumuzla konuşur ve sunucumuz erişim kaydı tutmaz.',
   'end.title': 'Okumak için sakin bir köşe bulun.',
   'end.star': 'GitHub’da yıldızla',
   'footer.line': '© 2026 Perch katkıcıları · MIT Lisansı',
