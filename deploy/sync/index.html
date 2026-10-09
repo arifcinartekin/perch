@@ -20,6 +20,8 @@
         --shadow: 0 1px 0 rgba(255, 255, 255, 0.7) inset, 0 20px 50px -24px rgba(18, 21, 28, 0.28);
         --glow-1: rgba(255, 122, 26, 0.32);
         --glow-2: rgba(120, 140, 220, 0.18);
+        --eye: #f4f1ea;
+        --perch: var(--text);
         color-scheme: light;
       }
       @media (prefers-color-scheme: dark) {
@@ -33,6 +35,8 @@
           --shadow: 0 1px 0 rgba(255, 255, 255, 0.06) inset, 0 24px 60px -24px rgba(0, 0, 0, 0.7);
           --glow-1: rgba(255, 122, 26, 0.26);
           --glow-2: rgba(70, 90, 180, 0.22);
+          --eye: #12151c;
+          --perch: var(--accent);
           color-scheme: dark;
         }
       }
@@ -70,9 +74,28 @@
         -webkit-backdrop-filter: blur(22px) saturate(160%);
         backdrop-filter: blur(22px) saturate(160%);
       }
-      img {
-        width: 48px;
-        height: 48px;
+      .mark {
+        display: block;
+        width: 56px;
+        height: 56px;
+      }
+      .accent {
+        fill: var(--accent);
+      }
+      .ink {
+        fill: var(--text);
+      }
+      .waves {
+        stroke: var(--accent);
+      }
+      .eye {
+        fill: var(--eye);
+      }
+      .legs {
+        stroke: var(--text);
+      }
+      .perch {
+        fill: var(--perch);
       }
       h1 {
         margin: 16px 0 8px;
@@ -109,7 +132,24 @@
   </head>
   <body>
     <main>
-      <img src="/favicon.svg" alt="" />
+      <svg class="mark" viewBox="39 53 440 440" aria-hidden="true">
+        <polygon class="accent" points="362,132 462,168 372,192" />
+        <path
+          class="ink"
+          d="M 392 176 C 392 120 352 84 304 84 C 252 84 214 118 208 164 C 150 188 96 250 56 330 L 172 336 C 188 388 232 416 284 416 C 350 416 400 366 404 296 C 406 262 394 236 380 222 C 388 210 392 194 392 176 Z"
+        />
+        <g class="waves" fill="none" stroke-width="15" stroke-linecap="round">
+          <path d="M 214 266 A 64 64 0 0 1 278 330" />
+          <path d="M 214 216 A 114 114 0 0 1 328 330" />
+        </g>
+        <circle class="accent" cx="214" cy="330" r="14" />
+        <circle class="eye" cx="338" cy="150" r="10" />
+        <g class="legs" stroke-width="10" stroke-linecap="round">
+          <line x1="262" y1="410" x2="262" y2="440" />
+          <line x1="312" y1="410" x2="312" y2="440" />
+        </g>
+        <rect class="perch" x="96" y="436" width="340" height="26" rx="13" />
+      </svg>
       <h1>This is Perch’s sync relay.</h1>
       <p>
         There’s nothing to open here in a browser. The Perch apps use this address to pass
