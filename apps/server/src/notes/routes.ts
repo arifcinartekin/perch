@@ -1,6 +1,7 @@
-import { and, asc, count, eq, isNull } from 'drizzle-orm';
+import { and, asc, count, desc, eq, isNotNull, isNull } from 'drizzle-orm';
 import { Hono, type Context } from 'hono';
 import type {
+  HiddenShare,
   NotesResponse,
   ReportItem,
   ReportReason,
@@ -329,6 +330,41 @@ export function reportRoutes(ctx: AppContext) {
       },
     }));
     return c.json({ reports: items });
+  });
+
+  app.get('/hidden', (c) => {
+    const rows = ctx.db
+      .select({
+        slug: shares.slug,
+        title: shares.title,
+        hiddenAt: shares.hiddenAt,
+        author: users.username,
+      })
+      .from(shares)
+      .innerJoin(users, eq(users.id, shares.userId))
+      .where(isNotNull(shares.hiddenAt))
+      .orderBy(desc(shares.hiddenAt))
+      .all();
+    const items: HiddenShare[] = rows.map((r) => ({
+      slug: r.slug,
+      url: shareUrl(ctx, c, r.slug),
+      title: r.title,
+      author: r.author,
+      hiddenAt: r.hiddenAt!,
+    }));
+    return c.json({ hidden: items });
+  });
+
+  /** Put a page taken down after a report back up, e.g. after its author objected. */
+  app.post('/hidden/:slug/restore', (c) => {
+    const restored = ctx.db
+      .update(shares)
+      .set({ hiddenAt: null })
+      .where(and(eq(shares.slug, c.req.param('slug')), isNotNull(shares.hiddenAt)))
+      .returning({ slug: shares.slug })
+      .get();
+    if (!restored) throw notFound('No such removed page');
+    return c.json({ ok: true });
   });
 
   /** Close a report: `hide` takes the page down (for every report on it), `dismiss` leaves it up. */

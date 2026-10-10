@@ -314,6 +314,15 @@ export interface SharedNoteSummary {
 export type ReportReason = 'illegal' | 'harassment' | 'spam' | 'other';
 
 /** GET /admin/reports */
+/** GET /admin/reports/hidden: pages taken down after a report. */
+export interface HiddenShare {
+  slug: string;
+  url: string;
+  title: string;
+  author: string;
+  hiddenAt: number;
+}
+
 export interface ReportItem {
   id: string;
   reason: ReportReason;

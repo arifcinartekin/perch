@@ -23,7 +23,7 @@ export default defineConfig({
     return {
       name: 'Perch',
       description:
-        'A privacy-first, local-only RSS reader. No account, no cloud, no telemetry, no broad site access.',
+        'A calm, private feed reader. Local by default, no telemetry, no broad site access; sync with an end-to-end encrypted chain if you want.',
       // Install-time permissions only. None of these grant standing access to
       // page content across the web.
       permissions: [
@@ -54,8 +54,21 @@ export default defineConfig({
                 id: 'perch@perch.rss',
                 // 128 = first Firefox with scripting.executeScript({ func }).
                 strict_min_version: '128.0',
-                // Perch collects and transmits no user data at all.
-                data_collection_permissions: { required: ['none'] },
+                // Nothing is sent unless you turn something on. Then, by
+                // feature (asked for at that moment, see DATA_FOR in
+                // lib/permissions/host.ts): a sync chain sends your library,
+                // end-to-end encrypted, to the relay; a Perch Server account
+                // sends it to that server; a Perch account (for sharing)
+                // sends your username and the notes you share.
+                data_collection_permissions: {
+                  required: ['none'],
+                  optional: [
+                    'authenticationInfo',
+                    'personallyIdentifyingInfo',
+                    'browsingActivity',
+                    'websiteContent',
+                  ],
+                },
               },
             },
           }

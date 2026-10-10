@@ -18,13 +18,39 @@ export async function hasHostPermission(url: string): Promise<boolean> {
   }
 }
 
-/** Must be called from a user gesture (click). Returns whether it was granted. */
-export async function requestHostPermission(url: string): Promise<boolean> {
+/**
+ * What Perch sends, and only once you turn it on, in Firefox's terms
+ * (data_collection_permissions in wxt.config.ts). Asked for together with
+ * the server's origin, in the same prompt.
+ */
+export const DATA_FOR = {
+  /** A sync chain: your library, sealed, to the relay. */
+  chain: ['browsingActivity', 'websiteContent'],
+  /** An account on a Perch Server that keeps your library. */
+  server: ['authenticationInfo', 'personallyIdentifyingInfo', 'browsingActivity', 'websiteContent'],
+  /** A Perch account, for sharing notes. */
+  community: ['authenticationInfo', 'personallyIdentifyingInfo', 'websiteContent'],
+} as const;
+
+/**
+ * Must be called from a user gesture (click). Returns whether it was granted.
+ * In Firefox, `dataCollection` asks in the same prompt to send that data.
+ */
+export async function requestHostPermission(
+  url: string,
+  dataCollection?: readonly string[],
+): Promise<boolean> {
   const pattern = originPattern(url);
   if (!pattern) return false;
+  const firefox = import.meta.env.BROWSER === 'firefox';
   try {
-    return await browser.permissions.request({ origins: [pattern] });
+    return await browser.permissions.request({
+      origins: [pattern],
+      ...(firefox && dataCollection && { data_collection: [...dataCollection] }),
+    } as Parameters<typeof browser.permissions.request>[0]);
   } catch {
+    // A Firefox too old for data collection permissions: ask for the origin alone.
+    if (firefox && dataCollection) return requestHostPermission(url);
     return false;
   }
 }

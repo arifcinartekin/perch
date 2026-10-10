@@ -11,7 +11,7 @@ import { relativeTime } from '@perch/core/time';
 import { suggestUsername } from '@perch/core/username';
 import { Button, Dialog, RecoveryCode, Row, Section, Spinner, useToast } from '@perch/reader';
 import { sendMessage } from '@/lib/messaging';
-import { requestHostPermission } from '@/lib/permissions/host';
+import { DATA_FOR, requestHostPermission } from '@/lib/permissions/host';
 import { DEFAULT_HUB } from '@/lib/community';
 import { chainApi, createChain, deleteChain, joinChain } from '@/lib/sync/chain';
 import { forgetDevice, getDevices, watchDevices, type DeviceMap } from '@/lib/sync/devices';
@@ -173,7 +173,7 @@ function ChainForm({
       return setErr('That code isn’t complete or has a typo. It has 28 letters and digits.');
     }
     const host = new URL(url).host;
-    if (!(await requestHostPermission(url))) {
+    if (!(await requestHostPermission(url, DATA_FOR.chain))) {
       return setErr(`Perch needs permission to talk to ${host}.`);
     }
     setBusy(true);
@@ -648,7 +648,9 @@ export function SignInForm({
     if (mode === 'recover' && !recoveryInput.trim()) return setErr('Enter your recovery code.');
 
     // Ask for the server's origin first, while we still have the click.
-    if (!(await requestHostPermission(url))) {
+    if (
+      !(await requestHostPermission(url, DATA_FOR[purpose === 'sync' ? 'server' : 'community']))
+    ) {
       return setErr(`Perch needs permission to talk to ${new URL(url).host}.`);
     }
     setBusy(true);

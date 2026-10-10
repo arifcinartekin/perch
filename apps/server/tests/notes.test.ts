@@ -165,5 +165,15 @@ describe('notes and shared pages', () => {
     expect(hidden.status).toBe(410);
     expect(hidden.html).toContain('removed');
     expect((await t.call('GET', '/admin/reports', { token })).body.reports).toEqual([]);
+
+    // Removed pages are listed, and can be put back up.
+    const removed = await t.call('GET', '/admin/reports/hidden', { token });
+    expect(removed.body.hidden).toHaveLength(1);
+    const removedSlug = removed.body.hidden[0].slug;
+    expect(
+      (await t.call('POST', `/admin/reports/hidden/${removedSlug}/restore`, { token })).status,
+    ).toBe(200);
+    expect((await page(url)).status).toBe(200);
+    expect((await t.call('GET', '/admin/reports/hidden', { token })).body.hidden).toEqual([]);
   });
 });

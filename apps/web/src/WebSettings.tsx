@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import type {
   Device,
+  HiddenShare,
+  ReportItem,
+  ReportReason,
   Invite,
   OpmlImportResponse,
   PreloginResponse,
@@ -34,6 +37,7 @@ export function WebSettings({
       <EmailSection user={user} />
       <RecoverySection user={user} />
       <DevicesSection />
+      {user.role === 'admin' && <ReportsSection />}
       {user.role === 'admin' && <InvitesSection />}
       {!hub && <OpmlSection />}
       <DeleteAccountSection user={user} onDeleted={onSignOut} hub={hub} />
@@ -538,6 +542,165 @@ function DeleteAccountSection({
           </Button>
         </form>
       )}
+    </Section>
+  );
+}
+
+const REASONS: Record<ReportReason, string> = {
+  illegal: 'Illegal',
+  harassment: 'Harassment or hate',
+  spam: 'Spam',
+  other: 'Something else',
+};
+
+/**
+ * Reports on shared notes (admins). Removing takes the page down for every
+ * report on it; dismissing leaves it up. A removed page can be put back,
+ * e.g. when its author objects. Under Law 5651, aim to look within 48 hours.
+ */
+function ReportsSection() {
+  const toast = useToast();
+  const [reports, setReports] = useState<ReportItem[] | null>(null);
+  const [hidden, setHidden] = useState<HiddenShare[]>([]);
+  const [busy, setBusy] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    try {
+      const [open, removed] = await Promise.all([
+        api<{ reports: ReportItem[] }>('/admin/reports'),
+        api<{ hidden: HiddenShare[] }>('/admin/reports/hidden'),
+      ]);
+      setReports(open.reports);
+      setHidden(removed.hidden);
+    } catch {
+      setReports([]);
+    }
+  }, []);
+  useEffect(() => void load(), [load]);
+
+  const act = async (key: string, work: () => Promise<unknown>, done: string) => {
+    setBusy(key);
+    try {
+      await work();
+      toast(done, 'success');
+      await load();
+    } catch (err) {
+      toast(err instanceof ServerError ? err.message : 'Something went wrong. Try again.', 'error');
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  return (
+    <Section title="Reports">
+      {reports === null ? (
+        <Spinner size={16} />
+      ) : reports.length === 0 ? (
+        <p className="text-[12.5px] text-[var(--text-muted)]">No open reports.</p>
+      ) : (
+        <ul className="flex flex-col gap-3">
+          {reports.map((r) => (
+            <li
+              key={r.id}
+              className="rounded-[12px] border border-[var(--border)] p-3 text-[12.5px] leading-relaxed"
+            >
+              <div className="flex flex-wrap items-center gap-x-2 text-[11.5px] text-[var(--text-faint)]">
+                <span className="font-semibold text-[var(--text)]">{REASONS[r.reason]}</span>
+                <span>· {relativeTime(r.createdAt)}</span>
+                {r.contact && (
+                  <a href={`mailto:${r.contact}`} className="underline">
+                    {r.contact}
+                  </a>
+                )}
+              </div>
+              {r.details && <p className="mt-1 whitespace-pre-wrap">{r.details}</p>}
+              <div className="mt-2 rounded-[9px] bg-[var(--bg-solid)] p-2.5">
+                <a
+                  href={r.share.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-medium hover:underline"
+                >
+                  {r.share.title || 'Untitled'}
+                </a>
+                <span className="text-[var(--text-faint)]"> · @{r.share.author}</span>
+                <p className="mt-1 line-clamp-4 whitespace-pre-wrap text-[var(--text-muted)]">
+                  {r.share.body}
+                </p>
+              </div>
+              <div className="mt-2 flex gap-2">
+                <Button
+                  size="sm"
+                  variant="danger"
+                  loading={busy === `hide:${r.id}`}
+                  onClick={() =>
+                    void act(
+                      `hide:${r.id}`,
+                      () => api(`/admin/reports/${r.id}`, { body: { action: 'hide' } }),
+                      'Page removed',
+                    )
+                  }
+                >
+                  Remove page
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  loading={busy === `dismiss:${r.id}`}
+                  onClick={() =>
+                    void act(
+                      `dismiss:${r.id}`,
+                      () => api(`/admin/reports/${r.id}`, { body: { action: 'dismiss' } }),
+                      'Report dismissed',
+                    )
+                  }
+                >
+                  Dismiss
+                </Button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {hidden.length > 0 && (
+        <div className="mt-4">
+          <div className="mb-1.5 text-[11.5px] font-semibold uppercase tracking-wide text-[var(--text-faint)]">
+            Removed pages
+          </div>
+          <ul className="flex flex-col gap-1.5">
+            {hidden.map((h) => (
+              <li key={h.slug} className="flex items-center gap-2 text-[12.5px]">
+                <span className="min-w-0 flex-1 truncate">
+                  {h.title || 'Untitled'}
+                  <span className="text-[var(--text-faint)]">
+                    {' '}
+                    · @{h.author} · {relativeTime(h.hiddenAt)}
+                  </span>
+                </span>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  loading={busy === `restore:${h.slug}`}
+                  onClick={() =>
+                    void act(
+                      `restore:${h.slug}`,
+                      () => api(`/admin/reports/hidden/${h.slug}/restore`, { body: {} }),
+                      'Page restored',
+                    )
+                  }
+                >
+                  Restore
+                </Button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      <p className="mt-3 text-[11px] text-[var(--text-faint)]">
+        Reporters’ addresses are deleted once a report is dealt with. Law 5651 expects unlawful
+        content to be removed promptly after notice; aim to look within 48 hours.
+      </p>
     </Section>
   );
 }
