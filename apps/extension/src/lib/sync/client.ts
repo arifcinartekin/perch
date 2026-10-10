@@ -1,5 +1,11 @@
 import { API_PREFIX } from '@perch/core/api';
-import type { ApiError, AuthResponse, PreloginResponse, ServerInfo } from '@perch/core/api';
+import type {
+  ApiError,
+  AuthResponse,
+  EmailPurpose,
+  PreloginResponse,
+  ServerInfo,
+} from '@perch/core/api';
 import { DEFAULT_KDF, deriveKeys, newSalt } from '@perch/core/auth';
 import type { SyncChangesResponse, SyncPushResponse, SyncRecord } from '@perch/core/sync';
 import type { ServerAccount } from './state';
@@ -90,7 +96,7 @@ export async function signUp(
   server: string,
   username: string,
   password: string,
-  invite?: string,
+  extra: { invite?: string; email?: string; emailCode?: string } = {},
 ): Promise<ServerAccount> {
   const salt = newSalt();
   const { authKey } = await deriveKeys(password, salt, DEFAULT_KDF);
@@ -101,8 +107,35 @@ export async function signUp(
       salt,
       kdf: DEFAULT_KDF,
       deviceName: deviceName(),
-      ...(invite && { invite }),
+      ...(extra.invite && { invite: extra.invite }),
+      ...(extra.email && { email: extra.email, emailCode: extra.emailCode }),
     },
+  });
+  return { server, username: res.user.username, token: res.token, node: randomNode() };
+}
+
+/** Email a 6-digit code for signing up or resetting the password. */
+export async function requestEmailCode(
+  server: string,
+  email: string,
+  purpose: EmailPurpose,
+): Promise<void> {
+  await call(server, '/auth/email/code', {
+    body: { email, purpose, lang: navigator.language },
+  });
+}
+
+/** Set a new password with an emailed code; signs in as the account. */
+export async function resetPassword(
+  server: string,
+  email: string,
+  code: string,
+  password: string,
+): Promise<ServerAccount> {
+  const salt = newSalt();
+  const { authKey } = await deriveKeys(password, salt, DEFAULT_KDF);
+  const res = await call<AuthResponse>(server, '/auth/reset', {
+    body: { email, code, authKey, salt, kdf: DEFAULT_KDF, deviceName: deviceName() },
   });
   return { server, username: res.user.username, token: res.token, node: randomNode() };
 }

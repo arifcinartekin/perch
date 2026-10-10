@@ -16,6 +16,10 @@ services:
       PERCH_FETCH_INTERVAL_MIN: ${PERCH_FETCH_INTERVAL_MIN:-30}
       PERCH_TRUST_PROXY: 'true' # Caddy sets X-Forwarded-For
       PERCH_CHAIN: ${PERCH_CHAIN:-false} # relay sync chains (see PERCH_SYNC_DOMAIN)
+      # Email codes for signup and password reset. The key stays in this server's .env.
+      PERCH_EMAIL: ${PERCH_EMAIL:-off} # resend | log | off
+      PERCH_EMAIL_FROM: ${PERCH_EMAIL_FROM:-}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
     volumes:
       - ${PERCH_DATA:-/var/lib/perch}:/data
 

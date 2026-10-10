@@ -888,12 +888,32 @@
         }
       }
     },
+    "Email": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "E-posta"
+          }
+        }
+      }
+    },
     "Encrypted, through %@.": {
       "localizations": {
         "tr": {
           "stringUnit": {
             "state": "translated",
             "value": "Şifreli, %@ üzerinden."
+          }
+        }
+      }
+    },
+    "Enter the code from the email.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "E-postadaki kodu gir."
           }
         }
       }
@@ -994,6 +1014,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Yazı tipi"
+          }
+        }
+      }
+    },
+    "Forgot your password?": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Şifreni mi unuttun?"
           }
         }
       }
@@ -1910,6 +1940,16 @@
         }
       }
     },
+    "Reset your password": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Şifreni sıfırla"
+          }
+        }
+      }
+    },
     "Sans": {
       "localizations": {
         "tr": {
@@ -1970,12 +2010,32 @@
         }
       }
     },
+    "Send code": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kodu gönder"
+          }
+        }
+      }
+    },
     "Serif": {
       "localizations": {
         "tr": {
           "stringUnit": {
             "state": "translated",
             "value": "Serif"
+          }
+        }
+      }
+    },
+    "Set new password": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yeni şifreyi kaydet"
           }
         }
       }
@@ -2410,6 +2470,16 @@
         }
       }
     },
+    "This server confirms your email address before you sign up. We'll send you a code.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu sunucu kayıttan önce e-posta adresini doğruluyor. Sana bir kod göndereceğiz."
+          }
+        }
+      }
+    },
     "This server doesn't relay sync chains.": {
       "localizations": {
         "tr": {
@@ -2540,6 +2610,16 @@
         }
       }
     },
+    "Use a different address or send a new code": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Başka bir adres kullan ya da yeni kod iste"
+          }
+        }
+      }
+    },
     "Use another relay": {
       "localizations": {
         "tr": {
@@ -2596,6 +2676,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Senkron bekleniyor"
+          }
+        }
+      }
+    },
+    "We sent a 6-digit code to %@. It works for 10 minutes.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ adresine 6 haneli bir kod gönderdik. Kod 10 dakika geçerli."
+          }
+        }
+      }
+    },
+    "We'll email you a code to set a new password.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yeni şifre belirlemen için sana e-postayla bir kod göndereceğiz."
           }
         }
       }

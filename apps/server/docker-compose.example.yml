@@ -13,7 +13,10 @@ services:
     restart: unless-stopped
     environment:
       PERCH_PUBLIC_URL: https://reader.example.com
-      PERCH_SIGNUP: invite # open | invite | closed
+      PERCH_SIGNUP: invite # open | invite | email | closed
+      # PERCH_EMAIL: resend  # email codes (needed for PERCH_SIGNUP=email and password reset)
+      # PERCH_EMAIL_FROM: Perch <noreply@mail.example.com>
+      # RESEND_API_KEY: re_...  # your own Resend key
       PERCH_FETCH_INTERVAL_MIN: 30
       PERCH_TRUST_PROXY: 'true' # Caddy sets X-Forwarded-For
       # PERCH_FETCH_ALLOW_HOSTS: nas.local  # feeds on your home network

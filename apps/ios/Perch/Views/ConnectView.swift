@@ -19,11 +19,17 @@ struct ConnectView: View {
   @State private var username = ""
   @State private var password = ""
   @State private var invite = ""
+  /// Setting a new password with an emailed code.
+  @State private var resetting = false
+  @State private var email = ""
+  @State private var code = ""
+  /// Where the code went; nil until one is sent.
+  @State private var codeSentTo: String?
   @State private var busy = false
   @State private var error: String?
 
   @FocusState private var focus: Field?
-  private enum Field { case address, username, password, invite }
+  private enum Field { case address, email, code, username, password, invite }
 
   var body: some View {
     ScrollView {
@@ -180,7 +186,9 @@ struct ConnectView: View {
       }
       server = (url, info)
       creating = info.needsSetup
-      focus = .username
+      resetting = false
+      codeSentTo = nil
+      focus = byEmail(info) ? .email : .username
     }
   }
 
@@ -191,7 +199,7 @@ struct ConnectView: View {
     VStack(alignment: .leading, spacing: 14) {
       HStack {
         VStack(alignment: .leading, spacing: 2) {
-          Text(info.needsSetup ? "Set up your server" : creating ? "Create an account" : "Sign in")
+          Text(title(info))
             .font(.headline)
           Text(url.host() ?? url.absoluteString)
             .font(.footnote)
@@ -212,6 +220,79 @@ struct ConnectView: View {
           .foregroundStyle(theme.muted)
       }
 
+      if byEmail(info) && codeSentTo == nil {
+        emailStep(url)
+      } else {
+        credentials(url, info)
+      }
+
+      if codeSentTo != nil {
+        Button("Use a different address or send a new code") {
+          codeSentTo = nil
+          code = ""
+          error = nil
+          focus = .email
+        }
+        .font(.footnote.weight(.medium))
+        .frame(maxWidth: .infinity)
+      }
+      if !creating && !resetting && info.email == true {
+        Button("Forgot your password?") { switchTo(creating: false, resetting: true) }
+          .font(.footnote.weight(.medium))
+          .frame(maxWidth: .infinity)
+      }
+      if !info.needsSetup && (info.signup != .closed || resetting) {
+        Button(creating || resetting ? "I already have an account" : "Create an account") {
+          switchTo(creating: !(creating || resetting), resetting: false)
+        }
+        .font(.footnote.weight(.medium))
+        .frame(maxWidth: .infinity)
+      }
+    }
+  }
+
+  private func title(_ info: ServerInfo) -> LocalizedStringKey {
+    if info.needsSetup { return "Set up your server" }
+    if resetting { return "Reset your password" }
+    return creating ? "Create an account" : "Sign in"
+  }
+
+  /// Ask for the address the code goes to.
+  @ViewBuilder
+  private func emailStep(_ url: URL) -> some View {
+    Text(
+      resetting
+        ? "We'll email you a code to set a new password."
+        : "This server confirms your email address before you sign up. We'll send you a code."
+    )
+    .font(.footnote)
+    .foregroundStyle(theme.muted)
+    TextField("Email", text: $email)
+      .textContentType(.emailAddress)
+      .keyboardType(.emailAddress)
+      .textInputAutocapitalization(.never)
+      .autocorrectionDisabled()
+      .focused($focus, equals: .email)
+      .submitLabel(.send)
+      .onSubmit { sendCode(url) }
+      .fieldStyle()
+    primaryButton("Send code") { sendCode(url) }
+      .disabled(email.trimmingCharacters(in: .whitespaces).isEmpty)
+  }
+
+  @ViewBuilder
+  private func credentials(_ url: URL, _ info: ServerInfo) -> some View {
+    if let codeSentTo {
+      Text("We sent a 6-digit code to \(codeSentTo). It works for 10 minutes.")
+        .font(.footnote)
+        .foregroundStyle(theme.muted)
+      TextField("Code", text: $code)
+        .textContentType(.oneTimeCode)
+        .keyboardType(.numberPad)
+        .focused($focus, equals: .code)
+        .fieldStyle()
+    }
+    if !resetting {
       TextField("Username", text: $username)
         .textContentType(.username)
         .textInputAutocapitalization(.never)
@@ -220,52 +301,79 @@ struct ConnectView: View {
         .submitLabel(.next)
         .onSubmit { focus = .password }
         .fieldStyle()
-      SecureField("Password", text: $password)
-        .textContentType(creating ? .newPassword : .password)
-        .focused($focus, equals: .password)
-        .submitLabel(creating && needsInvite(info) ? .next : .go)
-        .onSubmit {
-          if creating && needsInvite(info) { focus = .invite } else { submit(url) }
-        }
-        .fieldStyle()
-      if creating && needsInvite(info) {
-        TextField("Invite code", text: $invite)
-          .textInputAutocapitalization(.never)
-          .autocorrectionDisabled()
-          .focused($focus, equals: .invite)
-          .submitLabel(.go)
-          .onSubmit { submit(url) }
-          .fieldStyle()
-      }
-
-      primaryButton(creating ? "Create account" : "Sign in") { submit(url) }
-        .disabled(username.isEmpty || password.isEmpty)
-
-      if !info.needsSetup && info.signup != .closed {
-        Button(creating ? "I already have an account" : "Create an account") {
-          creating.toggle()
-          error = nil
-        }
-        .font(.footnote.weight(.medium))
-        .frame(maxWidth: .infinity)
-      }
     }
+    SecureField(resetting ? "New password" : "Password", text: $password)
+      .textContentType(creating || resetting ? .newPassword : .password)
+      .focused($focus, equals: .password)
+      .submitLabel(creating && needsInvite(info) ? .next : .go)
+      .onSubmit {
+        if creating && needsInvite(info) { focus = .invite } else { submit(url, info) }
+      }
+      .fieldStyle()
+    if creating && needsInvite(info) {
+      TextField("Invite code", text: $invite)
+        .textInputAutocapitalization(.never)
+        .autocorrectionDisabled()
+        .focused($focus, equals: .invite)
+        .submitLabel(.go)
+        .onSubmit { submit(url, info) }
+        .fieldStyle()
+    }
+
+    primaryButton(resetting ? "Set new password" : creating ? "Create account" : "Sign in") {
+      submit(url, info)
+    }
+    .disabled((!resetting && username.isEmpty) || password.isEmpty)
   }
 
   private func needsInvite(_ info: ServerInfo) -> Bool {
     !info.needsSetup && info.signup == .invite
   }
 
-  private func submit(_ url: URL) {
-    guard !username.isEmpty, !password.isEmpty else { return }
-    if creating && password.count < 8 {
+  /// Signing up on an email-signup server, or resetting a password, starts with a code.
+  private func byEmail(_ info: ServerInfo) -> Bool {
+    resetting || (creating && info.signup == .email)
+  }
+
+  private func switchTo(creating: Bool, resetting: Bool) {
+    self.creating = creating
+    self.resetting = resetting
+    codeSentTo = nil
+    code = ""
+    error = nil
+  }
+
+  private func sendCode(_ url: URL) {
+    let address = email.trimmingCharacters(in: .whitespaces)
+    guard !address.isEmpty else { return }
+    run {
+      try await APIClient(baseURL: url).requestEmailCode(
+        email: address, purpose: resetting ? .reset : .signup,
+        lang: Locale.current.language.languageCode?.identifier)
+      codeSentTo = address
+      focus = .code
+    }
+  }
+
+  private func submit(_ url: URL, _ info: ServerInfo) {
+    guard resetting || !username.isEmpty, !password.isEmpty else { return }
+    if (creating || resetting) && password.count < 8 {
       error = String(localized: "Use at least 8 characters for your password.")
       return
     }
+    let emailCode = code.filter(\.isNumber)
+    if codeSentTo != nil && emailCode.isEmpty {
+      error = String(localized: "Enter the code from the email.")
+      return
+    }
     run {
-      if creating {
+      if resetting, let codeSentTo {
+        try await session.resetPassword(
+          server: url, email: codeSentTo, code: emailCode, password: password)
+      } else if creating {
         try await session.register(
-          server: url, username: username, password: password, invite: invite)
+          server: url, username: username, password: password, invite: invite,
+          email: codeSentTo, emailCode: codeSentTo == nil ? nil : emailCode)
       } else {
         try await session.signIn(server: url, username: username, password: password)
       }

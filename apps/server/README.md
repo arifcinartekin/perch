@@ -33,19 +33,22 @@ open http://localhost:5173 — Vite proxies `/api` to the server.
 
 ## Configuration
 
-| Variable                    | Default            | Meaning                                                                                  |
-| --------------------------- | ------------------ | ---------------------------------------------------------------------------------------- |
-| `PERCH_MODE`                | `personal`         | `personal` (the server fetches feeds). `e2e` is not available yet.                       |
-| `DATABASE_URL`              | `./data/perch.db`  | SQLite file. The Docker image uses `/data/perch.db`. Postgres support is planned.        |
-| `PORT` / `HOST`             | `8080` / `0.0.0.0` | Where to listen.                                                                         |
-| `PERCH_PUBLIC_URL`          |                    | The address clients use, e.g. `https://reader.example.com`. Marks cookies `Secure`.      |
-| `PERCH_SIGNUP`              | `invite`           | `open`, `invite` (admin creates codes) or `closed`. The first account is always allowed. |
-| `PERCH_FETCH_INTERVAL_MIN`  | `30`               | Minutes between refreshes of a feed (5–1440). Failing feeds back off up to a day.        |
-| `PERCH_FETCH_ALLOW_PRIVATE` | `false`            | Allow feeds on private / loopback addresses.                                             |
-| `PERCH_FETCH_ALLOW_HOSTS`   |                    | Comma-separated hostnames allowed to resolve to private addresses (e.g. `nas.local`).    |
-| `PERCH_TRUST_PROXY`         | `false`            | Use `X-Forwarded-For` for rate limiting. Only behind a proxy you control.                |
-| `PERCH_CHAIN`               | `false`            | Relay sync chains (sync without an account) for anyone. See below.                       |
-| `PERCH_WEB_ROOT`            | `apps/web/dist`    | Folder with the built web reader. The Docker image sets it.                              |
+| Variable                    | Default            | Meaning                                                                                                                                                      |
+| --------------------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `PERCH_MODE`                | `personal`         | `personal` (the server fetches feeds). `e2e` is not available yet.                                                                                           |
+| `DATABASE_URL`              | `./data/perch.db`  | SQLite file. The Docker image uses `/data/perch.db`. Postgres support is planned.                                                                            |
+| `PORT` / `HOST`             | `8080` / `0.0.0.0` | Where to listen.                                                                                                                                             |
+| `PERCH_PUBLIC_URL`          |                    | The address clients use, e.g. `https://reader.example.com`. Marks cookies `Secure`.                                                                          |
+| `PERCH_SIGNUP`              | `invite`           | `open`, `invite` (admin creates codes), `email` (anyone, after confirming an address with an emailed code) or `closed`. The first account is always allowed. |
+| `PERCH_EMAIL`               | `off`              | `resend` to send email codes (signup, password reset, adding an address); `log` prints them instead (development).                                           |
+| `PERCH_EMAIL_FROM`          |                    | Sender, e.g. `Perch <noreply@mail.example.com>`. The domain must be verified with your provider.                                                             |
+| `RESEND_API_KEY`            |                    | Your own [Resend](https://resend.com) API key. Each server sends with its own account.                                                                       |
+| `PERCH_FETCH_INTERVAL_MIN`  | `30`               | Minutes between refreshes of a feed (5–1440). Failing feeds back off up to a day.                                                                            |
+| `PERCH_FETCH_ALLOW_PRIVATE` | `false`            | Allow feeds on private / loopback addresses.                                                                                                                 |
+| `PERCH_FETCH_ALLOW_HOSTS`   |                    | Comma-separated hostnames allowed to resolve to private addresses (e.g. `nas.local`).                                                                        |
+| `PERCH_TRUST_PROXY`         | `false`            | Use `X-Forwarded-For` for rate limiting. Only behind a proxy you control.                                                                                    |
+| `PERCH_CHAIN`               | `false`            | Relay sync chains (sync without an account) for anyone. See below.                                                                                           |
+| `PERCH_WEB_ROOT`            | `apps/web/dist`    | Folder with the built web reader. The Docker image sets it.                                                                                                  |
 
 ## How it works
 

@@ -8,6 +8,7 @@ import { meta, users } from './db/schema';
 import { FeedWorker } from './feeds/worker';
 import { HttpError, errorResponse, type AppContext, type Env } from './http';
 import { randomToken } from './lib/crypto';
+import { createMailer, type Mailer } from './lib/mailer';
 import { Notifier } from './lib/notifier';
 import { createSafeFetch } from './lib/safe-fetch';
 import { adminRoutes, authRoutes, deviceRoutes } from './auth/routes';
@@ -26,7 +27,10 @@ function instanceSecret(db: DB): string {
   return db.select().from(meta).where(eq(meta.key, 'secret')).get()!.value;
 }
 
-export function createContext(config: Config): AppContext & { close: () => void } {
+export function createContext(
+  config: Config,
+  deps: { mailer?: Mailer } = {},
+): AppContext & { close: () => void } {
   const { db, close } = openDatabase(config.databasePath);
   const fetch = createSafeFetch({
     allowPrivate: config.fetchAllowPrivate,
@@ -43,6 +47,7 @@ export function createContext(config: Config): AppContext & { close: () => void 
     // Feeds a client subscribes to are fetched right away, not at the next tick.
     sync: new SyncService(db, notifier, (ids) => void worker.refresh(ids)),
     notifier,
+    mailer: deps.mailer ?? createMailer(config.email),
     close,
   };
 }
@@ -64,6 +69,7 @@ export function createApp(ctx: AppContext) {
       community: ctx.config.community,
       chain: ctx.config.chain,
       needsSetup: users_ === 0,
+      email: ctx.mailer != null,
     });
   });
   api.route('/auth', authRoutes(ctx));

@@ -1,17 +1,18 @@
 import { useCallback, useEffect, useState } from 'react';
-import type { Device, Invite, OpmlImportResponse, PublicUser } from '@perch/core/api';
+import type { Device, Invite, OpmlImportResponse, PublicUser, ServerInfo } from '@perch/core/api';
 import { API_PREFIX } from '@perch/core/api';
 import { relativeTime } from '@perch/core/time';
 import { Button, Row, Section, Spinner, pickTextFile, useToast } from '@perch/reader';
-import { api } from './api';
+import { ServerError, api } from './api';
 
 // Settings that only exist on the web: the account on this server, signed-in
-// devices, invites (admins) and OPML import/export.
+// email address, devices, invites (admins) and OPML import/export.
 
 export function WebSettings({ user, onSignOut }: { user: PublicUser; onSignOut: () => void }) {
   return (
     <>
       <AccountSection user={user} onSignOut={onSignOut} />
+      <EmailSection user={user} />
       <DevicesSection />
       {user.role === 'admin' && <InvitesSection />}
       <OpmlSection />
@@ -40,6 +41,130 @@ function AccountSection({ user, onSignOut }: { user: PublicUser; onSignOut: () =
           Sign out
         </Button>
       </Row>
+    </Section>
+  );
+}
+
+const fieldClass =
+  'w-full rounded-[9px] border border-[var(--border-strong)] bg-[var(--bg-solid)] px-3 py-1.5 text-[13px] outline-none focus:border-[var(--accent)]';
+
+/** Add or change the account's address, confirmed with an emailed code. Hidden when the server can't send mail. */
+function EmailSection({ user }: { user: PublicUser }) {
+  const toast = useToast();
+  const [available, setAvailable] = useState(false);
+  const [current, setCurrent] = useState(user.email);
+  const [editing, setEditing] = useState(false);
+  const [email, setEmail] = useState('');
+  const [sentTo, setSentTo] = useState<string | null>(null);
+  const [code, setCode] = useState('');
+  const [busy, setBusy] = useState(false);
+  useEffect(() => {
+    void api<ServerInfo>('/server').then(
+      (i) => setAvailable(!!i.email),
+      () => {},
+    );
+  }, []);
+  if (!available) return null;
+
+  const run = async (fn: () => Promise<void>) => {
+    setBusy(true);
+    try {
+      await fn();
+    } catch (err) {
+      toast(err instanceof ServerError ? err.message : 'Something went wrong. Try again.', 'error');
+    } finally {
+      setBusy(false);
+    }
+  };
+  const send = () =>
+    run(async () => {
+      await api('/auth/email/code', {
+        body: { email: email.trim(), purpose: 'change', lang: navigator.language },
+      });
+      setSentTo(email.trim());
+    });
+  const confirm = () =>
+    run(async () => {
+      const res = await api<{ user: PublicUser }>('/auth/email', {
+        body: { email: sentTo, code },
+      });
+      setCurrent(res.user.email);
+      setEditing(false);
+      setSentTo(null);
+      setCode('');
+      toast('Email address saved', 'success');
+    });
+
+  return (
+    <Section title="Email">
+      <Row
+        label={current ?? 'No email address'}
+        hint={
+          current
+            ? 'Used to reset your password. It is never shown to anyone.'
+            : 'Add one so you can reset your password if you forget it.'
+        }
+      >
+        {!editing && (
+          <Button size="sm" variant="default" onClick={() => setEditing(true)}>
+            {current ? 'Change' : 'Add'}
+          </Button>
+        )}
+      </Row>
+      {editing && (
+        <form
+          className="flex flex-col gap-2"
+          onSubmit={(e) => {
+            e.preventDefault();
+            void (sentTo ? confirm() : send());
+          }}
+        >
+          {sentTo ? (
+            <>
+              <p className="text-[12px] text-[var(--text-muted)]">
+                Enter the 6-digit code we sent to {sentTo}.
+              </p>
+              <input
+                className={fieldClass}
+                placeholder="Code"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                maxLength={7}
+                autoFocus
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+              />
+            </>
+          ) : (
+            <input
+              className={fieldClass}
+              type="email"
+              placeholder="you@example.com"
+              autoComplete="email"
+              autoFocus
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          )}
+          <div className="flex gap-2">
+            <Button size="sm" variant="primary" type="submit" loading={busy}>
+              {sentTo ? 'Confirm' : 'Send code'}
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              type="button"
+              onClick={() => {
+                setEditing(false);
+                setSentTo(null);
+                setCode('');
+              }}
+            >
+              Cancel
+            </Button>
+          </div>
+        </form>
+      )}
     </Section>
   );
 }

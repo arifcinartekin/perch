@@ -4,7 +4,18 @@ import Foundation
 // types.ts. Times are epoch milliseconds on the wire.
 
 public enum ServerMode: String, Codable, Sendable { case personal, e2e }
-public enum SignupPolicy: String, Codable, Sendable { case open, invite, closed }
+public enum SignupPolicy: String, Codable, Sendable {
+  case open, invite, email, closed
+
+  /// A policy this version doesn't know is read as closed rather than failing
+  /// to decode the whole server info.
+  public init(from decoder: Decoder) throws {
+    self = SignupPolicy(rawValue: try decoder.singleValueContainer().decode(String.self)) ?? .closed
+  }
+}
+
+/// What an emailed code is for.
+public enum EmailPurpose: String, Codable, Sendable { case signup, reset, change }
 
 /// `GET /server`, read first when connecting.
 public struct ServerInfo: Codable, Sendable, Equatable {
@@ -17,6 +28,8 @@ public struct ServerInfo: Codable, Sendable, Equatable {
   public var chain: Bool?
   /// No accounts yet: the first one to register becomes the admin.
   public var needsSetup: Bool
+  /// The server can email codes (signup, password reset); absent on older servers.
+  public var email: Bool?
 }
 
 public struct KdfParams: Codable, Sendable, Equatable {
@@ -49,6 +62,8 @@ public struct PublicUser: Codable, Sendable, Equatable {
   public var displayName: String
   public var role: String
   public var createdAt: Double
+  /// Only ever sent to the account itself.
+  public var email: String?
 }
 
 public struct AuthResponse: Codable, Sendable {

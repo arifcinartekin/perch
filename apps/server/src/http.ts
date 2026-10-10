@@ -6,6 +6,7 @@ import type { Config } from './config';
 import type { DB } from './db';
 import type { SafeFetch } from './lib/safe-fetch';
 import type { FeedWorker } from './feeds/worker';
+import type { Mailer } from './lib/mailer';
 import type { Notifier } from './lib/notifier';
 import type { SyncService } from './sync/service';
 
@@ -18,6 +19,8 @@ export interface AppContext {
   worker: FeedWorker;
   sync: SyncService;
   notifier: Notifier;
+  /** Set when the server can send email (PERCH_EMAIL). */
+  mailer?: Mailer;
 }
 
 export interface SessionUser {
@@ -26,6 +29,7 @@ export interface SessionUser {
   displayName: string;
   role: 'admin' | 'user';
   createdAt: number;
+  email: string | null;
 }
 
 export type Env = {

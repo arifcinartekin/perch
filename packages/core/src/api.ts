@@ -7,7 +7,8 @@ import type { Article, Category, Feed, Settings } from './types';
 export const API_PREFIX = '/api/v1';
 
 export type ServerMode = 'personal' | 'e2e';
-export type SignupPolicy = 'open' | 'invite' | 'closed';
+/** `email`: anyone may sign up after confirming an email address with a code. */
+export type SignupPolicy = 'open' | 'invite' | 'email' | 'closed';
 
 /** GET /server — read first by a client connecting to a server. */
 export interface ServerInfo {
@@ -20,6 +21,8 @@ export interface ServerInfo {
   chain?: boolean;
   /** No accounts yet: the first account to register becomes the admin. */
   needsSetup: boolean;
+  /** The server can send email: codes for signup, password reset and adding an address. */
+  email?: boolean;
 }
 
 export interface ApiError {
@@ -46,7 +49,40 @@ export interface RegisterRequest {
   salt: string;
   kdf: KdfParams;
   invite?: string;
+  /** Required when signup is `email`, together with `emailCode`. */
+  email?: string;
+  emailCode?: string;
   deviceName?: string;
+}
+
+/** What an emailed code is for. */
+export type EmailPurpose = 'signup' | 'reset' | 'change';
+
+/**
+ * POST /auth/email/code — email a 6-digit code. Always answers `{ ok: true }`, so it
+ * can't be used to learn whether an address has an account. `change` needs a session.
+ */
+export interface EmailCodeRequest {
+  email: string;
+  purpose: EmailPurpose;
+  /** Language of the email; English when absent or unknown. */
+  lang?: string;
+}
+
+/** POST /auth/reset — set a new password with an emailed code. Signs out every device. */
+export interface ResetPasswordRequest {
+  email: string;
+  code: string;
+  authKey: string;
+  salt: string;
+  kdf: KdfParams;
+  deviceName?: string;
+}
+
+/** POST /auth/email — add or change the signed-in account's address. */
+export interface ChangeEmailRequest {
+  email: string;
+  code: string;
 }
 
 export interface LoginRequest {
@@ -61,6 +97,8 @@ export interface PublicUser {
   displayName: string;
   role: 'admin' | 'user';
   createdAt: number;
+  /** Only ever sent to the account itself. */
+  email?: string;
 }
 
 export interface AuthResponse {

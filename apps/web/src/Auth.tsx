@@ -1,11 +1,20 @@
 import { useState } from 'react';
-import type { AuthResponse, PreloginResponse, PublicUser, ServerInfo } from '@perch/core/api';
+import type {
+  AuthResponse,
+  EmailPurpose,
+  PreloginResponse,
+  PublicUser,
+  ServerInfo,
+} from '@perch/core/api';
 import { DEFAULT_KDF, deriveKeys, newSalt } from '@perch/core/auth';
 import { Button, PerchLogo } from '@perch/reader';
 import { ServerError, api } from './api';
 
 const inputClass =
   'w-full rounded-[9px] border border-[var(--border-strong)] bg-[var(--bg-solid)] px-3 py-2 text-[14px] outline-none focus:border-[var(--accent)]';
+
+const linkClass =
+  'mt-3 w-full text-center text-[12.5px] font-medium text-[var(--text-muted)] hover:text-[var(--text)]';
 
 /** Sign in or create an account. The password is stretched here; only a derived key is sent. */
 export function Auth({
@@ -16,7 +25,11 @@ export function Auth({
   onSignedIn: (u: PublicUser) => void;
 }) {
   const canSignUp = info.needsSetup || info.signup !== 'closed';
-  const [mode, setMode] = useState<'in' | 'up'>(info.needsSetup ? 'up' : 'in');
+  const [mode, setMode] = useState<'in' | 'up' | 'reset'>(info.needsSetup ? 'up' : 'in');
+  // Email signup and password reset start by mailing a code; `sentTo` is set once it's sent.
+  const [email, setEmail] = useState('');
+  const [sentTo, setSentTo] = useState<string | null>(null);
+  const [code, setCode] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -24,13 +37,45 @@ export function Auth({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const needsInvite = mode === 'up' && !info.needsSetup && info.signup === 'invite';
+  const purpose: EmailPurpose | null =
+    mode === 'reset' ? 'reset' : mode === 'up' && info.signup === 'email' ? 'signup' : null;
+  const askingEmail = purpose != null && sentTo == null;
+
+  const switchMode = (next: typeof mode) => {
+    setMode(next);
+    setSentTo(null);
+    setCode('');
+    setError(null);
+  };
+
+  const sendCode = async () => {
+    if (!email.trim()) return setError('Enter your email address.');
+    setBusy(true);
+    try {
+      await api('/auth/email/code', {
+        body: { email: email.trim(), purpose, lang: navigator.language },
+      });
+      setSentTo(email.trim());
+    } catch (err) {
+      setError(err instanceof ServerError ? err.message : 'Something went wrong. Try again.');
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    if (!username.trim() || !password) return setError('Enter a username and password.');
-    if (mode === 'up' && password.length < 8) return setError('Use at least 8 characters.');
-    if (mode === 'up' && password !== confirm) return setError('The passwords don’t match.');
+    if (askingEmail) return sendCode();
+    const isNew = mode !== 'in';
+    if (purpose && !code.trim()) return setError('Enter the code from the email.');
+    if ((mode !== 'reset' && !username.trim()) || !password) {
+      return setError(
+        mode === 'reset' ? 'Enter a new password.' : 'Enter a username and password.',
+      );
+    }
+    if (isNew && password.length < 8) return setError('Use at least 8 characters.');
+    if (isNew && password !== confirm) return setError('The passwords don’t match.');
     setBusy(true);
     try {
       const deviceName = `Web · ${navigator.platform || 'browser'}`;
@@ -39,6 +84,12 @@ export function Auth({
         const pre = await api<PreloginResponse>('/auth/prelogin', { body: { username } });
         const { authKey } = await deriveKeys(password, pre.salt, pre.kdf);
         res = await api<AuthResponse>('/auth/login', { body: { username, authKey, deviceName } });
+      } else if (mode === 'reset') {
+        const salt = newSalt();
+        const { authKey } = await deriveKeys(password, salt, DEFAULT_KDF);
+        res = await api<AuthResponse>('/auth/reset', {
+          body: { email: sentTo, code, authKey, salt, kdf: DEFAULT_KDF, deviceName },
+        });
       } else {
         const salt = newSalt();
         const { authKey } = await deriveKeys(password, salt, DEFAULT_KDF);
@@ -50,6 +101,7 @@ export function Auth({
             kdf: DEFAULT_KDF,
             deviceName,
             invite: invite || undefined,
+            ...(purpose && { email: sentTo, emailCode: code }),
           },
         });
       }
@@ -72,7 +124,13 @@ export function Auth({
         </div>
 
         <h2 className="mb-1 text-[15px] font-semibold">
-          {info.needsSetup ? 'Set up your server' : mode === 'in' ? 'Sign in' : 'Create an account'}
+          {info.needsSetup
+            ? 'Set up your server'
+            : mode === 'in'
+              ? 'Sign in'
+              : mode === 'reset'
+                ? 'Reset your password'
+                : 'Create an account'}
         </h2>
         {info.needsSetup && (
           <p className="mb-4 text-[12.5px] leading-relaxed text-[var(--text-muted)]">
@@ -80,60 +138,112 @@ export function Auth({
           </p>
         )}
 
-        <div className="mt-4 flex flex-col gap-2.5">
-          <input
-            className={inputClass}
-            placeholder="Username"
-            autoComplete="username"
-            autoCapitalize="off"
-            spellCheck={false}
-            autoFocus
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-          />
-          <input
-            className={inputClass}
-            type="password"
-            placeholder="Password"
-            autoComplete={mode === 'in' ? 'current-password' : 'new-password'}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          {mode === 'up' && (
+        {askingEmail ? (
+          <div className="mt-4 flex flex-col gap-2.5">
+            <p className="text-[12.5px] leading-relaxed text-[var(--text-muted)]">
+              {mode === 'reset'
+                ? 'We’ll email you a code to set a new password.'
+                : 'We’ll email you a code to confirm your address.'}
+            </p>
+            <input
+              className={inputClass}
+              type="email"
+              placeholder="Email"
+              autoComplete="email"
+              autoFocus
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
+        ) : (
+          <div className="mt-4 flex flex-col gap-2.5">
+            {sentTo && (
+              <>
+                <p className="text-[12.5px] leading-relaxed text-[var(--text-muted)]">
+                  We sent a 6-digit code to <b className="text-[var(--text)]">{sentTo}</b>. It works
+                  for 10 minutes.
+                </p>
+                <input
+                  className={inputClass}
+                  placeholder="Code"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  maxLength={7}
+                  autoFocus
+                  value={code}
+                  onChange={(e) => setCode(e.target.value)}
+                />
+              </>
+            )}
+            {mode !== 'reset' && (
+              <input
+                className={inputClass}
+                placeholder="Username"
+                autoComplete="username"
+                autoCapitalize="off"
+                spellCheck={false}
+                autoFocus={!sentTo}
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+              />
+            )}
             <input
               className={inputClass}
               type="password"
-              placeholder="Repeat password"
-              autoComplete="new-password"
-              value={confirm}
-              onChange={(e) => setConfirm(e.target.value)}
+              placeholder={mode === 'reset' ? 'New password' : 'Password'}
+              autoComplete={mode === 'in' ? 'current-password' : 'new-password'}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
             />
-          )}
-          {needsInvite && (
-            <input
-              className={inputClass}
-              placeholder="Invite code"
-              spellCheck={false}
-              value={invite}
-              onChange={(e) => setInvite(e.target.value)}
-            />
-          )}
-        </div>
+            {mode !== 'in' && (
+              <input
+                className={inputClass}
+                type="password"
+                placeholder="Repeat password"
+                autoComplete="new-password"
+                value={confirm}
+                onChange={(e) => setConfirm(e.target.value)}
+              />
+            )}
+            {needsInvite && (
+              <input
+                className={inputClass}
+                placeholder="Invite code"
+                spellCheck={false}
+                value={invite}
+                onChange={(e) => setInvite(e.target.value)}
+              />
+            )}
+          </div>
+        )}
 
         {error && <p className="mt-3 text-[12.5px] text-[#ef4444]">{error}</p>}
 
         <Button variant="primary" type="submit" loading={busy} className="mt-5 w-full">
-          {mode === 'in' ? 'Sign in' : 'Create account'}
+          {askingEmail
+            ? 'Send code'
+            : mode === 'in'
+              ? 'Sign in'
+              : mode === 'reset'
+                ? 'Set new password'
+                : 'Create account'}
         </Button>
 
-        {!info.needsSetup && canSignUp && (
+        {sentTo && (
+          <button type="button" onClick={() => switchMode(mode)} className={linkClass}>
+            Use a different address or send a new code
+          </button>
+        )}
+        {mode === 'in' && info.email && (
+          <button type="button" onClick={() => switchMode('reset')} className={linkClass}>
+            Forgot your password?
+          </button>
+        )}
+        {!info.needsSetup && (canSignUp || mode === 'reset') && (
           <button
             type="button"
-            onClick={() => {
-              setMode(mode === 'in' ? 'up' : 'in');
-              setError(null);
-            }}
-            className="mt-4 w-full text-center text-[12.5px] font-medium text-[var(--text-muted)] hover:text-[var(--text)]"
+            onClick={() => switchMode(mode === 'in' ? 'up' : 'in')}
+            className={linkClass}
           >
             {mode === 'in' ? 'New here? Create an account' : 'Have an account? Sign in'}
           </button>

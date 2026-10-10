@@ -16,6 +16,8 @@ import {
   getServerInfo,
   normalizeServerUrl,
   signIn,
+  requestEmailCode,
+  resetPassword,
   signOutRemote,
   signUp,
 } from '@/lib/sync/client';
@@ -473,14 +475,27 @@ function SignInForm({
   onCancel: () => void;
 }) {
   const toast = useToast();
-  const [mode, setMode] = useState<'in' | 'up'>('in');
+  const [mode, setMode] = useState<'in' | 'up' | 'reset'>('in');
   const [server, setServer] = useState(initial?.server ?? '');
   const [username, setUsername] = useState(initial?.username ?? '');
   const [password, setPassword] = useState('');
   const [invite, setInvite] = useState('');
   const [needsInvite, setNeedsInvite] = useState(false);
+  // Servers with email signup (and every password reset) confirm an address
+  // first: 'address' asks for it, 'code' once the code is on its way.
+  const [emailStep, setEmailStep] = useState<'address' | 'code' | null>(null);
+  const [email, setEmail] = useState('');
+  const [code, setCode] = useState('');
+  const [canReset, setCanReset] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(notice ?? null);
+
+  const switchMode = (next: typeof mode) => {
+    setMode(next);
+    setEmailStep(next === 'reset' ? 'address' : null);
+    setCode('');
+    setErr(null);
+  };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -491,7 +506,9 @@ function SignInForm({
     } catch {
       return setErr('That doesn’t look like a server address.');
     }
-    if (!username.trim() || !password) return setErr('Enter a username and password.');
+    if (emailStep !== 'address' && ((mode !== 'reset' && !username.trim()) || !password)) {
+      return setErr(mode === 'reset' ? 'Enter a new password.' : 'Enter a username and password.');
+    }
 
     // Ask for the server's origin first, while we still have the click.
     if (!(await requestHostPermission(url))) {
@@ -503,20 +520,42 @@ function SignInForm({
       if (info.mode !== 'personal') {
         return setErr('This server runs in a mode this version of Perch can’t use yet.');
       }
+      setCanReset(Boolean(info.email));
+      const byEmail = mode === 'reset' || (mode === 'up' && info.signup === 'email');
+      if (byEmail && emailStep !== 'code') {
+        if (!email.trim()) {
+          setEmailStep('address');
+          return setErr(
+            mode === 'reset' ? null : 'This server confirms your email address before signing up.',
+          );
+        }
+        await requestEmailCode(url, email.trim(), mode === 'reset' ? 'reset' : 'signup');
+        setEmailStep('code');
+        return;
+      }
+      const confirmed = byEmail ? { email: email.trim(), emailCode: code.trim() } : {};
       const account =
         mode === 'in'
           ? await signIn(url, username.trim(), password)
-          : await signUp(url, username.trim(), password, invite.trim() || undefined);
+          : mode === 'reset'
+            ? await resetPassword(url, email.trim(), code.trim(), password)
+            : await signUp(url, username.trim(), password, {
+                invite: invite.trim() || undefined,
+                ...confirmed,
+              });
       await saveAccount(account);
       toast(
         mode === 'in'
           ? `Signed in to ${new URL(url).host}`
-          : `Account created on ${new URL(url).host}`,
+          : mode === 'reset'
+            ? `New password set on ${new URL(url).host}`
+            : `Account created on ${new URL(url).host}`,
         'success',
       );
     } catch (error) {
       const e = error as Error;
       if (e instanceof ServerError && e.code === 'invite-required') setNeedsInvite(true);
+      if (e instanceof ServerError && e.code === 'invalid-credentials') setCanReset(true);
       setErr(e.message);
     } finally {
       setBusy(false);
@@ -527,15 +566,16 @@ function SignInForm({
     <form onSubmit={submit} className="flex flex-col gap-3">
       <div className="flex items-center justify-between">
         <div className="text-[13px] font-medium">
-          {mode === 'in' ? 'Sign in to your Perch Server' : 'Create an account'}
+          {mode === 'in'
+            ? 'Sign in to your Perch Server'
+            : mode === 'reset'
+              ? 'Reset your password'
+              : 'Create an account'}
         </div>
         <button
           type="button"
           className="text-[12px] font-medium text-[var(--accent-text)] hover:underline"
-          onClick={() => {
-            setMode(mode === 'in' ? 'up' : 'in');
-            setErr(null);
-          }}
+          onClick={() => switchMode(mode === 'in' ? 'up' : 'in')}
         >
           {mode === 'in' ? 'Create an account instead' : 'I have an account'}
         </button>
@@ -549,26 +589,60 @@ function SignInForm({
         spellCheck={false}
         autoCapitalize="off"
       />
-      <div className="flex gap-2">
+      {emailStep && (
         <input
           className={inputClass}
-          placeholder="Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          autoComplete="username"
-          spellCheck={false}
-          autoCapitalize="off"
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => {
+            setEmail(e.target.value);
+            if (emailStep === 'code') setEmailStep('address');
+          }}
+          autoComplete="email"
         />
-        <input
-          className={inputClass}
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          autoComplete={mode === 'in' ? 'current-password' : 'new-password'}
-          autoFocus={Boolean(initial)}
-        />
-      </div>
+      )}
+      {emailStep === 'code' && (
+        <>
+          <p className="text-[11.5px] text-[var(--text-muted)]">
+            We sent a 6-digit code to {email.trim()}. It works for 10 minutes.
+          </p>
+          <input
+            className={inputClass}
+            placeholder="Code from the email"
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            maxLength={7}
+            autoFocus
+          />
+        </>
+      )}
+      {emailStep !== 'address' && (
+        <div className="flex gap-2">
+          {mode !== 'reset' && (
+            <input
+              className={inputClass}
+              placeholder="Username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              autoComplete="username"
+              spellCheck={false}
+              autoCapitalize="off"
+            />
+          )}
+          <input
+            className={inputClass}
+            type="password"
+            placeholder={mode === 'reset' ? 'New password' : 'Password'}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            autoComplete={mode === 'in' ? 'current-password' : 'new-password'}
+            autoFocus={Boolean(initial)}
+          />
+        </div>
+      )}
       {mode === 'up' && needsInvite && (
         <input
           className={inputClass}
@@ -579,13 +653,28 @@ function SignInForm({
         />
       )}
       {err && <p className="text-[11.5px] text-[#ef4444]">{err}</p>}
+      {mode === 'in' && canReset && (
+        <button
+          type="button"
+          className="self-start text-[11.5px] font-medium text-[var(--accent-text)] hover:underline"
+          onClick={() => switchMode('reset')}
+        >
+          Forgot your password?
+        </button>
+      )}
       <p className="text-[11.5px] leading-relaxed text-[var(--text-faint)]">
         Your password never leaves this device: Perch derives a key from it (Argon2id) and sends
         only that. Subscriptions you already have here are merged with the account’s.
       </p>
       <div className="flex gap-2">
         <Button size="sm" variant="primary" type="submit" loading={busy}>
-          {mode === 'in' ? 'Sign in' : 'Create account'}
+          {emailStep === 'address'
+            ? 'Send code'
+            : mode === 'in'
+              ? 'Sign in'
+              : mode === 'reset'
+                ? 'Set new password'
+                : 'Create account'}
         </Button>
         <Button
           size="sm"

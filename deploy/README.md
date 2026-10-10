@@ -31,6 +31,20 @@ what the address is.
 Then open `https://app.perch.ws` straight away and create the first account; it becomes the
 admin. Sign-up is by invite after that (`PERCH_SIGNUP` in `/opt/perch/deploy/.env`).
 
+To let anyone sign up with an email address instead, verify a sending domain with
+[Resend](https://resend.com) (for app.perch.ws: `mail.perch.ws`), then add to `.env` and run
+`update.sh`:
+
+```sh
+PERCH_SIGNUP=email
+PERCH_EMAIL=resend
+PERCH_EMAIL_FROM=Perch <noreply@mail.perch.ws>
+RESEND_API_KEY=re_...
+```
+
+The key only ever lives in that file. It also turns on password reset by email and lets
+existing accounts add an address under Settings.
+
 ## Day to day
 
 | Task            | Command                                                        |

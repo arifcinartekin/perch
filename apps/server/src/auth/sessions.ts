@@ -68,6 +68,7 @@ export function lookupSession(
         displayName: users.displayName,
         role: users.role,
         createdAt: users.createdAt,
+        email: users.email,
       },
     })
     .from(sessions)
@@ -88,10 +89,15 @@ export function lookupSession(
   return { sessionId: row.sessionId, user: row.user };
 }
 
+/** The request's session, if it carries a valid one. */
+export function currentSession(ctx: AppContext, c: Context) {
+  const token = tokenFrom(c);
+  return token ? lookupSession(ctx.db, token) : undefined;
+}
+
 export function requireUser(ctx: AppContext): MiddlewareHandler<Env> {
   return async (c, next) => {
-    const token = tokenFrom(c);
-    const session = token ? lookupSession(ctx.db, token) : undefined;
+    const session = currentSession(ctx, c);
     if (!session) throw new HttpError(401, 'unauthorized', 'Sign in required');
     c.set('user', session.user);
     c.set('sessionId', session.sessionId);
@@ -103,6 +109,10 @@ export const requireAdmin: MiddlewareHandler<Env> = async (c, next) => {
   if (c.get('user').role !== 'admin') throw new HttpError(403, 'forbidden', 'Admins only');
   await next();
 };
+
+export function revokeAllSessions(db: DB, userId: string) {
+  db.delete(sessions).where(eq(sessions.userId, userId)).run();
+}
 
 export function revokeOtherSessions(db: DB, userId: string, keepSessionId: string) {
   db.delete(sessions)

@@ -38,7 +38,8 @@ export const users = sqliteTable('users', {
   role: text('role', { enum: ['admin', 'user'] })
     .notNull()
     .default('user'),
-  email: text('email'),
+  /** Lower-cased; unique when set. Accounts made before email signup have none. */
+  email: text('email').unique(),
   createdAt: integer('created_at').notNull().default(now),
 });
 
@@ -58,6 +59,21 @@ export const sessions = sqliteTable(
     expiresAt: integer('expires_at').notNull(),
   },
   (t) => [index('sessions_user').on(t.userId)],
+);
+
+/** Emailed 6-digit codes. One live code per address and purpose; a new one replaces it. */
+export const emailCodes = sqliteTable(
+  'email_codes',
+  {
+    email: text('email').notNull(),
+    purpose: text('purpose', { enum: ['signup', 'reset', 'change'] }).notNull(),
+    /** HMAC of the code with the instance secret; the code itself is never stored. */
+    codeHash: text('code_hash').notNull(),
+    attempts: integer('attempts').notNull().default(0),
+    expiresAt: integer('expires_at').notNull(),
+    createdAt: integer('created_at').notNull().default(now),
+  },
+  (t) => [primaryKey({ columns: [t.email, t.purpose] })],
 );
 
 export const invites = sqliteTable('invites', {

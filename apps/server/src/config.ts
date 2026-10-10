@@ -26,7 +26,12 @@ export interface Config {
   worker: boolean;
   /** Serve the web UI from this folder when set. */
   webRoot?: string;
+  /** How email is sent, if at all. `log` prints messages to stdout (development). */
+  email?: EmailConfig;
 }
+
+export type EmailConfig =
+  { provider: 'resend'; apiKey: string; from: string } | { provider: 'log'; from: string };
 
 const bool = (v: string | undefined, fallback: boolean) =>
   v == null || v === '' ? fallback : ['1', 'true', 'on', 'yes'].includes(v.toLowerCase());
@@ -58,13 +63,24 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     throw new Error('Postgres support is coming; leave DATABASE_URL empty to use SQLite.');
   }
 
+  const signup = oneOf(
+    'PERCH_SIGNUP',
+    env.PERCH_SIGNUP,
+    ['open', 'invite', 'email', 'closed'],
+    'invite',
+  );
+  const email = emailConfig(env);
+  if (signup === 'email' && !email) {
+    throw new Error('PERCH_SIGNUP=email needs email: set PERCH_EMAIL=resend and RESEND_API_KEY.');
+  }
+
   return {
     mode,
     port: int(env.PORT, 8080, 1, 65535),
     host: env.HOST || '0.0.0.0',
     databasePath: databaseUrl.replace(/^(sqlite|file):(\/\/)?/, '') || './data/perch.db',
     publicUrl: env.PERCH_PUBLIC_URL?.replace(/\/+$/, '') || undefined,
-    signup: oneOf('PERCH_SIGNUP', env.PERCH_SIGNUP, ['open', 'invite', 'closed'], 'invite'),
+    signup,
     community: bool(env.PERCH_COMMUNITY, false),
     chain: bool(env.PERCH_CHAIN, false),
     fetchIntervalMin: int(env.PERCH_FETCH_INTERVAL_MIN, 30, 5, 24 * 60),
@@ -76,7 +92,25 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     trustProxy: bool(env.PERCH_TRUST_PROXY, false),
     worker: bool(env.PERCH_WORKER, true),
     webRoot: env.PERCH_WEB_ROOT || undefined,
+    email,
   };
+}
+
+// Each server sends mail with its own provider account; nothing here reaches
+// another server's. Off unless PERCH_EMAIL is set.
+function emailConfig(env: NodeJS.ProcessEnv): EmailConfig | undefined {
+  const provider = oneOf('PERCH_EMAIL', env.PERCH_EMAIL, ['resend', 'log', 'off'], 'off');
+  if (provider === 'off') return undefined;
+  const from = env.PERCH_EMAIL_FROM?.trim() || 'Perch <noreply@localhost>';
+  if (provider === 'log') return { provider, from };
+  const apiKey = env.RESEND_API_KEY?.trim();
+  if (!apiKey) throw new Error('PERCH_EMAIL=resend needs RESEND_API_KEY.');
+  if (!env.PERCH_EMAIL_FROM?.trim()) {
+    throw new Error(
+      'PERCH_EMAIL=resend needs PERCH_EMAIL_FROM, e.g. "Perch <noreply@mail.example.com>".',
+    );
+  }
+  return { provider, apiKey, from };
 }
 
 export function testConfig(overrides: Partial<Config> = {}): Config {

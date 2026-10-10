@@ -68,9 +68,19 @@ final class Session {
     await adopt(server: server, res)
   }
 
-  func register(server: URL, username: String, password: String, invite: String?) async throws {
+  func register(
+    server: URL, username: String, password: String, invite: String?,
+    email: String? = nil, emailCode: String? = nil
+  ) async throws {
     let res = try await APIClient(baseURL: server).register(
-      username: username, password: password, invite: invite, deviceName: Self.deviceName)
+      username: username, password: password, invite: invite, email: email,
+      emailCode: emailCode, deviceName: Self.deviceName)
+    await adopt(server: server, res)
+  }
+
+  func resetPassword(server: URL, email: String, code: String, password: String) async throws {
+    let res = try await APIClient(baseURL: server).resetPassword(
+      email: email, code: code, password: password, deviceName: Self.deviceName)
     await adopt(server: server, res)
   }
 

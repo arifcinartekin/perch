@@ -5,9 +5,11 @@ import type { ApiError, AuthResponse } from '@perch/core/api';
 import { DEFAULT_KDF } from '@perch/core/auth';
 import { createApp, createContext } from '../src/app';
 import { testConfig, type Config } from '../src/config';
+import { MemoryMailer } from '../src/lib/mailer';
 
-export function setup(overrides: Partial<Config> = {}) {
-  const ctx = createContext(testConfig(overrides));
+export function setup(overrides: Partial<Config> = {}, opts: { email?: boolean } = {}) {
+  const mailer = opts.email ? new MemoryMailer() : undefined;
+  const ctx = createContext(testConfig(overrides), { mailer });
   const app = createApp(ctx);
 
   async function call<T = any>(
@@ -48,7 +50,7 @@ export function setup(overrides: Partial<Config> = {}) {
     return { ...res, authKey, token: res.body.token };
   }
 
-  return { ctx, app, call, register, close: () => ctx.close() };
+  return { ctx, app, call, register, mailer, close: () => ctx.close() };
 }
 
 export type Route = (req: IncomingMessage, res: ServerResponse) => void;

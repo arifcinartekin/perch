@@ -1,7 +1,14 @@
 import { and, count, desc, eq, isNull } from 'drizzle-orm';
-import { Hono } from 'hono';
+import { Hono, type Context } from 'hono';
 import { DEFAULT_KDF, isValidKdf, toBase64Url } from '@perch/core/auth';
-import type { AuthResponse, Device, Invite, PreloginResponse, PublicUser } from '@perch/core/api';
+import type {
+  AuthResponse,
+  Device,
+  EmailPurpose,
+  Invite,
+  PreloginResponse,
+  PublicUser,
+} from '@perch/core/api';
 import { normalizeUsername, usernameProblem } from '@perch/core/username';
 import { invites, sessions, users } from '../db/schema';
 import {
@@ -17,10 +24,22 @@ import {
 import { DUMMY_AUTH_HASH, hashAuthKey, hmac, randomToken, verifyAuthKey } from '../lib/crypto';
 import { RateLimiter } from '../lib/ratelimit';
 import {
+  checkCode,
+  codeEmail,
+  consumeCode,
+  emailCodeFrom,
+  emailLang,
+  noticeEmail,
+  normalizeEmail,
+  issueCode,
+} from './email';
+import {
   clearSessionCookie,
   createSession,
+  currentSession,
   requireAdmin,
   requireUser,
+  revokeAllSessions,
   revokeOtherSessions,
   setSessionCookie,
 } from './sessions';
@@ -49,13 +68,17 @@ function kdfFrom(body: Record<string, unknown>) {
   return { salt, kdf: { algorithm, memory, iterations, parallelism } };
 }
 
-const publicUser = (u: PublicUser): PublicUser => ({
+/** The account as its owner sees it. */
+const publicUser = (u: Omit<PublicUser, 'email'> & { email?: string | null }): PublicUser => ({
   id: u.id,
   username: u.username,
   displayName: u.displayName,
   role: u.role,
   createdAt: u.createdAt,
+  ...(u.email && { email: u.email }),
 });
+
+const PURPOSES: EmailPurpose[] = ['signup', 'reset', 'change'];
 
 export function authRoutes(ctx: AppContext) {
   const { db, config } = ctx;
@@ -67,6 +90,10 @@ export function authRoutes(ctx: AppContext) {
   const ipLimit = new RateLimiter(30, 10 * 60 * 1000);
   const userLimit = new RateLimiter(10, 15 * 60 * 1000);
   const registerLimit = new RateLimiter(5, 60 * 60 * 1000);
+  // Codes cost us mail: per IP, and per address so one inbox can't be flooded.
+  const codeIpLimit = new RateLimiter(10, 60 * 60 * 1000);
+  const codeEmailLimit = new RateLimiter(3, 15 * 60 * 1000);
+  const resetLimit = new RateLimiter(10, 60 * 60 * 1000);
 
   const throttle = (limiter: RateLimiter, key: string) => {
     const wait = limiter.retryAfter(key);
@@ -75,7 +102,16 @@ export function authRoutes(ctx: AppContext) {
     }
   };
 
-  const issue = (c: Parameters<typeof setSessionCookie>[0], user: PublicUser, device: string) => {
+  // The address people know the server by, for the emails' wording.
+  const host = (c: Context) => new URL(config.publicUrl ?? c.req.url).host;
+  const userByEmail = (email: string) =>
+    db.select({ id: users.id }).from(users).where(eq(users.email, email)).get();
+
+  const issue = (
+    c: Parameters<typeof setSessionCookie>[0],
+    user: Parameters<typeof publicUser>[0],
+    device: string,
+  ) => {
     const token = createSession(db, user.id, device || (c.req.header('user-agent') ?? ''));
     setSessionCookie(c, token, config.publicUrl);
     return c.json<AuthResponse>({ token, user: publicUser(user) });
@@ -108,6 +144,19 @@ export function authRoutes(ctx: AppContext) {
     const authKey = authKeyFrom(body);
     const { salt, kdf } = kdfFrom(body);
     const inviteCode = str(body, 'invite', { max: 64, optional: true }).trim();
+    // Email signup proves the address with a code; other policies don't take one,
+    // since an address nobody confirmed can't be used to reset the password.
+    const byEmail = config.signup === 'email';
+    let email: string | null = null;
+    let emailCode = '';
+    if (byEmail) {
+      if (body.email == null || body.emailCode == null) {
+        throw new HttpError(403, 'email-required', 'Confirm your email address to sign up');
+      }
+      email = normalizeEmail(str(body, 'email', { max: 320 }));
+      emailCode = emailCodeFrom(body, 'emailCode');
+      checkCode(db, ctx.secret, email, 'signup', emailCode);
+    }
     const displayName =
       str(body, 'displayName', { max: 64, optional: true }).trim() || str(body, 'username').trim();
 
@@ -128,6 +177,10 @@ export function authRoutes(ctx: AppContext) {
       if (tx.select({ id: users.id }).from(users).where(eq(users.username, username)).get()) {
         throw new HttpError(409, 'username-taken', 'That username is taken');
       }
+      if (email && tx.select({ id: users.id }).from(users).where(eq(users.email, email)).get()) {
+        throw new HttpError(409, 'email-taken', 'That email address already has an account');
+      }
+      if (email) consumeCode(tx, ctx.secret, email, 'signup', emailCode);
       const created = tx
         .insert(users)
         .values({
@@ -138,6 +191,7 @@ export function authRoutes(ctx: AppContext) {
           kdfSalt: salt,
           kdfParams: kdf,
           role: isFirst ? 'admin' : 'user',
+          email,
           createdAt: Date.now(),
         })
         .returning()
@@ -158,6 +212,101 @@ export function authRoutes(ctx: AppContext) {
 
     registerLimit.hit(ip);
     return issue(c, user, str(body, 'deviceName', { max: 80, optional: true }));
+  });
+
+  app.post('/email/code', async (c) => {
+    const mailer = ctx.mailer;
+    if (!mailer) throw new HttpError(404, 'email-unavailable', 'This server does not send email');
+    const body = await jsonBody(c);
+    const email = normalizeEmail(str(body, 'email', { max: 320 }));
+    const purpose = str(body, 'purpose', { max: 16 }) as EmailPurpose;
+    if (!PURPOSES.includes(purpose)) throw badRequest('"purpose" must be signup, reset or change');
+    const lang = emailLang(body.lang);
+
+    if (purpose === 'signup' && config.signup !== 'email') {
+      throw new HttpError(403, 'signup-closed', 'This server does not take email signups');
+    }
+    const session = purpose === 'change' ? currentSession(ctx, c) : undefined;
+    if (purpose === 'change' && !session)
+      throw new HttpError(401, 'unauthorized', 'Sign in required');
+
+    const ip = clientIp(c, config);
+    throttle(codeIpLimit, ip);
+    throttle(codeEmailLimit, email);
+    codeIpLimit.hit(ip);
+    codeEmailLimit.hit(email);
+
+    // The answer is the same whether or not the address has an account; what
+    // differs is the email, which only the address's owner reads.
+    const owner = userByEmail(email);
+    let mail;
+    if (purpose === 'signup') {
+      mail = owner
+        ? noticeEmail(email, 'taken', lang, host(c))
+        : codeEmail(email, purpose, issueCode(db, ctx.secret, email, purpose), lang, host(c));
+    } else if (purpose === 'reset') {
+      if (owner)
+        mail = codeEmail(email, purpose, issueCode(db, ctx.secret, email, purpose), lang, host(c));
+    } else if (owner && owner.id !== session!.user.id) {
+      mail = noticeEmail(email, 'inUse', lang, host(c));
+    } else if (!owner) {
+      mail = codeEmail(email, purpose, issueCode(db, ctx.secret, email, purpose), lang, host(c));
+    }
+    if (mail) {
+      try {
+        await mailer.send(mail);
+      } catch (err) {
+        console.error('Sending email failed:', err);
+        throw new HttpError(502, 'email-failed', 'The email could not be sent; try again later');
+      }
+    }
+    return c.json({ ok: true });
+  });
+
+  app.post('/reset', async (c) => {
+    const ip = clientIp(c, config);
+    throttle(resetLimit, ip);
+    resetLimit.hit(ip);
+    const body = await jsonBody(c);
+    const email = normalizeEmail(str(body, 'email', { max: 320 }));
+    const code = emailCodeFrom(body);
+    const authKey = authKeyFrom(body);
+    const { salt, kdf } = kdfFrom(body);
+    checkCode(db, ctx.secret, email, 'reset', code);
+    const authHash = await hashAuthKey(authKey);
+
+    const user = db.transaction((tx) => {
+      consumeCode(tx, ctx.secret, email, 'reset', code);
+      const row = tx
+        .update(users)
+        .set({ authHash, kdfSalt: salt, kdfParams: kdf })
+        .where(eq(users.email, email))
+        .returning()
+        .get();
+      if (!row) throw new HttpError(400, 'email-code-invalid', 'That code is wrong or has expired');
+      return row;
+    });
+    // Whoever knew the old password is signed out everywhere.
+    revokeAllSessions(db, user.id);
+    userLimit.reset(user.username);
+    return issue(c, user, str(body, 'deviceName', { max: 80, optional: true }));
+  });
+
+  app.post('/email', auth, async (c) => {
+    const body = await jsonBody(c);
+    const email = normalizeEmail(str(body, 'email', { max: 320 }));
+    const code = emailCodeFrom(body);
+    checkCode(db, ctx.secret, email, 'change', code);
+    const me = c.get('user');
+    const user = db.transaction((tx) => {
+      const owner = tx.select({ id: users.id }).from(users).where(eq(users.email, email)).get();
+      if (owner && owner.id !== me.id) {
+        throw new HttpError(409, 'email-taken', 'That email address already has an account');
+      }
+      consumeCode(tx, ctx.secret, email, 'change', code);
+      return tx.update(users).set({ email }).where(eq(users.id, me.id)).returning().get()!;
+    });
+    return c.json({ user: publicUser(user) });
   });
 
   app.post('/login', async (c) => {

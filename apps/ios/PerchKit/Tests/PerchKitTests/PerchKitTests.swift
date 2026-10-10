@@ -59,6 +59,17 @@ import Testing
     #expect(s.glass?.enabled == false)
   }
 
+  @Test func readsEmailSignupAndUnknownPoliciesInServerInfo() throws {
+    func info(_ signup: String) throws -> ServerInfo {
+      let json =
+        #"{"software":"perch-server","version":"0.1.0","mode":"personal","signup":"\#(signup)","community":false,"needsSetup":false,"email":true}"#
+      return try JSONDecoder().decode(ServerInfo.self, from: Data(json.utf8))
+    }
+    #expect(try info("email").signup == .email)
+    #expect(try info("email").email == true)
+    #expect(try info("something-new").signup == .closed)
+  }
+
   @Test func normalisesServerAddresses() {
     #expect(
       APIClient.normalizeServerURL("perch.example.com")?.absoluteString

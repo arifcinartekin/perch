@@ -73,13 +73,16 @@ public final class APIClient: Sendable {
       body: ["username": username, "authKey": keys.authKey, "deviceName": deviceName])
   }
 
-  public func register(username: String, password: String, invite: String?, deviceName: String)
-    async throws -> AuthResponse
-  {
+  /// `email` and `emailCode` are needed when the server's signup is `.email`.
+  public func register(
+    username: String, password: String, invite: String?, email: String? = nil,
+    emailCode: String? = nil, deviceName: String
+  ) async throws -> AuthResponse {
     struct Body: Encodable {
       var username, authKey, salt: String
       var kdf: KdfParams
       var invite: String?
+      var email, emailCode: String?
       var deviceName: String
     }
     let salt = KeyDerivation.newSalt()
@@ -90,7 +93,39 @@ public final class APIClient: Sendable {
       "auth/register",
       body: Body(
         username: username, authKey: keys.authKey, salt: salt, kdf: kdf,
-        invite: code?.isEmpty == false ? code : nil, deviceName: deviceName))
+        invite: code?.isEmpty == false ? code : nil, email: email, emailCode: emailCode,
+        deviceName: deviceName))
+  }
+
+  /// Email a 6-digit code. The server answers the same whether or not the
+  /// address has an account.
+  public func requestEmailCode(email: String, purpose: EmailPurpose, lang: String?) async throws {
+    struct Body: Encodable {
+      var email: String
+      var purpose: EmailPurpose
+      var lang: String?
+    }
+    let _: Ignored = try await send(
+      "auth/email/code", body: Body(email: email, purpose: purpose, lang: lang))
+  }
+
+  /// Set a new password with an emailed code. Every other device is signed out.
+  public func resetPassword(email: String, code: String, password: String, deviceName: String)
+    async throws -> AuthResponse
+  {
+    struct Body: Encodable {
+      var email, code, authKey, salt: String
+      var kdf: KdfParams
+      var deviceName: String
+    }
+    let salt = KeyDerivation.newSalt()
+    let kdf = KdfParams.default
+    let keys = try await KeyDerivation.derive(password: password, salt: salt, params: kdf)
+    return try await send(
+      "auth/reset",
+      body: Body(
+        email: email, code: code, authKey: keys.authKey, salt: salt, kdf: kdf,
+        deviceName: deviceName))
   }
 
   public func me() async throws -> PublicUser {
