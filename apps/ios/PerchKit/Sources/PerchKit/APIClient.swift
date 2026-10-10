@@ -360,6 +360,18 @@ public final class APIClient: Sendable {
       body: Body(authKey: old.authKey, newAuthKey: next.authKey, salt: salt, kdf: .default))
   }
 
+  /// Deletes the account and everything the server keeps with it, once the
+  /// password confirms it.
+  public func deleteAccount(username: String, password: String) async throws {
+    struct Prelogin: Decodable {
+      var salt: String
+      var kdf: KdfParams
+    }
+    let pre: Prelogin = try await send("auth/prelogin", body: ["username": username])
+    let keys = try await KeyDerivation.derive(password: password, salt: pre.salt, params: pre.kdf)
+    let _: Ignored = try await send("auth/delete", body: ["authKey": keys.authKey])
+  }
+
   public func devices() async throws -> [Device] {
     struct Res: Decodable { var devices: [Device] }
     let res: Res = try await get("devices")

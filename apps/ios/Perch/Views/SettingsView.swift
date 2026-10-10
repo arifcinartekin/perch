@@ -15,6 +15,7 @@ struct SettingsView: View {
   @State private var connecting = false
   @State private var changingPassword = false
   @State private var changingEmail = false
+  @State private var deletingAccount = false
   @State private var importing = false
   @State private var exported: ExportedFile?
   @State private var exporting = false
@@ -133,6 +134,17 @@ struct SettingsView: View {
         }
 
         Section {
+          Link(destination: URL(string: "https://perch.ws/privacy")!) {
+            Label("Privacy policy", systemImage: "hand.raised")
+          }
+          .surfaceRow()
+          Link(destination: URL(string: "https://perch.ws/terms")!) {
+            Label("Terms of use", systemImage: "doc.text")
+          }
+          .surfaceRow()
+        }
+
+        Section {
           Text("Perch \(version)")
             .font(.footnote)
             .foregroundStyle(theme.muted)
@@ -163,6 +175,7 @@ struct SettingsView: View {
       #endif
       .sheet(isPresented: $changingPassword) { ChangePasswordView() }
       .sheet(isPresented: $changingEmail) { EmailView() }
+      .sheet(isPresented: $deletingAccount) { DeleteAccountView() }
       .sheet(isPresented: $connecting) {
         NavigationStack { ConnectView(localFeeds: reader.library.feeds.count) }
       }
@@ -219,6 +232,10 @@ struct SettingsView: View {
       }
       Button("Sign out", systemImage: "rectangle.portrait.and.arrow.right", role: .destructive) {
         confirmingSignOut = true
+      }
+      .surfaceRow()
+      Button("Delete account…", systemImage: "trash", role: .destructive) {
+        deletingAccount = true
       }
       .surfaceRow()
     }
@@ -382,6 +399,65 @@ struct ChangePasswordView: View {
       defer { busy = false }
       do {
         try await reader.server?.changePassword(username: username, current: current, new: new)
+        dismiss()
+      } catch {
+        self.error = error.localizedDescription
+      }
+    }
+  }
+}
+
+/// Deletes the account on the server after the password; the library on the
+/// phone comes back, as after signing out.
+struct DeleteAccountView: View {
+  @Environment(Session.self) private var session
+  @Environment(\.dismiss) private var dismiss
+  @State private var password = ""
+  @State private var busy = false
+  @State private var error: String?
+
+  var body: some View {
+    NavigationStack {
+      Form {
+        Section {
+          SecureField("Password", text: $password).textContentType(.password)
+        } footer: {
+          Text(
+            "This removes your account on \(session.server?.host() ?? "this server") with your feeds, read state, settings, notes and shared pages. It can't be undone."
+          )
+        }
+        if let error {
+          Section {
+            Label(error, systemImage: "exclamationmark.triangle.fill").foregroundStyle(.red)
+          }
+        }
+      }
+      .navigationTitle("Delete account")
+      .navigationBarTitleDisplayMode(.inline)
+      .toolbar {
+        ToolbarItem(placement: .cancellationAction) {
+          Button("Cancel", systemImage: "xmark") { dismiss() }
+        }
+        ToolbarItem(placement: .confirmationAction) {
+          if busy {
+            ProgressView()
+          } else {
+            Button("Delete", role: .destructive, action: remove)
+              .tint(.red)
+              .disabled(password.isEmpty)
+          }
+        }
+      }
+    }
+  }
+
+  private func remove() {
+    busy = true
+    error = nil
+    Task {
+      defer { busy = false }
+      do {
+        try await session.deleteAccount(password: password)
         dismiss()
       } catch {
         self.error = error.localizedDescription

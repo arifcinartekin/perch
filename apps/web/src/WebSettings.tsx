@@ -1,12 +1,21 @@
 import { useCallback, useEffect, useState } from 'react';
-import type { Device, Invite, OpmlImportResponse, PublicUser, ServerInfo } from '@perch/core/api';
+import type {
+  Device,
+  Invite,
+  OpmlImportResponse,
+  PreloginResponse,
+  PublicUser,
+  ServerInfo,
+} from '@perch/core/api';
 import { API_PREFIX } from '@perch/core/api';
+import { deriveKeys } from '@perch/core/auth';
 import { relativeTime } from '@perch/core/time';
 import { Button, Row, Section, Spinner, pickTextFile, useToast } from '@perch/reader';
 import { ServerError, api } from './api';
 
 // Settings that only exist on the web: the account on this server, signed-in
-// email address, devices, invites (admins) and OPML import/export.
+// email address, devices, invites (admins), OPML import/export and deleting
+// the account.
 
 export function WebSettings({ user, onSignOut }: { user: PublicUser; onSignOut: () => void }) {
   return (
@@ -16,6 +25,7 @@ export function WebSettings({ user, onSignOut }: { user: PublicUser; onSignOut: 
       <DevicesSection />
       {user.role === 'admin' && <InvitesSection />}
       <OpmlSection />
+      <DeleteAccountSection user={user} onDeleted={onSignOut} />
     </>
   );
 }
@@ -307,6 +317,69 @@ function OpmlSection() {
           Import OPML
         </Button>
       </Row>
+    </Section>
+  );
+}
+
+/** Deletes the account and everything on this server with it, after the password. */
+function DeleteAccountSection({ user, onDeleted }: { user: PublicUser; onDeleted: () => void }) {
+  const toast = useToast();
+  const [open, setOpen] = useState(false);
+  const [password, setPassword] = useState('');
+  const [busy, setBusy] = useState(false);
+
+  const remove = async () => {
+    setBusy(true);
+    try {
+      const pre = await api<PreloginResponse>('/auth/prelogin', {
+        body: { username: user.username },
+      });
+      const { authKey } = await deriveKeys(password, pre.salt, pre.kdf);
+      await api('/auth/delete', { body: { authKey } });
+      onDeleted();
+    } catch (err) {
+      toast(err instanceof ServerError ? err.message : 'Something went wrong. Try again.', 'error');
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Section title="Delete account">
+      <Row
+        label="Delete your account"
+        hint={`Removes your account on ${location.host} with your feeds, read state, settings, notes and shared pages. It can’t be undone. What’s stored on your devices stays there.`}
+      >
+        {!open && (
+          <Button size="sm" variant="default" onClick={() => setOpen(true)}>
+            Delete…
+          </Button>
+        )}
+      </Row>
+      {open && (
+        <form
+          className="flex flex-wrap items-center gap-2 px-1 pb-2"
+          onSubmit={(e) => {
+            e.preventDefault();
+            void remove();
+          }}
+        >
+          <input
+            type="password"
+            autoComplete="current-password"
+            required
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className={`${fieldClass} max-w-[240px]`}
+          />
+          <Button size="sm" variant="danger" type="submit" loading={busy} disabled={!password}>
+            Delete my account
+          </Button>
+          <Button size="sm" variant="ghost" type="button" onClick={() => setOpen(false)}>
+            Cancel
+          </Button>
+        </form>
+      )}
     </Section>
   );
 }

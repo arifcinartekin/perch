@@ -107,6 +107,17 @@ final class Session {
     forget()
   }
 
+  /// Deletes the account on the server, then leaves it as signing out does.
+  func deleteAccount(password: String) async throws {
+    guard let client, let username = user?.username ?? username else { return }
+    try await client.deleteAccount(username: username, password: password)
+    if let server {
+      try? FileManager.default.removeItem(at: Self.accountDirectory(server, username))
+    }
+    await ImageCache.shared.clear()
+    forget()
+  }
+
   /// Called when the server rejects our token mid-session.
   func sessionExpired() {
     forget()

@@ -71,6 +71,9 @@ export function createApp(ctx: AppContext) {
       chain: ctx.config.chain,
       needsSetup: users_ === 0,
       email: ctx.mailer != null,
+      ...((ctx.config.privacyUrl || ctx.config.termsUrl) && {
+        legal: { privacy: ctx.config.privacyUrl, terms: ctx.config.termsUrl },
+      }),
     });
   });
   api.route('/auth', authRoutes(ctx));

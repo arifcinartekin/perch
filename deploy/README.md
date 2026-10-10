@@ -45,6 +45,14 @@ RESEND_API_KEY=re_...
 The key only ever lives in that file. It also turns on password reset by email and lets
 existing accounts add an address under Settings.
 
+The sign-up form and shared notes link to the privacy policy and terms when they're set; for
+app.perch.ws:
+
+```sh
+PERCH_PRIVACY_URL=https://perch.ws/privacy
+PERCH_TERMS_URL=https://perch.ws/terms
+```
+
 ## Day to day
 
 | Task            | Command                                                        |

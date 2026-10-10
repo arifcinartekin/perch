@@ -818,6 +818,26 @@
         }
       }
     },
+    "Delete account": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hesabı sil"
+          }
+        }
+      }
+    },
+    "Delete account…": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hesabı sil…"
+          }
+        }
+      }
+    },
     "Delete category": {
       "localizations": {
         "tr": {
@@ -1900,6 +1920,16 @@
         }
       }
     },
+    "Privacy policy": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gizlilik politikası"
+          }
+        }
+      }
+    },
     "Pull down to fetch the latest.": {
       "localizations": {
         "tr": {
@@ -2556,6 +2586,16 @@
         }
       }
     },
+    "Terms of use": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kullanım koşulları"
+          }
+        }
+      }
+    },
     "Text": {
       "localizations": {
         "tr": {
@@ -2726,6 +2766,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Bu iPhone zaten bir senkron zincirinde. Önce Ayarlar → Senkron zinciri'nden ayrılın."
+          }
+        }
+      }
+    },
+    "This removes your account on %@ with your feeds, read state, settings, notes and shared pages. It can't be undone.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu işlem %@ üzerindeki hesabını; akışların, okundu bilgilerin, ayarların, notların ve paylaşılan sayfalarınla birlikte siler. Geri alınamaz."
           }
         }
       }

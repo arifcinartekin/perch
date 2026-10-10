@@ -362,6 +362,39 @@ export function authRoutes(ctx: AppContext) {
     return c.json({ ok: true });
   });
 
+  // Deleting the account removes everything stored with it: sessions, library,
+  // read state, settings, notes and their public pages (the schema cascades).
+  app.post('/delete', auth, async (c) => {
+    const authKey = authKeyFrom(await jsonBody(c));
+    const me = c.get('user');
+    const row = db
+      .select({ authHash: users.authHash, role: users.role })
+      .from(users)
+      .where(eq(users.id, me.id))
+      .get();
+    if (!row || !(await verifyAuthKey(authKey, row.authHash))) {
+      throw new HttpError(401, 'invalid-credentials', 'Password is wrong');
+    }
+    db.transaction((tx) => {
+      if (row.role === 'admin') {
+        // A server with people on it keeps someone who can run it.
+        const admins = tx.select({ n: count() }).from(users).where(eq(users.role, 'admin')).get()!
+          .n;
+        const everyone = tx.select({ n: count() }).from(users).get()!.n;
+        if (admins === 1 && everyone > 1) {
+          throw new HttpError(
+            409,
+            'last-admin',
+            'You run this server and others use it; make someone else an admin first',
+          );
+        }
+      }
+      tx.delete(users).where(eq(users.id, me.id)).run();
+    });
+    clearSessionCookie(c);
+    return c.json({ ok: true });
+  });
+
   return app;
 }
 

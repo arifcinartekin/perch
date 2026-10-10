@@ -43,6 +43,8 @@ open http://localhost:5173 — Vite proxies `/api` to the server.
 | `PERCH_EMAIL`               | `off`              | `resend` to send email codes (signup, password reset, adding an address); `log` prints them instead (development).                                           |
 | `PERCH_EMAIL_FROM`          |                    | Sender, e.g. `Perch <noreply@mail.example.com>`. The domain must be verified with your provider.                                                             |
 | `RESEND_API_KEY`            |                    | Your own [Resend](https://resend.com) API key. Each server sends with its own account.                                                                       |
+| `PERCH_PRIVACY_URL`         |                    | Your privacy policy. Linked from sign-up and shared notes, and shown in apps that read `/server`.                                                            |
+| `PERCH_TERMS_URL`           |                    | Your terms of use, linked in the same places.                                                                                                                |
 | `PERCH_FETCH_INTERVAL_MIN`  | `30`               | Minutes between refreshes of a feed (5–1440). Failing feeds back off up to a day.                                                                            |
 | `PERCH_FETCH_ALLOW_PRIVATE` | `false`            | Allow feeds on private / loopback addresses.                                                                                                                 |
 | `PERCH_FETCH_ALLOW_HOSTS`   |                    | Comma-separated hostnames allowed to resolve to private addresses (e.g. `nas.local`).                                                                        |

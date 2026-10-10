@@ -13,6 +13,7 @@ import { requestHostPermission } from '@/lib/permissions/host';
 import { createChain, deleteChain, joinChain } from '@/lib/sync/chain';
 import {
   ServerError,
+  deleteAccount,
   getServerInfo,
   normalizeServerUrl,
   signIn,
@@ -419,7 +420,24 @@ function QrCode({ text, label }: { text: string; label: string }) {
 
 function Connected({ account, status }: { account: ServerAccount; status: SyncStatus }) {
   const toast = useToast();
-  const [busy, setBusy] = useState<null | 'sync' | 'out'>(null);
+  const [busy, setBusy] = useState<null | 'sync' | 'out' | 'delete'>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [password, setPassword] = useState('');
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  const removeAccount = async () => {
+    setBusy('delete');
+    setDeleteError(null);
+    try {
+      await deleteAccount(account, password);
+      await clearAccount();
+      toast('Account deleted. Everything on this device stays here.', 'info');
+    } catch (err) {
+      setDeleteError((err as Error).message);
+    } finally {
+      setBusy(null);
+    }
+  };
 
   const syncNow = async () => {
     setBusy('sync');
@@ -460,6 +478,50 @@ function Connected({ account, status }: { account: ServerAccount; status: SyncSt
       </Row>
       {status.lastError && (
         <p className="text-[11.5px] text-[#ef4444]">Last sync failed: {status.lastError}</p>
+      )}
+      <button
+        type="button"
+        className="mt-1 text-[11.5px] text-[var(--text-faint)] hover:text-[#ef4444]"
+        onClick={() => setDeleting(true)}
+      >
+        Delete account…
+      </button>
+      {deleting && (
+        <Dialog
+          title="Delete your account?"
+          onClose={() => setDeleting(false)}
+          footer={
+            <>
+              <Button size="sm" variant="ghost" onClick={() => setDeleting(false)}>
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                variant="danger"
+                loading={busy === 'delete'}
+                disabled={!password}
+                onClick={removeAccount}
+              >
+                Delete account
+              </Button>
+            </>
+          }
+        >
+          <p className="mb-3 text-[13px] text-[var(--text-muted)]">
+            This removes your account on {host} with your feeds, read state, settings, notes and
+            shared pages. It can’t be undone. What’s on this device stays here.
+          </p>
+          <input
+            type="password"
+            autoComplete="current-password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && password && void removeAccount()}
+            className={inputClass}
+          />
+          {deleteError && <p className="mt-2 text-[11.5px] text-[#ef4444]">{deleteError}</p>}
+        </Dialog>
       )}
     </>
   );

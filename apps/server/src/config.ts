@@ -28,6 +28,9 @@ export interface Config {
   webRoot?: string;
   /** How email is sent, if at all. `log` prints messages to stdout (development). */
   email?: EmailConfig;
+  /** This server's privacy policy and terms, linked from sign-up and shared pages. */
+  privacyUrl?: string;
+  termsUrl?: string;
 }
 
 export type EmailConfig =
@@ -93,7 +96,16 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     worker: bool(env.PERCH_WORKER, true),
     webRoot: env.PERCH_WEB_ROOT || undefined,
     email,
+    privacyUrl: httpUrl('PERCH_PRIVACY_URL', env.PERCH_PRIVACY_URL),
+    termsUrl: httpUrl('PERCH_TERMS_URL', env.PERCH_TERMS_URL),
   };
+}
+
+function httpUrl(name: string, value: string | undefined): string | undefined {
+  const v = value?.trim();
+  if (!v) return undefined;
+  if (!/^https?:\/\/[^\s"'<>]+$/i.test(v)) throw new Error(`${name} must be an http(s) URL.`);
+  return v;
 }
 
 // Each server sends mail with its own provider account; nothing here reaches

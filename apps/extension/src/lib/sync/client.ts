@@ -145,6 +145,15 @@ export async function signOutRemote(account: ServerAccount): Promise<void> {
   await call(account.server, '/auth/logout', { token: account.token, body: {} }).catch(() => {});
 }
 
+/** Delete the account on the server and everything stored there with it. */
+export async function deleteAccount(account: ServerAccount, password: string): Promise<void> {
+  const pre = await call<PreloginResponse>(account.server, '/auth/prelogin', {
+    body: { username: account.username },
+  });
+  const { authKey } = await deriveKeys(password, pre.salt, pre.kdf);
+  await call(account.server, '/auth/delete', { token: account.token, body: { authKey } });
+}
+
 /** Publish a note (already synced to the server) as a public page. */
 export async function shareNote(account: ServerAccount, noteId: string): Promise<string> {
   const res = await call<ShareResponse>(account.server, `/shares/${encodeURIComponent(noteId)}`, {

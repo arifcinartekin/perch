@@ -252,6 +252,33 @@ export function Auth({
         <p className="mt-6 text-[11.5px] leading-relaxed text-[var(--text-faint)]">
           Your password never leaves this browser. Perch derives a key from it and sends only that.
         </p>
+        {mode === 'up' && info.legal && (
+          <p className="mt-2 text-[11.5px] leading-relaxed text-[var(--text-faint)]">
+            By creating an account you agree to the{' '}
+            {info.legal.terms && (
+              <a
+                href={info.legal.terms}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline"
+              >
+                terms
+              </a>
+            )}
+            {info.legal.terms && info.legal.privacy && ' and '}
+            {info.legal.privacy && (
+              <a
+                href={info.legal.privacy}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline"
+              >
+                privacy policy
+              </a>
+            )}
+            .
+          </p>
+        )}
       </form>
     </div>
   );

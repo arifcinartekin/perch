@@ -114,7 +114,21 @@ function layout(opts: { title: string; description?: string; url?: string; body:
 const formatDate = (ms: number) =>
   new Date(ms).toLocaleDateString('en', { year: 'numeric', month: 'long', day: 'numeric' });
 
-export function sharedPage(note: SharedNote, pageUrl: string): string {
+/** The operator's policy pages, for the footer. */
+export interface LegalLinks {
+  privacyUrl?: string;
+  termsUrl?: string;
+}
+
+const legalLinks = (legal: LegalLinks = {}) =>
+  [
+    legal.termsUrl && `<a href="${esc(legal.termsUrl)}">Terms</a>`,
+    legal.privacyUrl && `<a href="${esc(legal.privacyUrl)}">Privacy</a>`,
+  ]
+    .filter(Boolean)
+    .join(' · ');
+
+export function sharedPage(note: SharedNote, pageUrl: string, legal?: LegalLinks): string {
   const href = safeHref(note.url);
   const title = esc(note.title || 'Untitled');
   return layout({
@@ -143,7 +157,7 @@ export function sharedPage(note: SharedNote, pageUrl: string): string {
       </details>
       <footer>
         <span>Notes are written by Perch readers, not by Perch or the article’s publisher.</span>
-        <a href="https://perch.ws">Get Perch</a>
+        <span>${legalLinks(legal)}${legal?.termsUrl || legal?.privacyUrl ? ' · ' : ''}<a href="https://perch.ws">Get Perch</a></span>
       </footer>`,
   });
 }

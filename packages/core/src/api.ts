@@ -23,6 +23,8 @@ export interface ServerInfo {
   needsSetup: boolean;
   /** The server can send email: codes for signup, password reset and adding an address. */
   email?: boolean;
+  /** The operator's privacy policy and terms, when they've published them. */
+  legal?: { privacy?: string; terms?: string };
 }
 
 export interface ApiError {
@@ -112,6 +114,11 @@ export interface ChangePasswordRequest {
   newAuthKey: string;
   salt: string;
   kdf: KdfParams;
+}
+
+/** Deletes the account and everything stored with it. The password confirms it. */
+export interface DeleteAccountRequest {
+  authKey: string;
 }
 
 export interface Device {

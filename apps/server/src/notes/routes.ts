@@ -213,7 +213,7 @@ export function sharedPages(ctx: AppContext) {
     if (note.hiddenAt) {
       return html(c, messagePage('Note removed', 'This note was removed after a report.'), 410);
     }
-    return html(c, sharedPage(note, shareUrl(ctx, c, note.slug)));
+    return html(c, sharedPage(note, shareUrl(ctx, c, note.slug), ctx.config));
   });
 
   app.post('/:slug/report', async (c) => {

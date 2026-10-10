@@ -1,21 +1,7 @@
 import { bareHost } from './url';
 
-// Favicons come straight from the site the feed belongs to — never a third-party
-// favicon service. When we can't load one, the UI falls back to a letter tile.
-
-export function faviconUrl(feed: {
-  siteUrl?: string;
-  url: string;
-  iconUrl?: string;
-}): string | null {
-  if (feed.iconUrl) return feed.iconUrl;
-  try {
-    const base = new URL(feed.siteUrl || feed.url);
-    return `${base.origin}/favicon.ico`;
-  } catch {
-    return null;
-  }
-}
+// No favicons are fetched anywhere: loading one would tell the site that you
+// follow it. Feeds show their initial on a coloured tile instead.
 
 /** Deterministic pastel colour for a feed's letter-tile fallback. */
 export function letterTile(feed: { title?: string; customTitle?: string; url: string }): {
