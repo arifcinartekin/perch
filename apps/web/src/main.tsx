@@ -7,6 +7,7 @@ import './styles.css';
 import { SIGNED_OUT_EVENT, api } from './api';
 import { Auth } from './Auth';
 import { Hub } from './Hub';
+import { LocalReader } from './local/LocalReader';
 import { createServerBackend } from './backend';
 import { WebSettings } from './WebSettings';
 
@@ -54,6 +55,13 @@ function App() {
         {session.message}
       </div>
     );
+  }
+  // On a hub the reader runs in the browser and needs no account; the Perch
+  // account (for sharing) lives at /account.
+  const info =
+    session.status === 'signed-in' || session.status === 'signed-out' ? session.info : null;
+  if (info?.mode === 'hub' && !location.pathname.startsWith('/account')) {
+    return <LocalReader />;
   }
   if (session.status === 'signed-out') {
     return (

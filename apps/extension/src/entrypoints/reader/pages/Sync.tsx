@@ -43,7 +43,8 @@ import {
 const inputClass =
   'w-full rounded-[9px] border border-[var(--border-strong)] bg-[var(--bg-solid)] px-2.5 py-1.5 text-[13px]';
 
-export function SyncSection() {
+/** `servers`: offer Perch Server accounts too (the web reader offers chains only). */
+export function SyncSection({ servers = true }: { servers?: boolean } = {}) {
   const [account, setAccount] = useState<SyncAccount | null | undefined>(undefined);
   const [status, setStatus] = useState<SyncStatus>({ cursor: 0 });
   const [form, setForm] = useState<null | 'server' | 'chain-new' | 'chain-join'>(null);
@@ -110,15 +111,17 @@ export function SyncSection() {
             </Button>
           </div>
         </Row>
-        <Row
-          label="Perch Server"
-          hint="Sign in to an account on a Perch Server, such as one you run yourself. Your PIN and
+        {servers && (
+          <Row
+            label="Perch Server"
+            hint="Sign in to an account on a Perch Server, such as one you run yourself. Your PIN and
           background image stay on this device either way."
-        >
-          <Button size="sm" variant="default" onClick={() => setForm('server')}>
-            Connect
-          </Button>
-        </Row>
+          >
+            <Button size="sm" variant="default" onClick={() => setForm('server')}>
+              Connect
+            </Button>
+          </Row>
+        )}
       </>
     );
   }

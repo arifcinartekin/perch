@@ -17,6 +17,8 @@ COPY packages/core packages/core
 COPY packages/reader packages/reader
 COPY apps/server apps/server
 COPY apps/web apps/web
+# The web reader on a hub runs the extension's library code in the page.
+COPY apps/extension/src apps/extension/src
 RUN npm run build -w @perch/server && npm run build -w @perch/web
 
 FROM node:22-alpine

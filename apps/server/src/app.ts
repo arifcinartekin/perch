@@ -1,5 +1,6 @@
 import { count, eq, like, sql } from 'drizzle-orm';
 import { Hono } from 'hono';
+import { cors } from 'hono/cors';
 import { secureHeaders } from 'hono/secure-headers';
 import { API_PREFIX, type ServerInfo } from '@perch/core/api';
 import type { Config } from './config';
@@ -29,6 +30,7 @@ import { readerRoutes } from './reader/routes';
 import { SyncService } from './sync/service';
 import { syncRoutes } from './sync/routes';
 import { chainRoutes } from './chain/routes';
+import { proxyRoutes } from './proxy/routes';
 import { noteRoutes, reportRoutes, shareRoutes, sharedPages } from './notes/routes';
 
 export const VERSION = '0.1.0';
@@ -141,6 +143,15 @@ export function createApp(ctx: AppContext) {
   app.notFound((c) => errorResponse(c, new HttpError(404, 'not-found', 'Not found')));
 
   const api = new Hono<Env>();
+  // Chains are reached with a bearer token, never cookies, so any web page may
+  // use a relay: a web reader on one server can sync through another's.
+  const openToAll = cors({
+    origin: '*',
+    allowMethods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
+    allowHeaders: ['authorization', 'content-type'],
+    maxAge: 86400,
+  });
+  for (const path of ['/server', '/chain', '/chain/*']) api.use(path, openToAll);
   api.get('/server', (c) => {
     const users_ = ctx.db.select({ n: count() }).from(users).get()!.n;
     return c.json<ServerInfo>({
@@ -177,6 +188,9 @@ export function createApp(ctx: AppContext) {
     api.route('/notes', noteRoutes(ctx));
   }
   api.route('/chain', chainRoutes(ctx));
+  // The web reader on a hub keeps its library in the browser and fetches
+  // feeds through here.
+  if (ctx.config.mode === 'hub') api.route('/proxy', proxyRoutes(ctx));
   api.route('/shares', shareRoutes(ctx));
   api.route('/admin/reports', reportRoutes(ctx));
 

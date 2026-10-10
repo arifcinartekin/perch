@@ -135,6 +135,17 @@
         reads a page only when you open Perch on it, and only the feed links the page names.
       </p>
 
+      <h2>The web reader (app.perch.ws)</h2>
+      <p>
+        The reader at app.perch.ws works like the extension: your subscriptions, reading and notes
+        are stored in your browser, and a sync chain links it to your other devices. A web page
+        isn't allowed to fetch other sites itself, so it asks our server to fetch feeds and article
+        pages for it. These requests carry no account or cookie, and the server keeps no record of
+        who asked. It keeps each fetched page for 10 minutes in a cache shared by everyone, so a
+        popular feed is fetched once: the server can tell which feeds are popular, not who reads
+        them. Images inside articles still load straight from the publisher.
+      </p>
+
       <h2>Sync chains (sync.perch.ws)</h2>
       <p>
         A sync chain links your devices without an account. Everything is encrypted on your devices
@@ -444,6 +455,17 @@
         için izin ister; tüm siteler için izni yalnızca otomatik akış bulmayı açarsan ister. Bir
         sayfayı yalnızca Perch'ü o sayfada açtığında okur, o da sayfanın belirttiği akış
         bağlantılarıyla sınırlıdır.
+      </p>
+
+      <h2>Web okuyucu (app.perch.ws)</h2>
+      <p>
+        app.perch.ws'teki okuyucu eklenti gibi çalışır: aboneliklerin, okudukların ve notların
+        tarayıcında saklanır; bir senkron zinciri onu diğer cihazlarına bağlar. Bir web sayfasının
+        başka siteleri kendisi çekmesine izin verilmediği için, akışları ve makale sayfalarını
+        sunucumuzdan ister. Bu istekler hiçbir hesap ya da çerez taşımaz ve sunucu kimin istediğini
+        kaydetmez. Çekilen her sayfayı herkesin ortak kullandığı bir önbellekte 10 dakika tutar;
+        böylece popüler bir akış bir kez çekilir. Sunucu hangi akışların popüler olduğunu bilir,
+        kimin okuduğunu bilmez. Makalelerdeki resimler yine doğrudan yayıncıdan yüklenir.
       </p>
 
       <h2>Senkron zincirleri (sync.perch.ws)</h2>

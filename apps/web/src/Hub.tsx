@@ -30,15 +30,18 @@ export function Hub({
           <div className="glass rounded-[18px] p-5">
             <h1 className="text-[17px] font-semibold">Your Perch account</h1>
             <p className="mt-1.5 text-[13px] leading-relaxed text-[var(--text-muted)]">
-              It’s your name for sharing notes. Your feeds and reading stay on your devices: read in
-              the Perch extension or the iPhone app, and link your devices with a sync chain.
+              It’s your name for sharing notes. Your feeds and reading stay on your devices: read
+              here in the browser, in the extension or in the iPhone app, and link them with a sync
+              chain.
             </p>
-            <a
-              href="https://perch.ws"
-              className="mt-3 inline-block text-[13px] font-medium text-[var(--accent-text)] hover:underline"
-            >
-              Get Perch →
-            </a>
+            <div className="mt-3 flex gap-4 text-[13px] font-medium text-[var(--accent-text)]">
+              <a href="/" className="hover:underline">
+                Open the reader →
+              </a>
+              <a href="https://perch.ws" className="hover:underline">
+                Get the apps
+              </a>
+            </div>
           </div>
 
           <SharedNotes />
