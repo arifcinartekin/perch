@@ -75,3 +75,12 @@ describe('policy links', () => {
     t.close();
   });
 });
+
+describe('configuration', () => {
+  it('ignores stray spaces around .env values', async () => {
+    const { loadConfig } = await import('../src/config');
+    const config = loadConfig({ PERCH_SIGNUP: 'open  ', PERCH_CHAIN: ' true ' });
+    expect(config.signup).toBe('open');
+    expect(config.chain).toBe(true);
+  });
+});

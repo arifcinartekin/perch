@@ -41,7 +41,9 @@ export type EmailConfig =
   { provider: 'resend'; apiKey: string; from: string } | { provider: 'log'; from: string };
 
 const bool = (v: string | undefined, fallback: boolean) =>
-  v == null || v === '' ? fallback : ['1', 'true', 'on', 'yes'].includes(v.toLowerCase());
+  v == null || v.trim() === ''
+    ? fallback
+    : ['1', 'true', 'on', 'yes'].includes(v.trim().toLowerCase());
 
 const int = (v: string | undefined, fallback: number, min: number, max: number) => {
   const n = Number.parseInt(v ?? '', 10);
@@ -54,6 +56,8 @@ function oneOf<T extends string>(
   allowed: T[],
   fallback: T,
 ): T {
+  // Stray spaces in an .env line ("open  ") aren't worth refusing to start over.
+  v = v?.trim();
   if (v == null || v === '') return fallback;
   if ((allowed as string[]).includes(v)) return v as T;
   throw new Error(`${name} must be one of ${allowed.join(', ')} (got "${v}")`);
