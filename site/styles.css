@@ -1109,3 +1109,126 @@ h2 {
     display: none;
   }
 }
+
+/* ---------------------------------------------------------------------------
+   Privacy policy and terms: long text, both languages in the page.
+   ------------------------------------------------------------------------ */
+
+.legal-bar {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 22px 16px 0;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.legal-bar .home {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  font-size: 19px;
+}
+
+.legal-bar .home svg {
+  width: 30px;
+  height: 30px;
+}
+
+.legal-bar .lang {
+  margin-left: auto;
+}
+
+.legal {
+  position: relative;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 36px 16px 80px;
+}
+
+.legal h1 {
+  font-size: clamp(32px, 5vw, 44px);
+  font-weight: 760;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.legal .updated {
+  margin: 10px 0 28px;
+  color: var(--faint);
+  font-size: 15px;
+}
+
+.legal h2 {
+  margin: 40px 0 10px;
+  font-size: 23px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.legal h3 {
+  margin: 22px 0 6px;
+  font-size: 18px;
+}
+
+.legal p,
+.legal li {
+  color: var(--muted);
+}
+
+.legal strong {
+  color: var(--text);
+}
+
+.legal ul {
+  padding-left: 22px;
+}
+
+.legal li + li {
+  margin-top: 6px;
+}
+
+.legal a {
+  color: var(--accent-text);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.legal .summary {
+  padding: 20px 24px;
+  border-radius: var(--radius);
+}
+
+.legal .summary ul {
+  margin: 8px 0 0;
+}
+
+.legal table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+  margin: 12px 0;
+}
+
+.legal th,
+.legal td {
+  text-align: left;
+  vertical-align: top;
+  padding: 9px 10px 9px 0;
+  border-bottom: 1px solid var(--border);
+  color: var(--muted);
+}
+
+.legal th {
+  color: var(--text);
+  font-weight: 650;
+}
+
+.legal .table-wrap {
+  overflow-x: auto;
+}
+
+.legal code {
+  font-size: 0.9em;
+}

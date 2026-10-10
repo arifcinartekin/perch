@@ -64,6 +64,9 @@ const TR = {
   'end.star': 'GitHub’da yıldızla',
   'footer.line': '© 2026 Perch katkıcıları · MIT Lisansı',
   'footer.app': 'Web uygulaması',
+  'footer.privacy': 'Gizlilik',
+  'footer.terms': 'Koşullar',
+  'legal.home': 'Ana sayfa',
 };
 
 const META_TR = {
@@ -77,10 +80,12 @@ document.documentElement.classList.add('js');
 // English is in the page; remember each node's original text to switch back.
 const nodes = [...document.querySelectorAll('[data-i18n]')];
 const english = new Map(nodes.map((n) => [n, n.textContent]));
-const englishMeta = {
-  title: document.title,
-  description: document.querySelector('meta[name="description"]').content,
-};
+const description = document.querySelector('meta[name="description"]');
+const englishMeta = { title: document.title, description: description?.content };
+// Pages with long text (privacy, terms) carry both languages in blocks, and
+// their Turkish title and description on <html>.
+const blocks = document.querySelectorAll('[data-lang]');
+const pageTr = document.documentElement.dataset;
 
 function storedLanguage() {
   try {
@@ -96,11 +101,14 @@ function apply(lang) {
     const key = node.dataset.i18n;
     node.textContent = tr && TR[key] ? TR[key] : english.get(node);
   }
+  for (const block of blocks) block.hidden = block.dataset.lang !== lang;
   document.documentElement.lang = lang;
-  document.title = tr ? META_TR.title : englishMeta.title;
-  document.querySelector('meta[name="description"]').content = tr
-    ? META_TR.description
-    : englishMeta.description;
+  document.title = tr ? (pageTr.titleTr ?? META_TR.title) : englishMeta.title;
+  if (description) {
+    description.content = tr
+      ? (pageTr.descriptionTr ?? META_TR.description)
+      : englishMeta.description;
+  }
   for (const button of document.querySelectorAll('[data-lang-toggle]')) {
     button.textContent = tr ? 'EN' : 'TR';
     button.setAttribute('aria-label', tr ? 'English' : 'Türkçe');
@@ -146,6 +154,8 @@ if ('IntersectionObserver' in window) {
 
 // A firmer glass bar once the page has scrolled.
 const navWrap = document.querySelector('.nav-wrap');
-const onScroll = () => navWrap.classList.toggle('scrolled', window.scrollY > 12);
-window.addEventListener('scroll', onScroll, { passive: true });
-onScroll();
+if (navWrap) {
+  const onScroll = () => navWrap.classList.toggle('scrolled', window.scrollY > 12);
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+}
