@@ -31,6 +31,13 @@ what the address is.
 Then open `https://app.perch.ws` straight away and create the first account; it becomes the
 admin. Sign-up is by invite after that (`PERCH_SIGNUP` in `/opt/perch/deploy/.env`).
 
+### A hub, like app.perch.ws
+
+`PERCH_MODE=hub` makes the server hold Perch accounts and shared notes but no libraries: readers
+keep theirs on their devices and sync them through a chain. With `PERCH_CHAIN=true` the same
+server relays the chains. A server switched from personal mode keeps the old libraries until you
+start it once with `PERCH_PURGE_LIBRARIES=true` (move yours to a chain first).
+
 ### Open sign-up without email
 
 To let anyone sign up, with a proof of work instead of a CAPTCHA or an email check (this is how

@@ -4,7 +4,19 @@ import { secureHeaders } from 'hono/secure-headers';
 import { API_PREFIX, type ServerInfo } from '@perch/core/api';
 import type { Config } from './config';
 import { openDatabase, type DB } from './db';
-import { emailCodes, meta, users } from './db/schema';
+import {
+  articleStates,
+  articles,
+  categories,
+  emailCodes,
+  feeds,
+  fulltextCache,
+  meta,
+  subscriptions,
+  syncRecords,
+  userSettings,
+  users,
+} from './db/schema';
 import { FeedWorker } from './feeds/worker';
 import { HttpError, errorResponse, type AppContext, type Env } from './http';
 import { hmac, randomToken } from './lib/crypto';
@@ -59,6 +71,39 @@ function forgetStoredAddresses(db: DB, key: string) {
   db.run(sql`PRAGMA wal_checkpoint(TRUNCATE)`);
 }
 
+/**
+ * A hub keeps no libraries. A server switched from personal mode still has
+ * them; say so, and delete them (rewriting the file) when asked to.
+ */
+function checkLibraries(db: DB, purge: boolean) {
+  const left = db.select({ n: count() }).from(syncRecords).get()!.n;
+  if (!left) return;
+  if (!purge) {
+    console.warn(
+      `Hub mode, but ${left} library records from personal mode remain. ` +
+        'Move them to a sync chain, then start once with PERCH_PURGE_LIBRARIES=true to delete them.',
+    );
+    return;
+  }
+  db.transaction((tx) => {
+    for (const table of [
+      syncRecords,
+      articleStates,
+      subscriptions,
+      categories,
+      userSettings,
+      fulltextCache,
+      articles,
+      feeds,
+    ]) {
+      tx.delete(table).run();
+    }
+  });
+  db.run(sql`VACUUM`);
+  db.run(sql`PRAGMA wal_checkpoint(TRUNCATE)`);
+  console.log(`Deleted ${left} library records left from personal mode.`);
+}
+
 export function createContext(
   config: Config,
   deps: { mailer?: Mailer } = {},
@@ -71,6 +116,7 @@ export function createContext(
   const secret = instanceSecret(db);
   const emailKey = config.emailKey ?? hmac(secret, 'email-id').toString('base64url');
   forgetStoredAddresses(db, emailKey);
+  if (config.mode === 'hub') checkLibraries(db, config.purgeLibraries);
   const notifier = new Notifier();
   const worker = new FeedWorker(db, fetch, config.fetchIntervalMin, notifier);
   return {
@@ -116,10 +162,18 @@ export function createApp(ctx: AppContext) {
   api.route('/auth', authRoutes(ctx));
   api.route('/devices', deviceRoutes(ctx));
   api.route('/admin', adminRoutes(ctx));
-  api.route('/reader', readerRoutes(ctx));
-  api.route('/sync', syncRoutes(ctx));
+  if (ctx.config.mode === 'hub') {
+    // Libraries live on devices; there's nothing here to read or sync.
+    const none = () => {
+      throw new HttpError(404, 'hub', 'This server holds Perch accounts, not libraries');
+    };
+    for (const path of ['/reader/*', '/sync/*', '/notes/*', '/notes']) api.all(path, none);
+  } else {
+    api.route('/reader', readerRoutes(ctx));
+    api.route('/sync', syncRoutes(ctx));
+    api.route('/notes', noteRoutes(ctx));
+  }
   api.route('/chain', chainRoutes(ctx));
-  api.route('/notes', noteRoutes(ctx));
   api.route('/shares', shareRoutes(ctx));
   api.route('/admin/reports', reportRoutes(ctx));
 

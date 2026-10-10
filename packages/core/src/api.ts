@@ -6,7 +6,12 @@ import type { Article, Category, Feed, Settings } from './types';
 
 export const API_PREFIX = '/api/v1';
 
-export type ServerMode = 'personal' | 'e2e';
+/**
+ * `personal`: the server keeps each account's library and fetches its feeds.
+ * `hub`: Perch accounts only (community identity, shared notes); libraries
+ * stay on devices and sync through chains. `e2e` is reserved.
+ */
+export type ServerMode = 'personal' | 'hub' | 'e2e';
 /** `email`: anyone may sign up after confirming an email address with a code. */
 export type SignupPolicy = 'open' | 'invite' | 'email' | 'closed';
 
@@ -278,10 +283,26 @@ export interface SaveNoteRequest {
   body: string;
 }
 
-/** PUT /shares/:noteId publishes the note; DELETE takes it down. */
+/**
+ * PUT /shares/:noteId publishes the note; DELETE takes it down. The body
+ * carries the note (SaveNoteRequest); on a personal server it may be left out
+ * to publish the copy the server already has.
+ */
 export interface ShareResponse {
   url: string;
   slug: string;
+}
+
+/** GET /shares: the account's public pages. */
+export interface SharedNoteSummary {
+  noteId: string;
+  slug: string;
+  url: string;
+  title: string;
+  feedTitle?: string;
+  updatedAt: number;
+  /** Taken down after a report. */
+  hidden?: boolean;
 }
 
 export type ReportReason = 'illegal' | 'harassment' | 'spam' | 'other';

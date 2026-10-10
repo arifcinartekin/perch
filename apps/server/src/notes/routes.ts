@@ -5,6 +5,7 @@ import type {
   ReportItem,
   ReportReason,
   SaveNoteRequest,
+  SharedNoteSummary,
   ShareResponse,
 } from '@perch/core/api';
 import { noteProblem, type Note, type NoteRecordData } from '@perch/core/notes';
@@ -118,7 +119,30 @@ export function shareRoutes(ctx: AppContext) {
   app.use(requireUser(ctx));
   const limit = new RateLimiter(60, 60 * 60 * 1000);
 
-  app.put('/:id', (c) => {
+  app.get('/', (c) => {
+    const rows = ctx.db
+      .select()
+      .from(shares)
+      .where(eq(shares.userId, c.get('user').id))
+      .orderBy(asc(shares.createdAt))
+      .all();
+    return c.json<{ shares: SharedNoteSummary[] }>({
+      shares: rows.map((r) => ({
+        noteId: r.noteId,
+        slug: r.slug,
+        url: shareUrl(ctx, c, r.slug),
+        title: r.title,
+        ...(r.feedTitle && { feedTitle: r.feedTitle }),
+        updatedAt: r.updatedAt,
+        ...(r.hiddenAt && { hidden: true }),
+      })),
+    });
+  });
+
+  // The note comes in the body: from a device whose library syncs by chain,
+  // or any other. A personal server can also publish the copy it already
+  // has, and then keeps the copy in step as the note changes.
+  app.put('/:id', async (c) => {
     const user = c.get('user');
     const id = noteIdParam(c);
     const wait = limit.retryAfter(user.id);
@@ -126,8 +150,27 @@ export function shareRoutes(ctx: AppContext) {
       throw new HttpError(429, 'rate-limited', `Too many shares; try again in ${wait}s`);
     limit.hit(user.id);
 
-    const note = readNote(ctx, user.id, id);
+    const body = (await c.req.json().catch(() => ({}))) as Partial<SaveNoteRequest>;
+    const sent = typeof body.body === 'string';
+    const stored = ctx.config.mode === 'personal' ? readNote(ctx, user.id, id) : undefined;
+    const { feedId, articleId } = parseStateRecordId(id)!;
+    const now = Date.now();
+    const note: NoteRecordData | undefined = sent
+      ? {
+          feedId,
+          articleId,
+          title: typeof body.title === 'string' ? body.title.slice(0, 1000) : '',
+          ...(typeof body.url === 'string' && body.url && { url: body.url }),
+          ...(typeof body.feedTitle === 'string' &&
+            body.feedTitle && { feedTitle: body.feedTitle.slice(0, 300) }),
+          body: body.body!,
+          createdAt: now,
+          updatedAt: now,
+        }
+      : stored;
     if (!note) throw new HttpError(404, 'note-not-found', 'Save the note before sharing it');
+    const problem = noteProblem(note);
+    if (problem) throw badRequest(`The note is not valid (${problem})`);
     if (!note.body.trim()) throw badRequest('An empty note can’t be shared');
 
     const where = and(eq(shares.userId, user.id), eq(shares.noteId, id));

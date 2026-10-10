@@ -35,6 +35,8 @@ export interface Config {
   emailKey?: string;
   /** Proof-of-work difficulty for signing up, in bits; 0 for none. */
   signupPow: number;
+  /** Hub mode: delete libraries left from when the server was personal. */
+  purgeLibraries: boolean;
 }
 
 export type EmailConfig =
@@ -64,7 +66,7 @@ function oneOf<T extends string>(
 }
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
-  const mode = oneOf('PERCH_MODE', env.PERCH_MODE, ['personal', 'e2e'], 'personal');
+  const mode = oneOf('PERCH_MODE', env.PERCH_MODE, ['personal', 'hub', 'e2e'], 'personal');
   if (mode === 'e2e') {
     throw new Error('PERCH_MODE=e2e is not available yet; use personal.');
   }
@@ -101,13 +103,15 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
       .map((h) => h.trim().toLowerCase())
       .filter(Boolean),
     trustProxy: bool(env.PERCH_TRUST_PROXY, false),
-    worker: bool(env.PERCH_WORKER, true),
+    // A hub fetches no feeds.
+    worker: mode !== 'hub' && bool(env.PERCH_WORKER, true),
     webRoot: env.PERCH_WEB_ROOT || undefined,
     email,
     privacyUrl: httpUrl('PERCH_PRIVACY_URL', env.PERCH_PRIVACY_URL),
     termsUrl: httpUrl('PERCH_TERMS_URL', env.PERCH_TERMS_URL),
     emailKey: emailKey(env.PERCH_EMAIL_KEY),
     signupPow: int(env.PERCH_SIGNUP_POW, 0, 0, 28),
+    purgeLibraries: bool(env.PERCH_PURGE_LIBRARIES, false),
   };
 }
 
