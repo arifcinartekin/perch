@@ -1,17 +1,18 @@
-import { count, eq } from 'drizzle-orm';
+import { count, eq, like, sql } from 'drizzle-orm';
 import { Hono } from 'hono';
 import { secureHeaders } from 'hono/secure-headers';
 import { API_PREFIX, type ServerInfo } from '@perch/core/api';
 import type { Config } from './config';
 import { openDatabase, type DB } from './db';
-import { meta, users } from './db/schema';
+import { emailCodes, meta, users } from './db/schema';
 import { FeedWorker } from './feeds/worker';
 import { HttpError, errorResponse, type AppContext, type Env } from './http';
-import { randomToken } from './lib/crypto';
+import { hmac, randomToken } from './lib/crypto';
 import { createMailer, type Mailer } from './lib/mailer';
 import { Notifier } from './lib/notifier';
 import { createSafeFetch } from './lib/safe-fetch';
 import { adminRoutes, authRoutes, deviceRoutes } from './auth/routes';
+import { emailIdSync } from './auth/email';
 import { readerRoutes } from './reader/routes';
 import { SyncService } from './sync/service';
 import { syncRoutes } from './sync/routes';
@@ -28,6 +29,36 @@ function instanceSecret(db: DB): string {
   return db.select().from(meta).where(eq(meta.key, 'secret')).get()!.value;
 }
 
+/**
+ * Servers from before emailId kept addresses as they were. Replace each with
+ * its emailId, drop pending codes, and rewrite the file so the old text isn't
+ * left in free pages. Runs once; afterwards no row contains an '@'.
+ */
+function forgetStoredAddresses(db: DB, key: string) {
+  const old = db
+    .select({ id: users.id, email: users.emailId })
+    .from(users)
+    .where(like(users.emailId, '%@%'))
+    .all();
+  const codes = db
+    .select({ n: count() })
+    .from(emailCodes)
+    .where(like(emailCodes.emailId, '%@%'))
+    .get()!.n;
+  if (!old.length && !codes) return;
+  db.transaction((tx) => {
+    for (const u of old) {
+      tx.update(users)
+        .set({ emailId: emailIdSync(key, u.email!) })
+        .where(eq(users.id, u.id))
+        .run();
+    }
+    tx.delete(emailCodes).run();
+  });
+  db.run(sql`VACUUM`);
+  db.run(sql`PRAGMA wal_checkpoint(TRUNCATE)`);
+}
+
 export function createContext(
   config: Config,
   deps: { mailer?: Mailer } = {},
@@ -37,12 +68,16 @@ export function createContext(
     allowPrivate: config.fetchAllowPrivate,
     allowHosts: config.fetchAllowHosts,
   });
+  const secret = instanceSecret(db);
+  const emailKey = config.emailKey ?? hmac(secret, 'email-id').toString('base64url');
+  forgetStoredAddresses(db, emailKey);
   const notifier = new Notifier();
   const worker = new FeedWorker(db, fetch, config.fetchIntervalMin, notifier);
   return {
     config,
     db,
-    secret: instanceSecret(db),
+    secret,
+    emailKey,
     fetch,
     worker,
     // Feeds a client subscribes to are fetched right away, not at the next tick.

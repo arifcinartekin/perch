@@ -68,7 +68,7 @@ export function lookupSession(
         displayName: users.displayName,
         role: users.role,
         createdAt: users.createdAt,
-        email: users.email,
+        emailId: users.emailId,
       },
     })
     .from(sessions)

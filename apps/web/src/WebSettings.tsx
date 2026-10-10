@@ -62,7 +62,7 @@ const fieldClass =
 function EmailSection({ user }: { user: PublicUser }) {
   const toast = useToast();
   const [available, setAvailable] = useState(false);
-  const [current, setCurrent] = useState(user.email);
+  const [current, setCurrent] = useState(!!user.hasEmail);
   const [editing, setEditing] = useState(false);
   const [email, setEmail] = useState('');
   const [sentTo, setSentTo] = useState<string | null>(null);
@@ -98,7 +98,7 @@ function EmailSection({ user }: { user: PublicUser }) {
       const res = await api<{ user: PublicUser }>('/auth/email', {
         body: { email: sentTo, code },
       });
-      setCurrent(res.user.email);
+      setCurrent(!!res.user.hasEmail);
       setEditing(false);
       setSentTo(null);
       setCode('');
@@ -108,10 +108,10 @@ function EmailSection({ user }: { user: PublicUser }) {
   return (
     <Section title="Email">
       <Row
-        label={current ?? 'No email address'}
+        label={current ? 'An email address is added' : 'No email address'}
         hint={
           current
-            ? 'Used to reset your password. It is never shown to anyone.'
+            ? 'Used only to reset your password. The server keeps a hash of it, not the address, so it can’t show it here.'
             : 'Add one so you can reset your password if you forget it.'
         }
       >

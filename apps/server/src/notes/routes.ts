@@ -301,15 +301,20 @@ export function reportRoutes(ctx: AppContext) {
       .get();
     if (!report) throw notFound('No such report');
     const now = Date.now();
+    // A reporter's address is kept only until the report is dealt with.
     if (action === 'hide') {
       ctx.db.update(shares).set({ hiddenAt: now }).where(eq(shares.slug, report.slug)).run();
       ctx.db
         .update(reports)
-        .set({ resolvedAt: now })
+        .set({ resolvedAt: now, contact: null })
         .where(and(eq(reports.slug, report.slug), isNull(reports.resolvedAt)))
         .run();
     } else {
-      ctx.db.update(reports).set({ resolvedAt: now }).where(eq(reports.id, report.id)).run();
+      ctx.db
+        .update(reports)
+        .set({ resolvedAt: now, contact: null })
+        .where(eq(reports.id, report.id))
+        .run();
     }
     return c.json({ ok: true });
   });

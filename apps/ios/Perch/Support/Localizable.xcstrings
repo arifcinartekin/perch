@@ -222,6 +222,16 @@
         }
       }
     },
+    "Added": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eklendi"
+          }
+        }
+      }
+    },
     "Added %lld feeds, %lld were already here. New feeds are fetched in the background.": {
       "localizations": {
         "en": {
@@ -304,6 +314,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Her zaman"
+          }
+        }
+      }
+    },
+    "An address is added": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bir adres ekli"
           }
         }
       }
@@ -3016,6 +3036,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Kullanılmış"
+          }
+        }
+      }
+    },
+    "Used only to reset your password. The server keeps a hash of it, not the address. We'll email you a code to confirm it.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yalnızca şifreni sıfırlamak için kullanılır. Sunucu adresin kendisini değil, özetini saklar. Doğrulamak için sana bir kod göndereceğiz."
           }
         }
       }

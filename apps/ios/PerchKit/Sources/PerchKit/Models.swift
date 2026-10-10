@@ -69,8 +69,9 @@ public struct PublicUser: Codable, Sendable, Equatable {
   public var displayName: String
   public var role: String
   public var createdAt: Double
-  /// Only ever sent to the account itself.
-  public var email: String?
+  /// A confirmed address is on the account. The server keeps only a keyed
+  /// hash of it, so it can't say which.
+  public var hasEmail: Bool?
 }
 
 public struct AuthResponse: Codable, Sendable {

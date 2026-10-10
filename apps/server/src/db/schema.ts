@@ -38,8 +38,12 @@ export const users = sqliteTable('users', {
   role: text('role', { enum: ['admin', 'user'] })
     .notNull()
     .default('user'),
-  /** Lower-cased; unique when set. Accounts made before email signup have none. */
-  email: text('email').unique(),
+  /**
+   * Not the address: a slow keyed hash of it (see auth/email.ts emailId), so
+   * the server can find the account someone types an address for, and can't
+   * list or read anyone's address. Accounts without an address have none.
+   */
+  emailId: text('email').unique(),
   createdAt: integer('created_at').notNull().default(now),
 });
 
@@ -65,7 +69,8 @@ export const sessions = sqliteTable(
 export const emailCodes = sqliteTable(
   'email_codes',
   {
-    email: text('email').notNull(),
+    /** emailId of the address, never the address itself. */
+    emailId: text('email').notNull(),
     purpose: text('purpose', { enum: ['signup', 'reset', 'change'] }).notNull(),
     /** HMAC of the code with the instance secret; the code itself is never stored. */
     codeHash: text('code_hash').notNull(),
@@ -73,7 +78,7 @@ export const emailCodes = sqliteTable(
     expiresAt: integer('expires_at').notNull(),
     createdAt: integer('created_at').notNull().default(now),
   },
-  (t) => [primaryKey({ columns: [t.email, t.purpose] })],
+  (t) => [primaryKey({ columns: [t.emailId, t.purpose] })],
 );
 
 export const invites = sqliteTable('invites', {
@@ -319,7 +324,7 @@ export const reports = sqliteTable(
       .references(() => shares.slug, { onDelete: 'cascade' }),
     reason: text('reason', { enum: ['illegal', 'harassment', 'spam', 'other'] }).notNull(),
     details: text('details').notNull().default(''),
-    /** Optional, so the reporter can be told the outcome. */
+    /** Optional, so the reporter can be told the outcome. Cleared once the report is resolved. */
     contact: text('contact'),
     createdAt: integer('created_at').notNull().default(now),
     resolvedAt: integer('resolved_at'),

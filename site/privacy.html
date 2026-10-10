@@ -66,7 +66,10 @@
             If you make an account on app.perch.ws, the server stores your library so it can sync it
             — <strong>not end-to-end encrypted</strong>. Details below.
           </li>
-          <li>We don't keep access logs or store IP addresses. We don't sell or share anything.</li>
+          <li>
+            We don't store email addresses, keep access logs or store IP addresses. We don't sell or
+            share anything.
+          </li>
           <li>
             Perch is open source. Everything here can be checked in
             <a href="https://github.com/arifcinartekin/perch">the code</a>.
@@ -168,10 +171,10 @@
             <td>To sign in, and to sign your shared notes (as @username).</td>
           </tr>
           <tr>
-            <td>Email address</td>
+            <td>A keyed hash of your email address — not the address</td>
             <td>
-              To confirm sign-up and reset your password. Never shown to anyone, never used for
-              newsletters or marketing.
+              To find your account when you type your address to reset your password, and to stop
+              one address from having two accounts. We can't read or list addresses from it.
             </td>
           </tr>
           <tr>
@@ -221,15 +224,53 @@
       </p>
       <p>
         Each shared page has a report form. A report stores the reason, what you write and, only if
-        you give it, a way to reach you. We use reports only to review the page.
+        you give it, a way to reach you. We use reports only to review the page, and delete the
+        contact address once the report is dealt with.
       </p>
 
       <h2>Email</h2>
       <p>
-        We send email only when you ask for something: a sign-up or password-reset code, a code to
-        confirm a new address, or a notice that an address already has an account. Codes are stored
-        only as a keyed hash and expire after 10 minutes. Mail is delivered by Resend from
-        mail.perch.ws. Servers run by other people never use our email service.
+        <strong>We don't store your email address.</strong> When you type it, the server uses it to
+        send the one email you asked for, and keeps only a slow, keyed hash of it (scrypt, with a
+        key that isn't in the database). With that hash it can recognise the address when you type
+        it again, but it can't turn it back into the address. That also means we can't write to you
+        unless you ask: there are no newsletters, announcements or reminders.
+      </p>
+      <p>
+        We send email only for a sign-up or password-reset code, a code to confirm a new address, or
+        a notice that an address already has an account. Codes are stored only as a keyed hash and
+        expire after 10 minutes. Mail is delivered by Resend from mail.perch.ws; like any email
+        provider, Resend sees the address and the message it delivers. Servers run by other people
+        never use our email service.
+      </p>
+
+      <h2>If someone took our server</h2>
+      <p>
+        We try to keep as little as possible, so that a stolen disk or a leaked backup says little
+        about you. Here is exactly what it would contain:
+      </p>
+      <ul>
+        <li>
+          <strong>Sync chains:</strong> only encrypted data. Without your chain code it can't be
+          read.
+        </li>
+        <li>
+          <strong>Email addresses:</strong> none — only keyed hashes. Someone who already knows an
+          address and also has the key could check whether it has an account; nobody can get a list
+          of addresses.
+        </li>
+        <li><strong>Passwords:</strong> none — only a hash of a key derived from them.</li>
+        <li>
+          <strong>Accounts on app.perch.ws:</strong> usernames, and the library of each account
+          (subscriptions, read and starred flags, settings and notes)
+          <strong>in plain text</strong>. This is the part that would be readable. If that matters
+          to you, use a sync chain instead of an account.
+        </li>
+        <li>Shared notes, which are public anyway.</li>
+      </ul>
+      <p>
+        Deleted data is overwritten in the database rather than left on disk, and is gone from
+        backups within 14 days.
       </p>
 
       <h2>What we don't collect</h2>
@@ -329,8 +370,9 @@
 
       <h2>Changes</h2>
       <p>
-        If we change what we collect, we'll update this page first and, for anything significant,
-        tell account holders by email. Every version of this page is in the
+        If we change what we collect, we'll update this page first and announce it here and in the
+        apps — we can't email you, since we don't keep your address. Every version of this page is
+        in the
         <a href="https://github.com/arifcinartekin/perch/commits/main/site/privacy.html"
           >project's history</a
         >.
@@ -357,7 +399,10 @@
             app.perch.ws'te hesap açarsan sunucu, senkronlayabilmek için kitaplığını saklar. Bu veri
             <strong>uçtan uca şifreli değildir</strong>; ayrıntılar aşağıda.
           </li>
-          <li>Erişim kaydı tutmayız, IP adresi saklamayız. Hiçbir şeyi satmayız, paylaşmayız.</li>
+          <li>
+            E-posta adresi saklamayız, erişim kaydı tutmayız, IP adresi saklamayız. Hiçbir şeyi
+            satmayız, paylaşmayız.
+          </li>
           <li>
             Perch açık kaynaktır. Burada yazan her şey
             <a href="https://github.com/arifcinartekin/perch">kodda</a> doğrulanabilir.
@@ -462,10 +507,10 @@
             <td>Giriş için ve paylaştığın notlarda imza olarak (@kullanıcıadı).</td>
           </tr>
           <tr>
-            <td>E-posta adresi</td>
+            <td>E-posta adresinin anahtarlı özeti (adresin kendisi değil)</td>
             <td>
-              Kaydı doğrulamak ve şifreni sıfırlamak için. Kimseye gösterilmez; bülten ya da
-              pazarlama için kullanılmaz.
+              Şifreni sıfırlamak için adresini yazdığında hesabını bulmak ve bir adresin iki hesabı
+              olmasını önlemek için. Bu özetten adresleri okuyamaz ya da listeleyemeyiz.
             </td>
           </tr>
           <tr>
@@ -519,16 +564,51 @@
       <p>
         Her paylaşılan sayfada bir şikayet formu vardır. Şikayet; nedeni, yazdıklarını ve yalnızca
         verirsen sana ulaşma yolunu saklar. Şikayetleri yalnızca ilgili sayfayı incelemek için
-        kullanırız.
+        kullanırız; iletişim adresini şikayet sonuçlandığında sileriz.
       </p>
 
       <h2>E-posta</h2>
       <p>
-        Yalnızca sen bir şey istediğinde e-posta göndeririz: kayıt ya da şifre sıfırlama kodu, yeni
-        bir adresi doğrulama kodu, ya da bir adresin zaten bir hesabı olduğunu bildiren bir mesaj.
-        Kodlar yalnızca anahtarlı bir özet olarak saklanır ve 10 dakikada geçersiz olur. E-postalar
-        mail.perch.ws'ten Resend aracılığıyla gönderilir. Başkalarının işlettiği sunucular bizim
-        e-posta hizmetimizi kullanmaz.
+        <strong>E-posta adresini saklamıyoruz.</strong> Adresini yazdığında sunucu onu yalnızca
+        istediğin e-postayı göndermek için kullanır ve geriye adresin yavaş ve anahtarlı bir özetini
+        bırakır (scrypt; anahtar veritabanında durmaz). Bu özetle adresi tekrar yazdığında
+        tanıyabilir, ama özetten adresin kendisine dönemez. Bu yüzden sen istemedikçe sana yazamayız
+        da: bülten, duyuru ya da hatırlatma yok.
+      </p>
+      <p>
+        Yalnızca kayıt ya da şifre sıfırlama kodu, yeni bir adresi doğrulama kodu ya da bir adresin
+        zaten bir hesabı olduğunu bildiren bir mesaj göndeririz. Kodlar yalnızca anahtarlı bir özet
+        olarak saklanır ve 10 dakikada geçersiz olur. E-postalar mail.perch.ws'ten Resend
+        aracılığıyla gönderilir; her e-posta sağlayıcısı gibi Resend de ilettiği adresi ve mesajı
+        görür. Başkalarının işlettiği sunucular bizim e-posta hizmetimizi kullanmaz.
+      </p>
+
+      <h2>Sunucumuz ele geçirilirse</h2>
+      <p>
+        Çalınan bir disk ya da sızan bir yedek senin hakkında olabildiğince az şey söylesin diye
+        mümkün olduğunca az veri tutuyoruz. İçinde tam olarak şunlar bulunur:
+      </p>
+      <ul>
+        <li>
+          <strong>Senkron zincirleri:</strong> yalnızca şifreli veri. Zincir kodun olmadan okunamaz.
+        </li>
+        <li>
+          <strong>E-posta adresleri:</strong> yok, yalnızca anahtarlı özetler var. Bir adresi zaten
+          bilen ve anahtara da sahip olan biri o adresin hesabı olup olmadığını kontrol edebilir;
+          kimse adreslerin listesini çıkaramaz.
+        </li>
+        <li><strong>Şifreler:</strong> yok, yalnızca onlardan türetilen anahtarın özeti var.</li>
+        <li>
+          <strong>app.perch.ws hesapları:</strong> kullanıcı adları ve her hesabın kitaplığı
+          (abonelikler, okundu ve yıldız işaretleri, ayarlar ve notlar)
+          <strong>düz metin olarak</strong>. Okunabilecek kısım budur. Bu senin için önemliyse hesap
+          yerine senkron zinciri kullan.
+        </li>
+        <li>Zaten herkese açık olan paylaşılan notlar.</li>
+      </ul>
+      <p>
+        Silinen veriler diskte bırakılmaz, veritabanında üzerine yazılır; 14 gün içinde yedeklerden
+        de silinir.
       </p>
 
       <h2>Neleri toplamıyoruz</h2>
@@ -630,8 +710,8 @@
 
       <h2>Değişiklikler</h2>
       <p>
-        Topladığımız veriler değişirse önce bu sayfayı güncelleriz; önemli değişiklikleri hesap
-        sahiplerine e-postayla da bildiririz. Bu sayfanın her sürümü
+        Topladığımız veriler değişirse önce bu sayfayı güncelleriz ve bunu burada ve uygulamalarda
+        duyururuz; adresini saklamadığımız için sana e-posta gönderemeyiz. Bu sayfanın her sürümü
         <a href="https://github.com/arifcinartekin/perch/commits/main/site/privacy.html"
           >projenin geçmişinde</a
         >

@@ -99,8 +99,11 @@ export interface PublicUser {
   displayName: string;
   role: 'admin' | 'user';
   createdAt: number;
-  /** Only ever sent to the account itself. */
-  email?: string;
+  /**
+   * The account has a confirmed email address (for password reset). The
+   * server keeps only a keyed hash of it, so it can't say which address.
+   */
+  hasEmail?: boolean;
 }
 
 export interface AuthResponse {

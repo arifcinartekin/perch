@@ -1,4 +1,4 @@
-import { randomInt, timingSafeEqual } from 'node:crypto';
+import { randomInt, scrypt, scryptSync, timingSafeEqual } from 'node:crypto';
 import { and, eq, lt, sql } from 'drizzle-orm';
 import type { EmailPurpose } from '@perch/core/api';
 import type { DB } from '../db';
@@ -10,6 +10,25 @@ import type { Email } from '../lib/mailer';
 // Emailed 6-digit codes prove someone can read an address: before signing up,
 // resetting a password, or adding the address to an account. Codes live ten
 // minutes, allow five guesses, and only their HMAC is stored.
+
+// Addresses are never stored. Where the server needs to recognise one (the
+// account it belongs to, the code sent to it) it keeps an emailId: scrypt of
+// the address keyed with PERCH_EMAIL_KEY. Someone holding the database can't
+// read or list addresses, and testing guesses costs them real work per guess.
+// The address itself is used only to send the email, then forgotten.
+
+const ID_PARAMS = { N: 2 ** 14, r: 8, p: 1 };
+
+export function emailId(key: string, email: string): Promise<string> {
+  return new Promise((resolve, reject) =>
+    scrypt(email, `perch-email:${key}`, 32, ID_PARAMS, (err, out) =>
+      err ? reject(err) : resolve(out.toString('base64url')),
+    ),
+  );
+}
+
+export const emailIdSync = (key: string, email: string) =>
+  scryptSync(email, `perch-email:${key}`, 32, ID_PARAMS).toString('base64url');
 
 const CODE_TTL_MS = 10 * 60 * 1000;
 const MAX_ATTEMPTS = 5;
@@ -23,25 +42,25 @@ export function normalizeEmail(value: string): string {
   return email;
 }
 
-const hashCode = (secret: string, email: string, purpose: EmailPurpose, code: string) =>
-  hmac(secret, `email-code:${purpose}:${email}:${code}`).toString('base64url');
+const hashCode = (secret: string, id: string, purpose: EmailPurpose, code: string) =>
+  hmac(secret, `email-code:${purpose}:${id}:${code}`).toString('base64url');
 
-/** Make a new code for this address and purpose, replacing any earlier one. */
-export function issueCode(db: DB, secret: string, email: string, purpose: EmailPurpose): string {
+/** Make a new code for this address (by emailId) and purpose, replacing any earlier one. */
+export function issueCode(db: DB, secret: string, id: string, purpose: EmailPurpose): string {
   const code = String(randomInt(0, 1_000_000)).padStart(6, '0');
   const now = Date.now();
   db.delete(emailCodes).where(lt(emailCodes.expiresAt, now)).run();
   const row = {
-    email,
+    emailId: id,
     purpose,
-    codeHash: hashCode(secret, email, purpose, code),
+    codeHash: hashCode(secret, id, purpose, code),
     attempts: 0,
     expiresAt: now + CODE_TTL_MS,
     createdAt: now,
   };
   db.insert(emailCodes)
     .values(row)
-    .onConflictDoUpdate({ target: [emailCodes.email, emailCodes.purpose], set: row })
+    .onConflictDoUpdate({ target: [emailCodes.emailId, emailCodes.purpose], set: row })
     .run();
   return code;
 }
@@ -57,16 +76,16 @@ const invalidCode = () =>
 export function checkCode(
   db: DB,
   secret: string,
-  email: string,
+  id: string,
   purpose: EmailPurpose,
   code: string,
 ): void {
   if (!/^\d{6}$/.test(code)) throw invalidCode();
-  const where = and(eq(emailCodes.email, email), eq(emailCodes.purpose, purpose));
+  const where = and(eq(emailCodes.emailId, id), eq(emailCodes.purpose, purpose));
   const row = db.select().from(emailCodes).where(where).get();
   if (!row || row.expiresAt <= Date.now()) throw invalidCode();
   const expected = Buffer.from(row.codeHash);
-  const actual = Buffer.from(hashCode(secret, email, purpose, code));
+  const actual = Buffer.from(hashCode(secret, id, purpose, code));
   if (expected.length === actual.length && timingSafeEqual(expected, actual)) return;
   if (row.attempts + 1 >= MAX_ATTEMPTS) db.delete(emailCodes).where(where).run();
   else
@@ -81,7 +100,7 @@ export function checkCode(
 export function consumeCode(
   db: Pick<DB, 'delete'>,
   secret: string,
-  email: string,
+  id: string,
   purpose: EmailPurpose,
   code: string,
 ): void {
@@ -89,12 +108,12 @@ export function consumeCode(
     .delete(emailCodes)
     .where(
       and(
-        eq(emailCodes.email, email),
+        eq(emailCodes.emailId, id),
         eq(emailCodes.purpose, purpose),
-        eq(emailCodes.codeHash, hashCode(secret, email, purpose, code)),
+        eq(emailCodes.codeHash, hashCode(secret, id, purpose, code)),
       ),
     )
-    .returning({ email: emailCodes.email })
+    .returning({ id: emailCodes.emailId })
     .get();
   if (!used) throw invalidCode();
 }

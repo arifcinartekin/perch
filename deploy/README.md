@@ -40,7 +40,12 @@ PERCH_SIGNUP=email
 PERCH_EMAIL=resend
 PERCH_EMAIL_FROM=Perch <noreply@mail.perch.ws>
 RESEND_API_KEY=re_...
+PERCH_EMAIL_KEY=...   # openssl rand -base64 48
 ```
+
+Perch never stores email addresses, only a hash keyed with `PERCH_EMAIL_KEY`, so a leaked
+database or backup holds no addresses. Keep the key out of backups, and never change it: with a
+new key nobody could reset their password by email.
 
 The key only ever lives in that file. It also turns on password reset by email and lets
 existing accounts add an address under Settings.

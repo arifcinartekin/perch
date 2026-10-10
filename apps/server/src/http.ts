@@ -15,6 +15,8 @@ export interface AppContext {
   db: DB;
   /** Instance secret: signs fake prelogin salts. Generated once, kept in `meta`. */
   secret: string;
+  /** Keys emailId (auth/email.ts): PERCH_EMAIL_KEY, or derived from the secret. */
+  emailKey: string;
   fetch: SafeFetch;
   worker: FeedWorker;
   sync: SyncService;
@@ -29,7 +31,7 @@ export interface SessionUser {
   displayName: string;
   role: 'admin' | 'user';
   createdAt: number;
-  email: string | null;
+  emailId: string | null;
 }
 
 export type Env = {

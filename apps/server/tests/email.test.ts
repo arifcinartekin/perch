@@ -29,10 +29,8 @@ describe('email signup', () => {
 
     const ada = await t.register('ada', { email: 'ada@example.com', emailCode: code });
     expect(ada.status).toBe(200);
-    expect(ada.body.user).toMatchObject({ username: 'ada', email: 'ada@example.com' });
-    expect((await t.call('GET', '/auth/me', { token: ada.token })).body.user.email).toBe(
-      'ada@example.com',
-    );
+    expect(ada.body.user).toMatchObject({ username: 'ada', hasEmail: true });
+    expect((await t.call('GET', '/auth/me', { token: ada.token })).body.user.hasEmail).toBe(true);
 
     const again = await t.register('ada2', { email: 'ada@example.com', emailCode: code });
     expect(again.body.error).toBe('email-code-invalid');
@@ -162,7 +160,7 @@ describe('email signup', () => {
         body: { email: 'o@example.com', code: plain.mailer!.codeFor('o@example.com') },
         token: owner.token,
       });
-      expect(res.body.user.email).toBe('o@example.com');
+      expect(res.body.user.hasEmail).toBe(true);
 
       // Another account can't take it.
       const friend = await plain.register('friend');
@@ -181,7 +179,7 @@ describe('email signup', () => {
     try {
       const res = await open.register('ada', { email: 'ada@example.com' });
       expect(res.status).toBe(200);
-      expect(res.body.user.email).toBeUndefined();
+      expect(res.body.user.hasEmail).toBeUndefined();
     } finally {
       open.close();
     }
@@ -217,6 +215,71 @@ describe('email config', () => {
       expect(res.body.error).toBe('email-unavailable');
     } finally {
       t.close();
+    }
+  });
+
+  it('keeps no address on disk, only a hash that finds the account', async () => {
+    const t = setup({ signup: 'email' }, { email: true });
+    const askCode = (email: string, purpose = 'signup') =>
+      t.call('POST', '/auth/email/code', { body: { email, purpose } });
+    await askCode('ada@example.com');
+    await t.register('ada', {
+      email: 'ada@example.com',
+      emailCode: t.mailer!.codeFor('ada@example.com'),
+    });
+    const sqlite = (t.ctx.db as unknown as { $client: import('better-sqlite3').Database }).$client;
+    const rows = JSON.stringify([
+      sqlite.prepare('select * from users').all(),
+      sqlite.prepare('select * from email_codes').all(),
+    ]);
+    expect(rows).not.toContain('ada@example');
+
+    // Reset still finds the account from the address someone types.
+    await askCode('ada@example.com', 'reset');
+    expect(t.mailer!.sent.at(-1)!.to).toBe('ada@example.com');
+    expect(t.mailer!.codeFor('ada@example.com')).toMatch(/^\d{6}$/);
+    t.close();
+  });
+});
+
+describe('servers that stored addresses before', () => {
+  it('replace them with hashes on start, and reset still works', async () => {
+    const { mkdtempSync, readFileSync, rmSync } = await import('node:fs');
+    const { tmpdir } = await import('node:os');
+    const { join } = await import('node:path');
+    const dir = mkdtempSync(join(tmpdir(), 'perch-email-'));
+    const databasePath = join(dir, 'perch.db');
+    const config = { databasePath, publicUrl: 'https://app.perch.test', signup: 'email' as const };
+    try {
+      const first = setup(config, { email: true });
+      const ada = await first.register('ada', {
+        email: 'ada@example.com',
+        emailCode: await (async () => {
+          await first.call('POST', '/auth/email/code', {
+            body: { email: 'ada@example.com', purpose: 'signup' },
+          });
+          return first.mailer!.codeFor('ada@example.com');
+        })(),
+      });
+      expect(ada.status).toBe(200);
+      // As an older server would have left it.
+      const sqlite = (first.ctx.db as unknown as { $client: import('better-sqlite3').Database })
+        .$client;
+      sqlite.prepare("update users set email = 'ada@example.com'").run();
+      first.close();
+
+      const again = setup(config, { email: true });
+      try {
+        expect(readFileSync(databasePath).includes('ada@example.com')).toBe(false);
+        await again.call('POST', '/auth/email/code', {
+          body: { email: 'ada@example.com', purpose: 'reset' },
+        });
+        expect(again.mailer!.codeFor('ada@example.com')).toMatch(/^\d{6}$/);
+      } finally {
+        again.close();
+      }
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
     }
   });
 });

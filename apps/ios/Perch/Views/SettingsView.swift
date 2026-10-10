@@ -238,9 +238,7 @@ struct SettingsView: View {
     Section("Account") {
       Button { changingEmail = true } label: {
         LabeledContent {
-          Text(session.user?.email ?? String(localized: "Add"))
-            .lineLimit(1)
-            .truncationMode(.middle)
+          Text(session.user?.hasEmail == true ? String(localized: "Added") : String(localized: "Add"))
         } label: {
           Label("Email", systemImage: "envelope")
         }
@@ -539,12 +537,12 @@ struct EmailView: View {
               .submitLabel(.send)
               .onSubmit(send)
           } header: {
-            if let current = session.user?.email {
-              Text("Now: \(current)")
+            if session.user?.hasEmail == true {
+              Text("An address is added")
             }
           } footer: {
             Text(
-              "Used to reset your password if you forget it. It's never shown to anyone. We'll email you a code to confirm it."
+              "Used only to reset your password. The server keeps a hash of it, not the address. We'll email you a code to confirm it."
             )
           }
         }
@@ -554,7 +552,7 @@ struct EmailView: View {
           }
         }
       }
-      .navigationTitle(session.user?.email == nil ? "Add email" : "Change email")
+      .navigationTitle(session.user?.hasEmail == true ? "Change email" : "Add email")
       .navigationBarTitleDisplayMode(.inline)
       .onAppear { focus = .email }
       .toolbar {

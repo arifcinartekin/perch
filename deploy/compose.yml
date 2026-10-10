@@ -20,6 +20,8 @@ services:
       PERCH_EMAIL: ${PERCH_EMAIL:-off} # resend | log | off
       PERCH_EMAIL_FROM: ${PERCH_EMAIL_FROM:-}
       RESEND_API_KEY: ${RESEND_API_KEY:-}
+      # Keys the hashes kept instead of email addresses. Set once, never change it.
+      PERCH_EMAIL_KEY: ${PERCH_EMAIL_KEY:-}
       # Your privacy policy and terms, linked from sign-up and shared notes (optional).
       PERCH_PRIVACY_URL: ${PERCH_PRIVACY_URL:-}
       PERCH_TERMS_URL: ${PERCH_TERMS_URL:-}

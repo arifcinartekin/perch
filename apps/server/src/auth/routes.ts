@@ -28,6 +28,7 @@ import {
   codeEmail,
   consumeCode,
   emailCodeFrom,
+  emailId,
   emailLang,
   noticeEmail,
   normalizeEmail,
@@ -68,14 +69,14 @@ function kdfFrom(body: Record<string, unknown>) {
   return { salt, kdf: { algorithm, memory, iterations, parallelism } };
 }
 
-/** The account as its owner sees it. */
-const publicUser = (u: Omit<PublicUser, 'email'> & { email?: string | null }): PublicUser => ({
+/** The account as its owner sees it. The address itself isn't kept, only whether there is one. */
+const publicUser = (u: Omit<PublicUser, 'hasEmail'> & { emailId?: string | null }): PublicUser => ({
   id: u.id,
   username: u.username,
   displayName: u.displayName,
   role: u.role,
   createdAt: u.createdAt,
-  ...(u.email && { email: u.email }),
+  ...(u.emailId && { hasEmail: true }),
 });
 
 const PURPOSES: EmailPurpose[] = ['signup', 'reset', 'change'];
@@ -104,8 +105,9 @@ export function authRoutes(ctx: AppContext) {
 
   // The address people know the server by, for the emails' wording.
   const host = (c: Context) => new URL(config.publicUrl ?? c.req.url).host;
-  const userByEmail = (email: string) =>
-    db.select({ id: users.id }).from(users).where(eq(users.email, email)).get();
+  const userByEmail = (id: string) =>
+    db.select({ id: users.id }).from(users).where(eq(users.emailId, id)).get();
+  const idOf = (email: string) => emailId(ctx.emailKey, email);
 
   const issue = (
     c: Parameters<typeof setSessionCookie>[0],
@@ -153,7 +155,7 @@ export function authRoutes(ctx: AppContext) {
       if (body.email == null || body.emailCode == null) {
         throw new HttpError(403, 'email-required', 'Confirm your email address to sign up');
       }
-      email = normalizeEmail(str(body, 'email', { max: 320 }));
+      email = await idOf(normalizeEmail(str(body, 'email', { max: 320 })));
       emailCode = emailCodeFrom(body, 'emailCode');
       checkCode(db, ctx.secret, email, 'signup', emailCode);
     }
@@ -177,7 +179,7 @@ export function authRoutes(ctx: AppContext) {
       if (tx.select({ id: users.id }).from(users).where(eq(users.username, username)).get()) {
         throw new HttpError(409, 'username-taken', 'That username is taken');
       }
-      if (email && tx.select({ id: users.id }).from(users).where(eq(users.email, email)).get()) {
+      if (email && tx.select({ id: users.id }).from(users).where(eq(users.emailId, email)).get()) {
         throw new HttpError(409, 'email-taken', 'That email address already has an account');
       }
       if (email) consumeCode(tx, ctx.secret, email, 'signup', emailCode);
@@ -191,7 +193,7 @@ export function authRoutes(ctx: AppContext) {
           kdfSalt: salt,
           kdfParams: kdf,
           role: isFirst ? 'admin' : 'user',
-          email,
+          emailId: email,
           createdAt: Date.now(),
         })
         .returning()
@@ -232,25 +234,27 @@ export function authRoutes(ctx: AppContext) {
 
     const ip = clientIp(c, config);
     throttle(codeIpLimit, ip);
-    throttle(codeEmailLimit, email);
     codeIpLimit.hit(ip);
-    codeEmailLimit.hit(email);
+    const id = await idOf(email);
+    throttle(codeEmailLimit, id);
+    codeEmailLimit.hit(id);
 
     // The answer is the same whether or not the address has an account; what
-    // differs is the email, which only the address's owner reads.
-    const owner = userByEmail(email);
+    // differs is the email, which only the address's owner reads. The address
+    // is used to send it and then forgotten.
+    const owner = userByEmail(id);
+    const code = () => issueCode(db, ctx.secret, id, purpose);
     let mail;
     if (purpose === 'signup') {
       mail = owner
         ? noticeEmail(email, 'taken', lang, host(c))
-        : codeEmail(email, purpose, issueCode(db, ctx.secret, email, purpose), lang, host(c));
+        : codeEmail(email, purpose, code(), lang, host(c));
     } else if (purpose === 'reset') {
-      if (owner)
-        mail = codeEmail(email, purpose, issueCode(db, ctx.secret, email, purpose), lang, host(c));
+      if (owner) mail = codeEmail(email, purpose, code(), lang, host(c));
     } else if (owner && owner.id !== session!.user.id) {
       mail = noticeEmail(email, 'inUse', lang, host(c));
     } else if (!owner) {
-      mail = codeEmail(email, purpose, issueCode(db, ctx.secret, email, purpose), lang, host(c));
+      mail = codeEmail(email, purpose, code(), lang, host(c));
     }
     if (mail) {
       try {
@@ -268,7 +272,7 @@ export function authRoutes(ctx: AppContext) {
     throttle(resetLimit, ip);
     resetLimit.hit(ip);
     const body = await jsonBody(c);
-    const email = normalizeEmail(str(body, 'email', { max: 320 }));
+    const email = await idOf(normalizeEmail(str(body, 'email', { max: 320 })));
     const code = emailCodeFrom(body);
     const authKey = authKeyFrom(body);
     const { salt, kdf } = kdfFrom(body);
@@ -280,7 +284,7 @@ export function authRoutes(ctx: AppContext) {
       const row = tx
         .update(users)
         .set({ authHash, kdfSalt: salt, kdfParams: kdf })
-        .where(eq(users.email, email))
+        .where(eq(users.emailId, email))
         .returning()
         .get();
       if (!row) throw new HttpError(400, 'email-code-invalid', 'That code is wrong or has expired');
@@ -294,17 +298,17 @@ export function authRoutes(ctx: AppContext) {
 
   app.post('/email', auth, async (c) => {
     const body = await jsonBody(c);
-    const email = normalizeEmail(str(body, 'email', { max: 320 }));
+    const email = await idOf(normalizeEmail(str(body, 'email', { max: 320 })));
     const code = emailCodeFrom(body);
     checkCode(db, ctx.secret, email, 'change', code);
     const me = c.get('user');
     const user = db.transaction((tx) => {
-      const owner = tx.select({ id: users.id }).from(users).where(eq(users.email, email)).get();
+      const owner = tx.select({ id: users.id }).from(users).where(eq(users.emailId, email)).get();
       if (owner && owner.id !== me.id) {
         throw new HttpError(409, 'email-taken', 'That email address already has an account');
       }
       consumeCode(tx, ctx.secret, email, 'change', code);
-      return tx.update(users).set({ email }).where(eq(users.id, me.id)).returning().get()!;
+      return tx.update(users).set({ emailId: email }).where(eq(users.id, me.id)).returning().get()!;
     });
     return c.json({ user: publicUser(user) });
   });

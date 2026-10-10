@@ -26,6 +26,8 @@ export function openDatabase(path: string): { db: DB; close: () => void } {
   const sqlite = new Database(path);
   sqlite.pragma('journal_mode = WAL');
   sqlite.pragma('foreign_keys = ON');
+  // Deleted rows are overwritten, not left readable in free pages on disk.
+  sqlite.pragma('secure_delete = ON');
   sqlite.pragma('busy_timeout = 5000');
   sqlite.pragma('synchronous = NORMAL');
 

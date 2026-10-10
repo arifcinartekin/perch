@@ -31,6 +31,8 @@ export interface Config {
   /** This server's privacy policy and terms, linked from sign-up and shared pages. */
   privacyUrl?: string;
   termsUrl?: string;
+  /** Keys the hashes kept instead of email addresses. Kept out of the database. */
+  emailKey?: string;
 }
 
 export type EmailConfig =
@@ -98,7 +100,15 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     email,
     privacyUrl: httpUrl('PERCH_PRIVACY_URL', env.PERCH_PRIVACY_URL),
     termsUrl: httpUrl('PERCH_TERMS_URL', env.PERCH_TERMS_URL),
+    emailKey: emailKey(env.PERCH_EMAIL_KEY),
   };
+}
+
+function emailKey(value: string | undefined): string | undefined {
+  const v = value?.trim();
+  if (!v) return undefined;
+  if (v.length < 32) throw new Error('PERCH_EMAIL_KEY must be at least 32 characters.');
+  return v;
 }
 
 function httpUrl(name: string, value: string | undefined): string | undefined {
