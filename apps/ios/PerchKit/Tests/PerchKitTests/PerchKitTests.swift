@@ -70,6 +70,15 @@ import Testing
     #expect(try info("something-new").signup == .closed)
   }
 
+  @Test func decodesANoteFromTheServer() throws {
+    let json =
+      #"{"id":"f1:a1","feedId":"f1","articleId":"a1","title":"T","body":"Hi","createdAt":1,"updatedAt":2,"sharedUrl":"https://app.perch.ws/shared/x"}"#
+    let note = try JSONDecoder().decode(Note.self, from: Data(json.utf8))
+    #expect(note.id == "f1:a1")
+    #expect(note.sharedUrl == "https://app.perch.ws/shared/x")
+    #expect(note.url == nil)
+  }
+
   @Test func normalisesServerAddresses() {
     #expect(
       APIClient.normalizeServerURL("perch.example.com")?.absoluteString

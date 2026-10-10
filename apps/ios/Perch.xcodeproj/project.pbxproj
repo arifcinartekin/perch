@@ -22,6 +22,7 @@
 		4FA21E71EC99A47ADAFCA162 /* WidgetSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C002131DCED71D23198C29F /* WidgetSnapshot.swift */; };
 		60DC4360D085209EB712A956 /* BackgroundRefresh.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16DB99A3BC6609013D614C6A /* BackgroundRefresh.swift */; };
 		6E140EB56A427E4A8FA10D64 /* ReaderUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 919DE3B89AF84FDDA3735FDC /* ReaderUITests.swift */; };
+		6F527C13A9E9966F5C687A1D /* NoteViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2C6F632894A32B83E38C56E /* NoteViews.swift */; };
 		6FB486DF2AA9F2C06344CEDB /* PerchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8FEB8A1AEBD4A3546F97BED /* PerchApp.swift */; };
 		75C83EEB1EC0AA2A6B5E5CAF /* AddFeedSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 655340A93FD076C55BABDD92 /* AddFeedSheet.swift */; };
 		78120E6FD0CB355F794B2B46 /* LibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D2C8281A15D24FE521E108C /* LibraryView.swift */; };
@@ -119,6 +120,7 @@
 		A8FEB8A1AEBD4A3546F97BED /* PerchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerchApp.swift; sourceTree = "<group>"; };
 		A9820D50B5167D72FD592FFE /* FeedEditSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedEditSheet.swift; sourceTree = "<group>"; };
 		CE8C30FB9465701CCD476FE5 /* ArticleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArticleView.swift; sourceTree = "<group>"; };
+		D2C6F632894A32B83E38C56E /* NoteViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteViews.swift; sourceTree = "<group>"; };
 		D41D4D3B908363F711572982 /* Perch.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Perch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D5982BDE739B05EE8EAF104B /* ImageCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageCache.swift; sourceTree = "<group>"; };
 		D996D51567887C53BCFD5308 /* Perch.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Perch.entitlements; sourceTree = "<group>"; };
@@ -194,6 +196,7 @@
 				A9820D50B5167D72FD592FFE /* FeedEditSheet.swift */,
 				5D2C8281A15D24FE521E108C /* LibraryView.swift */,
 				6A04F0519598EE4BAAF1557C /* MainTabView.swift */,
+				D2C6F632894A32B83E38C56E /* NoteViews.swift */,
 				16D59EB0C384D24D03E73507 /* OfflineSettingsView.swift */,
 				1B00D3F911F440538B501763 /* SettingsView.swift */,
 			);
@@ -441,6 +444,7 @@
 				1D211E57B19AB93D14A23D11 /* Keychain.swift in Sources */,
 				78120E6FD0CB355F794B2B46 /* LibraryView.swift in Sources */,
 				105023448514C3FCC6015A94 /* MainTabView.swift in Sources */,
+				6F527C13A9E9966F5C687A1D /* NoteViews.swift in Sources */,
 				A3E2CF5F0B32751D3D0F5EF1 /* OfflineSettingsView.swift in Sources */,
 				8506BD826A1F884DD3EF7E21 /* OfflineSync.swift in Sources */,
 				6FB486DF2AA9F2C06344CEDB /* PerchApp.swift in Sources */,

@@ -172,6 +172,16 @@
         }
       }
     },
+    "Add a note": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not ekle"
+          }
+        }
+      }
+    },
     "Add email": {
       "localizations": {
         "tr": {
@@ -274,6 +284,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Her zaman"
+          }
+        }
+      }
+    },
+    "Anyone with the link can read this note. Edits show there too.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Linki olan herkes bu notu okuyabilir. Düzenlemelerin orada da görünür."
           }
         }
       }
@@ -514,6 +534,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Onayla"
+          }
+        }
+      }
+    },
+    "Connect to a Perch Server in Settings to share notes.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not paylaşmak için Ayarlar'dan bir Perch Sunucusuna bağlan."
           }
         }
       }
@@ -818,6 +848,16 @@
         }
       }
     },
+    "Delete note": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notu sil"
+          }
+        }
+      }
+    },
     "Delete this chain?": {
       "localizations": {
         "tr": {
@@ -854,6 +894,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Karartma"
+          }
+        }
+      }
+    },
+    "Done": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bitti"
           }
         }
       }
@@ -904,6 +954,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Feed'i düzenle"
+          }
+        }
+      }
+    },
+    "Edit note": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notu düzenle"
           }
         }
       }
@@ -1358,6 +1418,16 @@
         }
       }
     },
+    "Makes a page anyone with the link can read, and copies the link.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Linki olan herkesin okuyabileceği bir sayfa oluşturur ve linki kopyalar."
+          }
+        }
+      }
+    },
     "Mark all %lld articles in %@ as read?": {
       "localizations": {
         "en": {
@@ -1400,6 +1470,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Okundu yap"
+          }
+        }
+      }
+    },
+    "Markdown works: **bold**, _italic_, [link](https://…)": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Markdown kullanabilirsin: **kalın**, _italik_, [link](https://…)"
+          }
+        }
+      }
+    },
+    "Mode": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mod"
           }
         }
       }
@@ -1454,6 +1544,16 @@
         }
       }
     },
+    "New note": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yeni not"
+          }
+        }
+      }
+    },
     "New password": {
       "localizations": {
         "tr": {
@@ -1494,6 +1594,16 @@
         }
       }
     },
+    "No notes yet": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Henüz not yok"
+          }
+        }
+      }
+    },
     "No starred articles": {
       "localizations": {
         "tr": {
@@ -1514,12 +1624,42 @@
         }
       }
     },
+    "Note": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not"
+          }
+        }
+      }
+    },
+    "Notes": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notlar"
+          }
+        }
+      }
+    },
     "Nothing to read yet": {
       "localizations": {
         "tr": {
           "stringUnit": {
             "state": "translated",
             "value": "Henüz okunacak bir şey yok"
+          }
+        }
+      }
+    },
+    "Nothing written yet.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Henüz bir şey yazılmadı."
           }
         }
       }
@@ -1634,6 +1774,16 @@
         }
       }
     },
+    "Open an article and tap the note button to write down what you think. Notes stay private unless you share one.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bir makale aç ve düşündüklerini yazmak için not düğmesine dokun. Paylaşmadığın sürece notlar sana özel kalır."
+          }
+        }
+      }
+    },
     "Open in Safari": {
       "localizations": {
         "tr": {
@@ -1736,6 +1886,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Makale listelerinde resimler"
+          }
+        }
+      }
+    },
+    "Preview": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Önizleme"
           }
         }
       }
@@ -2100,6 +2260,56 @@
         }
       }
     },
+    "Share as a public page": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Herkese açık sayfa olarak paylaş"
+          }
+        }
+      }
+    },
+    "Share link": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Linki paylaş"
+          }
+        }
+      }
+    },
+    "Shared": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paylaşıldı"
+          }
+        }
+      }
+    },
+    "Sharing": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paylaşım"
+          }
+        }
+      }
+    },
+    "Sharing needs a Perch Server account. Sync chains stay private.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paylaşmak için bir Perch Sunucusu hesabı gerekir. Senkronizasyon zincirleri gizli kalır."
+          }
+        }
+      }
+    },
     "Show": {
       "localizations": {
         "tr": {
@@ -2252,6 +2462,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Zinciri tarayıcı eklentisinde mi başlattınız? Katıl'ı seçip kodunu girin ya da QR kodunu Kamera uygulamasıyla okutun. Her cihaz feed'leri kendisi indirir."
+          }
+        }
+      }
+    },
+    "Stop sharing": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paylaşmayı durdur"
           }
         }
       }
@@ -2640,6 +2860,16 @@
         }
       }
     },
+    "Untitled": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Başlıksız"
+          }
+        }
+      }
+    },
     "Unused": {
       "localizations": {
         "tr": {
@@ -2760,6 +2990,16 @@
         }
       }
     },
+    "Write": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yaz"
+          }
+        }
+      }
+    },
     "Your Perch Server": {
       "localizations": {
         "tr": {
@@ -2806,6 +3046,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Kitaplığınız bu iPhone'da kalır."
+          }
+        }
+      }
+    },
+    "Your note · Edit": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notun · Düzenle"
           }
         }
       }

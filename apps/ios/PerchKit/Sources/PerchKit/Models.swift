@@ -266,3 +266,62 @@ public struct OpmlImportResult: Codable, Sendable {
   public var existing: Int
   public var categories: Int
 }
+
+/// A note on an article (packages/core/src/notes.ts). id = "feedId:articleId".
+public struct Note: Codable, Sendable, Identifiable, Hashable {
+  public var feedId: String
+  public var articleId: String
+  /// The article, so the note keeps its context after the article ages out.
+  public var title: String
+  public var url: String?
+  public var feedTitle: String?
+  public var body: String
+  public var createdAt: Double
+  public var updatedAt: Double
+  /// The public page, while the note is shared.
+  public var sharedUrl: String?
+
+  public var id: String { "\(feedId):\(articleId)" }
+  public var updated: Date { Date(timeIntervalSince1970: updatedAt / 1000) }
+
+  /// Longest body, in characters (NOTE_MAX).
+  public static let maxLength = 10_000
+
+  enum CodingKeys: String, CodingKey {
+    case feedId, articleId, title, url, feedTitle, body, createdAt, updatedAt, sharedUrl
+  }
+
+  public init(
+    feedId: String, articleId: String, title: String, url: String?, feedTitle: String?,
+    body: String, createdAt: Double, updatedAt: Double, sharedUrl: String? = nil
+  ) {
+    self.feedId = feedId
+    self.articleId = articleId
+    self.title = title
+    self.url = url
+    self.feedTitle = feedTitle
+    self.body = body
+    self.createdAt = createdAt
+    self.updatedAt = updatedAt
+    self.sharedUrl = sharedUrl
+  }
+}
+
+/// The article a note is about.
+public struct NoteSource: Sendable, Hashable {
+  public var feedId: String
+  public var articleId: String
+  public var title: String
+  public var url: String?
+  public var feedTitle: String?
+
+  public init(feedId: String, articleId: String, title: String, url: String?, feedTitle: String?) {
+    self.feedId = feedId
+    self.articleId = articleId
+    self.title = title
+    self.url = url
+    self.feedTitle = feedTitle
+  }
+
+  public var id: String { "\(feedId):\(articleId)" }
+}

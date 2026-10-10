@@ -202,6 +202,19 @@ extension LocalBackend {
         guard field.set(&s.settings, value) else { continue }
         st.shadow[r.key] = field.canon(s.settings)
 
+      case "note":
+        var notes = s.notes ?? [:]
+        if editedHere(r.key, notes[r.id].flatMap(Self.noteRecord)?.canon) { continue }
+        if r.deleted {
+          notes[r.id] = nil
+          st.shadow[r.key] = nil
+        } else {
+          guard let note = try? r.data?.decode(Note.self), note.id == r.id else { continue }
+          notes[r.id] = note
+          st.shadow[r.key] = Self.noteRecord(note)?.canon
+        }
+        s.notes = notes
+
       case "state":
         // A change here that hasn't gone out yet wins on push.
         if pending.contains(r.id) || r.deleted { continue }
@@ -272,6 +285,7 @@ extension LocalBackend {
       "category",
       Dictionary(
         uniqueKeysWithValues: s.library.categories.map { ($0.id, Self.categoryRecord($0)) }))
+    diff("note", (s.notes ?? [:]).compactMapValues(Self.noteRecord))
     // Settings this phone doesn't have (or doesn't know) aren't pushed.
     var settings: [String: (data: JSONValue, canon: String)] = [:]
     for field in SettingField.allCases {
@@ -347,6 +361,11 @@ extension LocalBackend {
     if let t = f.customTitle, !t.isEmpty { d["customTitle"] = .string(t) }
     if let site = f.siteUrl { d["siteUrl"] = .string(site) }
     return (.object(d), feedCanon(f))
+  }
+
+  static func noteRecord(_ n: Note) -> (data: JSONValue, canon: String)? {
+    guard let data = try? JSONValue(encoding: n) else { return nil }
+    return (data, data.canonical)
   }
 
   static func categoryCanon(_ c: Category) -> String {

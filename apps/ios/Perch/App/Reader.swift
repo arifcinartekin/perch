@@ -42,6 +42,8 @@ final class Reader {
   private let onUnauthorized: @MainActor () -> Void
 
   private(set) var library = Library()
+  /// Newest first.
+  private(set) var notes: [Note] = []
   private(set) var counts = Counts() {
     didSet { updateGlance() }
   }
@@ -167,6 +169,63 @@ final class Reader {
       loaded = true
       await store.saveSnapshot(library: self.library, counts: self.counts, settings: self.settings)
     }
+    await loadNotes()
+  }
+
+  // MARK: Notes
+
+  /// A server too old to keep notes just has none.
+  func loadNotes() async {
+    if let list = try? await backend.notes() { notes = list }
+  }
+
+  func note(for article: Article) -> Note? {
+    notes.first { $0.feedId == article.feedId && $0.articleId == article.articleId }
+  }
+
+  func noteSource(_ article: Article) -> NoteSource {
+    NoteSource(
+      feedId: article.feedId, articleId: article.articleId, title: article.displayTitle,
+      url: article.url, feedTitle: feed(article.feedId)?.displayTitle)
+  }
+
+  /// Saves the note; an empty one is deleted.
+  func saveNote(_ source: NoteSource, body: String) async throws {
+    if body.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+      try await deleteNote(source.id)
+      return
+    }
+    let note = try await backend.saveNote(source, body: body)
+    notes = [note] + notes.filter { $0.id != note.id }
+    chainSoon()
+  }
+
+  func deleteNote(_ id: String) async throws {
+    guard notes.contains(where: { $0.id == id }) else { return }
+    try await backend.deleteNote(id)
+    notes.removeAll { $0.id == id }
+    chainSoon()
+  }
+
+  /// Why notes can't be shared from here, or nil when they can.
+  var sharingUnavailable: String? {
+    if server != nil { return nil }
+    return chain?.isOn == true
+      ? String(localized: "Sharing needs a Perch Server account. Sync chains stay private.")
+      : String(localized: "Connect to a Perch Server in Settings to share notes.")
+  }
+
+  /// Publishes the note; returns the page's address.
+  func shareNote(_ id: String) async throws -> String {
+    guard let server else { throw APIError(status: 0, code: "no-server", message: sharingUnavailable ?? "") }
+    let url = try await server.shareNote(id)
+    await loadNotes()
+    return url
+  }
+
+  func unshareNote(_ id: String) async throws {
+    try await server?.unshareNote(id)
+    await loadNotes()
   }
 
   func reloadCounts() async {

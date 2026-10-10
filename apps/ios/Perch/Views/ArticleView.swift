@@ -23,6 +23,7 @@ struct ArticleView: View {
   @State private var hasNext = true
   @State private var barsHidden = false
   @State private var textSettings = false
+  @State private var editingNote = false
   @State private var progress = ReadingProgress()
 
   init(article: Article, list: ArticleList? = nil) {
@@ -39,6 +40,7 @@ struct ArticleView: View {
         article: article,
         feedTitle: reader.feed(article.feedId)?.displayTitle,
         body: showFullText ? fullText?.html : nil,
+        note: reader.note(for: article).map { NoteMarkdown.html($0.body) },
         theme: theme),
       style: ArticleHTML.Style(
         size: reader.device.readerTextSize, leading: reader.device.readerLineHeight),
@@ -46,6 +48,7 @@ struct ArticleView: View {
       progress: progress,
       onLink: { url in
         if url.scheme == "http" || url.scheme == "https" { safari = SafariTarget(url: url) }
+        if url.scheme == ArticleHTML.noteScheme { editingNote = true }
       },
       onScrollDirection: { down in
         // On iPad the article shares the screen with the list; its bars stay.
@@ -81,6 +84,10 @@ struct ArticleView: View {
           Task { await reader.setRead(article, !current.read) }
         }
         .contentTransition(.symbolEffect(.replace))
+        Button(
+          reader.note(for: article) == nil ? "Add a note" : "Edit note",
+          systemImage: reader.note(for: article) == nil ? "square.and.pencil" : "note.text"
+        ) { editingNote = true }
         if link != nil {
           Button(
             showFullText ? "Feed text" : "Full text",
@@ -108,6 +115,9 @@ struct ArticleView: View {
     }
     .sensoryFeedback(.impact(weight: .light), trigger: current.starred)
     .sensoryFeedback(.selection, trigger: article.id)
+    .sheet(isPresented: $editingNote) {
+      NoteEditorView(source: reader.noteSource(article))
+    }
     .sheet(isPresented: $textSettings) {
       TextSettingsSheet()
         .presentationDetents([.height(250)])
@@ -396,7 +406,12 @@ enum ArticleHTML {
       in: slot, with: "--size: \(style.size)px; --leading: \(style.leading);")
   }
 
-  static func page(article: Article, feedTitle: String?, body: String?, theme: AppTheme) -> String {
+  /// Links in the page with this scheme open the note editor.
+  static let noteScheme = "perch-note"
+
+  static func page(
+    article: Article, feedTitle: String?, body: String?, note: String? = nil, theme: AppTheme
+  ) -> String {
     let base = article.url.flatMap(URL.init(string:))
     // Tags that could change how the page loads; the CSP and disabled
     // JavaScript cover the rest.
@@ -446,11 +461,14 @@ enum ArticleHTML {
       hr { border: 0; border-top: 1px solid var(--rule); }
       h2, h3, h4 { line-height: 1.3; margin: 1.5em 0 .5em; }
       iframe, form, input, button, object, embed { display: none; }
+      .note { margin-top: 18px; padding: 12px 14px; border-radius: 12px; border-left: 3px solid var(--link); background: var(--code); font-size: 15px; line-height: 1.5; }
+      .note .label { display: block; font: 600 11px/1.4 -apple-system, system-ui; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); text-decoration: none; margin-bottom: 4px; }
       </style></head>
       <body>
       <header>
       <p class="meta">\(meta)</p>
       <h1 class="title">\(heading)</h1>
+      \(note.map { "<div class=\"note\"><a class=\"label\" href=\"\(noteScheme):edit\">\(escape(String(localized: "Your note · Edit")))</a>\($0)</div>" } ?? "")
       </header>
       <article>\(content)</article>
       </body></html>

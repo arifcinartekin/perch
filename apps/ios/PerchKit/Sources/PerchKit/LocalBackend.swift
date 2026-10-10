@@ -32,6 +32,8 @@ public actor LocalBackend: ReaderBackend {
     var settings = SyncedSettings()
     /// Per feed: validators for conditional requests.
     var validators: [String: Validators] = [:]
+    /// By note id. Optional so libraries saved before notes still load.
+    var notes: [String: Note]? = nil
   }
 
   struct Validators: Codable {
@@ -96,6 +98,30 @@ public actor LocalBackend: ReaderBackend {
       if let v = patch.glass { s.settings.glass = v }
     }
     return await load().settings
+  }
+
+  // MARK: Notes
+
+  public func notes() async throws -> [Note] {
+    (await load().notes ?? [:]).values.sorted { $0.updatedAt > $1.updatedAt }
+  }
+
+  public func saveNote(_ source: NoteSource, body: String) async throws -> Note {
+    let now = Date.now.timeIntervalSince1970 * 1000
+    var saved: Note!
+    await update { s in
+      let existing = s.notes?[source.id]
+      saved = Note(
+        feedId: source.feedId, articleId: source.articleId, title: source.title, url: source.url,
+        feedTitle: source.feedTitle, body: String(body.prefix(Note.maxLength)),
+        createdAt: existing?.createdAt ?? now, updatedAt: now, sharedUrl: existing?.sharedUrl)
+      s.notes = (s.notes ?? [:]).merging([source.id: saved]) { _, new in new }
+    }
+    return saved
+  }
+
+  public func deleteNote(_ id: String) async throws {
+    await update { s in s.notes?[id] = nil }
   }
 
   // MARK: Articles

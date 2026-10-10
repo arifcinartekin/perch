@@ -26,6 +26,12 @@ public protocol ReaderBackend: Sendable {
   /// Its feeds move to Uncategorized.
   func deleteCategory(_ id: String) async throws
 
+  /// Newest first.
+  func notes() async throws -> [Note]
+  /// Creates or updates the note on an article.
+  func saveNote(_ source: NoteSource, body: String) async throws -> Note
+  func deleteNote(_ id: String) async throws
+
   func exportOPML() async throws -> Data
   func importOPML(_ data: Data) async throws -> OpmlImportResult
 }

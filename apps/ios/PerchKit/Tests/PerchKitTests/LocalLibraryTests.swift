@@ -336,6 +336,20 @@ final class StubProtocol: URLProtocol, @unchecked Sendable {
     #expect(try await local.counts().unread[kept.id] == 1)
   }
 
+  @Test func notesAreSavedEditedAndDeleted() async throws {
+    let local = try backend()
+    let source = NoteSource(
+      feedId: "f1", articleId: "a1", title: "An article", url: "https://e.example/a",
+      feedTitle: "Blog")
+    let first = try await local.saveNote(source, body: "First *thought*")
+    #expect(first.id == "f1:a1")
+    let edited = try await local.saveNote(source, body: "Second")
+    #expect(edited.createdAt == first.createdAt)
+    #expect(try await local.notes().map(\.body) == ["Second"])
+    try await local.deleteNote(first.id)
+    #expect(try await local.notes().isEmpty)
+  }
+
   @Test func failuresAreNotedOnTheFeed() async throws {
     StubProtocol.responses = [
       "https://down.example/feed": (200, rss([("x", "X")]), [:])

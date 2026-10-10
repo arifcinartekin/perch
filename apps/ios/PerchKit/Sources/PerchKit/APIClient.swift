@@ -146,6 +146,43 @@ public final class APIClient: Sendable {
     let _: Ignored = try await send("auth/logout", body: [String: String]())
   }
 
+  // MARK: Notes and sharing
+
+  public func notes() async throws -> [Note] {
+    struct Res: Decodable { var notes: [Note] }
+    let res: Res = try await get("notes")
+    return res.notes
+  }
+
+  public func saveNote(_ source: NoteSource, body: String) async throws -> Note {
+    struct Body: Encodable {
+      var title: String
+      var url, feedTitle: String?
+      var body: String
+    }
+    struct Res: Decodable { var note: Note }
+    let res: Res = try await send(
+      "notes/\(source.id.pathSafe)", method: "PUT",
+      body: Body(title: source.title, url: source.url, feedTitle: source.feedTitle, body: body))
+    return res.note
+  }
+
+  public func deleteNote(_ id: String) async throws {
+    let _: Ignored = try await send("notes/\(id.pathSafe)", method: "DELETE", body: nil as String?)
+  }
+
+  /// Publishes a saved note as a public page; returns its address.
+  public func shareNote(_ id: String) async throws -> String {
+    struct Res: Decodable { var url: String }
+    let res: Res = try await send(
+      "shares/\(id.pathSafe)", method: "PUT", body: [String: String]())
+    return res.url
+  }
+
+  public func unshareNote(_ id: String) async throws {
+    let _: Ignored = try await send("shares/\(id.pathSafe)", method: "DELETE", body: nil as String?)
+  }
+
   // MARK: Reader
 
   public func library() async throws -> Library { try await get("reader/library") }

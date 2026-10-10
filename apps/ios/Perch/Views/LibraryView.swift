@@ -47,6 +47,20 @@ struct LibraryView: View {
     Section {
       row(.all, icon: "tray.full")
       row(.starred, icon: "star")
+      NavigationLink {
+        NotesListView()
+      } label: {
+        HStack(spacing: 12) {
+          Image(systemName: "note.text")
+            .foregroundStyle(theme.accent)
+            .frame(width: 26)
+          Text("Notes")
+          Spacer()
+          if !reader.notes.isEmpty {
+            Text("\(reader.notes.count)").foregroundStyle(theme.muted).monospacedDigit()
+          }
+        }
+      }
     }
 
     ForEach(reader.groups, id: \.category.id) { group in
