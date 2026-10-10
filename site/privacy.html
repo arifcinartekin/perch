@@ -63,8 +63,8 @@
           </li>
           <li>Sync chains are end-to-end encrypted. Our relay stores data it cannot read.</li>
           <li>
-            If you make an account on app.perch.ws, the server stores your library so it can sync it
-            — <strong>not end-to-end encrypted</strong>. Details below.
+            A Perch account on app.perch.ws is only a name for sharing notes. The server keeps no
+            feeds, no reading and no private notes.
           </li>
           <li>
             We don't ask for an email address, keep access logs or store IP addresses. We don't sell
@@ -155,11 +155,9 @@
 
       <h2>A Perch account on app.perch.ws</h2>
       <p>
-        An account lets you read on the web and sync through our server. To do that, the server
-        needs your library in a form it can use. That means it is stored
-        <strong>in plain text on our server, not end-to-end encrypted</strong>. If that's not what
-        you want, use a sync chain or no sync at all. We don't look at your data except when needed
-        to run or fix the service, or when the law requires it.
+        A Perch account is your name for sharing notes as public pages. It isn't needed to read, and
+        it doesn't sync your library: your feeds, what you read and your notes stay on your devices
+        (and in your sync chain, encrypted). The server keeps only this:
       </p>
       <div class="table-wrap">
         <table>
@@ -193,27 +191,14 @@
             </td>
           </tr>
           <tr>
-            <td>Subscriptions, categories, settings</td>
-            <td>To sync them and fetch your feeds.</td>
-          </tr>
-          <tr>
-            <td>Read and starred flags</td>
+            <td>The notes you share</td>
             <td>
-              To sync them. We store only <em>whether</em> an article is read or starred and when
-              that changed — not how long you read, how far you scrolled, or what you clicked.
+              To show them at their public address. Only the notes you choose to share, until you
+              stop sharing or delete them.
             </td>
-          </tr>
-          <tr>
-            <td>Notes</td>
-            <td>To sync them, and to publish one if you share it.</td>
           </tr>
         </table>
       </div>
-      <p>
-        Our server fetches the feeds you follow, so publishers see our server, not you. Feeds and
-        articles are stored once and shared by everyone who follows them; full article text is
-        cached the same way, with no record of who asked for it.
-      </p>
 
       <h2>Shared notes</h2>
       <p>
@@ -261,12 +246,9 @@
           the password, and of the code).
         </li>
         <li>
-          <strong>Accounts on app.perch.ws:</strong> usernames, and the library of each account
-          (subscriptions, read and starred flags, settings and notes)
-          <strong>in plain text</strong>. This is the part that would be readable. If that matters
-          to you, use a sync chain instead of an account.
+          <strong>Accounts on app.perch.ws:</strong> usernames, signed-in device names, and the
+          notes people chose to share, which are public anyway. No feeds, reading or private notes.
         </li>
-        <li>Shared notes, which are public anyway.</li>
       </ul>
       <p>
         Deleted data is overwritten in the database rather than left on disk, and is gone from
@@ -309,8 +291,8 @@
       <ul>
         <li>
           <strong>OVHcloud</strong> hosts our server (app.perch.ws and sync.perch.ws). It is
-          currently in <strong>Canada</strong>; we plan to move it to the EU. Your account data and
-          encrypted chain records are stored there.
+          currently in <strong>Canada</strong>; we plan to move it to the EU. Accounts, shared notes
+          and encrypted chain records are stored there.
         </li>
         <li>
           <strong>Cloudflare</strong> provides DNS for perch.ws and hosts this site. Traffic to
@@ -340,11 +322,10 @@
 
       <h2>Deleting your data</h2>
       <p>
-        You can delete your account yourself, in the web app (Settings → Delete account), the iPhone
-        app (Settings → Delete account) or the extension (Settings → Sync). It deletes your account,
-        sessions, library, read state, settings, notes and shared pages at once. Data on your
-        devices stays there until you remove it or uninstall the app. You can export your
-        subscriptions as OPML at any time.
+        You can delete your Perch account yourself: on app.perch.ws, in the iPhone app (Settings →
+        Perch account) or in the extension (Settings → Perch account). It deletes your account, its
+        sessions and the notes you shared at once. Data on your devices stays there until you remove
+        it or uninstall the app. You can export your subscriptions as OPML at any time.
       </p>
 
       <h2>Your rights</h2>
@@ -392,8 +373,8 @@
           <li>Hesap açmazsan akışların, okudukların ve notların cihazında kalır. Biz görmeyiz.</li>
           <li>Senkron zincirleri uçtan uca şifrelidir. Aktarıcımız okuyamadığı veriyi saklar.</li>
           <li>
-            app.perch.ws'te hesap açarsan sunucu, senkronlayabilmek için kitaplığını saklar. Bu veri
-            <strong>uçtan uca şifreli değildir</strong>; ayrıntılar aşağıda.
+            app.perch.ws'teki Perch hesabı yalnızca not paylaşmak için bir addır. Sunucu akış, okuma
+            ya da özel not tutmaz.
           </li>
           <li>
             E-posta adresi istemeyiz, erişim kaydı tutmayız, IP adresi saklamayız. Hiçbir şeyi
@@ -487,11 +468,9 @@
 
       <h2>app.perch.ws'te bir Perch hesabı</h2>
       <p>
-        Hesap; web'de okumanı ve sunucumuz üzerinden senkronlamanı sağlar. Bunun için sunucunun
-        kitaplığını kullanabileceği bir biçimde tutması gerekir; bu yüzden kitaplığın
-        <strong>sunucumuzda düz metin olarak saklanır, uçtan uca şifreli değildir</strong>. Bunu
-        istemiyorsan senkron zinciri kullan ya da hiç senkronlama. Verine; hizmeti çalıştırmak ya da
-        bir sorunu gidermek gerekmedikçe veya yasa zorunlu kılmadıkça bakmayız.
+        Perch hesabı, notları herkese açık sayfa olarak paylaştığın adındır. Okumak için gerekmez ve
+        kitaplığını senkronlamaz: akışların, ne okuduğun ve notların cihazlarında (ve şifreli olarak
+        senkron zincirinde) kalır. Sunucu yalnızca şunları tutar:
       </p>
       <div class="table-wrap">
         <table>
@@ -526,28 +505,14 @@
             </td>
           </tr>
           <tr>
-            <td>Abonelikler, kategoriler, ayarlar</td>
-            <td>Senkronlamak ve akışlarını çekmek için.</td>
-          </tr>
-          <tr>
-            <td>Okundu ve yıldız işaretleri</td>
+            <td>Paylaştığın notlar</td>
             <td>
-              Senkronlamak için. Yalnızca bir makalenin okunup okunmadığını, yıldızlanıp
-              yıldızlanmadığını ve bunun ne zaman değiştiğini saklarız. Ne kadar süre okuduğunu,
-              nereye kadar kaydırdığını ya da neye tıkladığını saklamayız.
+              Herkese açık adreslerinde gösterebilmek için. Yalnızca paylaşmayı seçtiğin notlar,
+              paylaşmayı durdurana ya da silene kadar.
             </td>
-          </tr>
-          <tr>
-            <td>Notlar</td>
-            <td>Senkronlamak ve paylaşırsan yayınlamak için.</td>
           </tr>
         </table>
       </div>
-      <p>
-        Takip ettiğin akışları sunucumuz çeker; yayıncılar seni değil sunucumuzu görür. Akışlar ve
-        makaleler bir kez saklanır ve onları takip eden herkes tarafından ortak kullanılır.
-        Makalelerin tam metni de aynı şekilde önbelleğe alınır ve kimin istediği kaydedilmez.
-      </p>
 
       <h2>Paylaşılan notlar</h2>
       <p>
@@ -595,12 +560,10 @@
           türetilen anahtarın ve kodun).
         </li>
         <li>
-          <strong>app.perch.ws hesapları:</strong> kullanıcı adları ve her hesabın kitaplığı
-          (abonelikler, okundu ve yıldız işaretleri, ayarlar ve notlar)
-          <strong>düz metin olarak</strong>. Okunabilecek kısım budur. Bu senin için önemliyse hesap
-          yerine senkron zinciri kullan.
+          <strong>app.perch.ws hesapları:</strong> kullanıcı adları, giriş yapılmış cihaz adları ve
+          kullanıcıların paylaşmayı seçtiği, zaten herkese açık olan notlar. Akış, okuma ya da özel
+          not yok.
         </li>
-        <li>Zaten herkese açık olan paylaşılan notlar.</li>
       </ul>
       <p>
         Silinen veriler diskte bırakılmaz, veritabanında üzerine yazılır; 14 gün içinde yedeklerden
@@ -643,8 +606,8 @@
       <ul>
         <li>
           <strong>OVHcloud</strong> sunucumuzu barındırır (app.perch.ws ve sync.perch.ws). Sunucu şu
-          an <strong>Kanada</strong>'da; AB'ye taşımayı planlıyoruz. Hesap verilerin ve şifreli
-          zincir kayıtların orada saklanır.
+          an <strong>Kanada</strong>'da; AB'ye taşımayı planlıyoruz. Hesaplar, paylaşılan notlar ve
+          şifreli zincir kayıtları orada saklanır.
         </li>
         <li>
           <strong>Cloudflare</strong>, perch.ws için DNS hizmeti verir ve bu siteyi barındırır.
@@ -675,11 +638,11 @@
 
       <h2>Verini silmek</h2>
       <p>
-        Hesabını kendin silebilirsin: web uygulamasında (Ayarlar → Hesabı sil), iPhone uygulamasında
-        (Ayarlar → Hesabı sil) ya da eklentide (Ayarlar → Senkron). Bu işlem hesabını, oturumlarını,
-        kitaplığını, okundu bilgilerini, ayarlarını, notlarını ve paylaşılan sayfalarını tek seferde
-        siler. Cihazlarındaki veriler, sen kaldırana ya da uygulamayı silene kadar orada kalır.
-        Aboneliklerini istediğin zaman OPML olarak dışa aktarabilirsin.
+        Perch hesabını kendin silebilirsin: app.perch.ws'te, iPhone uygulamasında (Ayarlar → Perch
+        hesabı) ya da eklentide (Ayarlar → Perch hesabı). Bu işlem hesabını, oturumlarını ve
+        paylaştığın notları tek seferde siler. Cihazlarındaki veriler, sen kaldırana ya da
+        uygulamayı silene kadar orada kalır. Aboneliklerini istediğin zaman OPML olarak dışa
+        aktarabilirsin.
       </p>
 
       <h2>Hakların</h2>
