@@ -6,6 +6,7 @@ import { ReaderApp, Spinner } from '@perch/reader';
 import './styles.css';
 import { SIGNED_OUT_EVENT, api } from './api';
 import { Auth } from './Auth';
+import { Hub } from './Hub';
 import { createServerBackend } from './backend';
 import { WebSettings } from './WebSettings';
 
@@ -13,21 +14,23 @@ type Session =
   | { status: 'loading' }
   | { status: 'error'; message: string }
   | { status: 'signed-out'; info: ServerInfo }
-  | { status: 'signed-in'; user: PublicUser };
+  | { status: 'signed-in'; user: PublicUser; info: ServerInfo };
 
 function App() {
   const [session, setSession] = useState<Session>({ status: 'loading' });
 
   const check = async () => {
+    let info: ServerInfo;
+    try {
+      info = await api<ServerInfo>('/server');
+    } catch (err) {
+      return setSession({ status: 'error', message: (err as Error).message });
+    }
     try {
       const { user } = await api<{ user: PublicUser }>('/auth/me');
-      setSession({ status: 'signed-in', user });
+      setSession({ status: 'signed-in', user, info });
     } catch {
-      try {
-        setSession({ status: 'signed-out', info: await api<ServerInfo>('/server') });
-      } catch (err) {
-        setSession({ status: 'error', message: (err as Error).message });
-      }
+      setSession({ status: 'signed-out', info });
     }
   };
 
@@ -54,8 +57,15 @@ function App() {
   }
   if (session.status === 'signed-out') {
     return (
-      <Auth info={session.info} onSignedIn={(user) => setSession({ status: 'signed-in', user })} />
+      <Auth
+        info={session.info}
+        onSignedIn={(user) => setSession({ status: 'signed-in', user, info: session.info })}
+      />
     );
+  }
+  // A hub keeps no libraries: its web app is the Perch account.
+  if (session.info.mode === 'hub') {
+    return <Hub key={session.user.id} user={session.user} onSignOut={() => void check()} />;
   }
   return <Reader key={session.user.id} user={session.user} onSignOut={() => void check()} />;
 }

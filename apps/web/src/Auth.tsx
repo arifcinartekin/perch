@@ -182,6 +182,12 @@ export function Auth({
                 ? 'Reset your password'
                 : 'Create an account'}
         </h2>
+        {info.mode === 'hub' && !info.needsSetup && (
+          <p className="mb-2 text-[12.5px] leading-relaxed text-[var(--text-muted)]">
+            A Perch account is your name for sharing notes. Your feeds and reading stay on your
+            devices.
+          </p>
+        )}
         {info.needsSetup && (
           <p className="mb-4 text-[12.5px] leading-relaxed text-[var(--text-muted)]">
             No accounts yet. The first one you create here is the admin.

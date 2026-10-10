@@ -45,4 +45,13 @@ export async function deleteNote(id: string): Promise<void> {
   await saveNoteMap(rest);
 }
 
+/** Record (or clear) the note's public link; it syncs like the rest of the note. */
+export async function setSharedUrl(id: string, sharedUrl: string | undefined): Promise<void> {
+  const notes = await getNoteMap();
+  const note = notes[id];
+  if (!note || note.sharedUrl === sharedUrl) return;
+  const { sharedUrl: _old, ...rest } = note;
+  await saveNoteMap({ ...notes, [id]: { ...rest, ...(sharedUrl && { sharedUrl }) } });
+}
+
 export const watchNotes = (fn: () => void) => watchLocal(KEYS.notes, fn);

@@ -11,6 +11,7 @@ import { suggestUsername } from '@perch/core/username';
 import { Button, Dialog, RecoveryCode, Row, Section, Spinner, useToast } from '@perch/reader';
 import { sendMessage } from '@/lib/messaging';
 import { requestHostPermission } from '@/lib/permissions/host';
+import { DEFAULT_HUB } from '@/lib/community';
 import { createChain, deleteChain, joinChain } from '@/lib/sync/chain';
 import {
   ServerError,
@@ -529,19 +530,26 @@ function Connected({ account, status }: { account: ServerAccount; status: SyncSt
   );
 }
 
-function SignInForm({
+export function SignInForm({
   initial,
   notice,
   onCancel,
+  purpose = 'sync',
+  onSignedIn = saveAccount,
 }: {
-  initial?: ServerAccount;
+  initial?: Pick<ServerAccount, 'server' | 'username'>;
   notice?: string;
   onCancel: () => void;
+  /** `sync`: the library syncs with this account. `community`: the Perch account, for sharing. */
+  purpose?: 'sync' | 'community';
+  onSignedIn?: (account: ServerAccount) => Promise<void>;
 }) {
   const toast = useToast();
   // 'reset' sets a new password with an emailed code, 'recover' with the recovery code.
   const [mode, setMode] = useState<'in' | 'up' | 'reset' | 'recover'>('in');
-  const [server, setServer] = useState(initial?.server ?? '');
+  const [server, setServer] = useState(
+    initial?.server ?? (purpose === 'community' ? DEFAULT_HUB : ''),
+  );
   const [username, setUsername] = useState(initial?.username ?? '');
   const [password, setPassword] = useState('');
   const [invite, setInvite] = useState('');
@@ -587,7 +595,12 @@ function SignInForm({
     setBusy(true);
     try {
       const info = await getServerInfo(url);
-      if (info.mode !== 'personal') {
+      if (purpose === 'sync' && info.mode === 'hub') {
+        return setErr(
+          `${new URL(url).host} holds Perch accounts, not libraries. Sync with a chain, and sign in to it under Perch account to share notes.`,
+        );
+      }
+      if (info.mode !== 'personal' && info.mode !== 'hub') {
         return setErr('This server runs in a mode this version of Perch can’t use yet.');
       }
       setCanReset(Boolean(info.email || info.recovery));
@@ -612,7 +625,7 @@ function SignInForm({
         });
         if (made.recoveryCode)
           return setCreated({ account: made.account, code: made.recoveryCode });
-        await saveAccount(made.account);
+        await onSignedIn(made.account);
         return toast(`Account created on ${new URL(url).host}`, 'success');
       }
       const account =
@@ -621,7 +634,7 @@ function SignInForm({
           : mode === 'recover'
             ? await recoverAccount(url, username.trim(), recoveryInput.trim(), password)
             : await resetPassword(url, email.trim(), code.trim(), password);
-      await saveAccount(account);
+      await onSignedIn(account);
       toast(
         mode === 'in'
           ? `Signed in to ${new URL(url).host}`
@@ -648,7 +661,7 @@ function SignInForm({
           username={created.account.username}
           host={host}
           onDone={async () => {
-            await saveAccount(created.account);
+            await onSignedIn(created.account);
             toast(`Account created on ${host}`, 'success');
           }}
         />
@@ -661,10 +674,14 @@ function SignInForm({
       <div className="flex items-center justify-between">
         <div className="text-[13px] font-medium">
           {mode === 'in'
-            ? 'Sign in to your Perch Server'
+            ? purpose === 'community'
+              ? 'Sign in to your Perch account'
+              : 'Sign in to your Perch Server'
             : mode === 'reset' || mode === 'recover'
               ? 'Reset your password'
-              : 'Create an account'}
+              : purpose === 'community'
+                ? 'Create a Perch account'
+                : 'Create an account'}
         </div>
         <button
           type="button"
@@ -676,7 +693,11 @@ function SignInForm({
       </div>
       <input
         className={inputClass}
-        placeholder="Server address, e.g. reader.example.com"
+        placeholder={
+          purpose === 'community'
+            ? 'Server address: app.perch.ws, or your own'
+            : 'Server address, e.g. reader.example.com'
+        }
         value={server}
         onChange={(e) => setServer(e.target.value)}
         autoFocus={!initial}
@@ -804,7 +825,10 @@ function SignInForm({
       )}
       <p className="text-[11.5px] leading-relaxed text-[var(--text-faint)]">
         Your password never leaves this device: Perch derives a key from it (Argon2id) and sends
-        only that. Subscriptions you already have here are merged with the account’s.
+        only that.{' '}
+        {purpose === 'community'
+          ? 'The account is your name for sharing notes; your library stays here and keeps syncing as it does now.'
+          : 'Subscriptions you already have here are merged with the account’s.'}
       </p>
       <div className="flex gap-2">
         <Button size="sm" variant="primary" type="submit" loading={busy}>
@@ -821,7 +845,7 @@ function SignInForm({
           variant="ghost"
           type="button"
           onClick={async () => {
-            if (initial) await clearAccount();
+            if (initial && purpose === 'sync') await clearAccount();
             onCancel();
           }}
         >

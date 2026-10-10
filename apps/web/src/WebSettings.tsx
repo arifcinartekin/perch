@@ -18,27 +18,48 @@ import { ServerError, api } from './api';
 // email address, devices, invites (admins), OPML import/export and deleting
 // the account.
 
-export function WebSettings({ user, onSignOut }: { user: PublicUser; onSignOut: () => void }) {
+export function WebSettings({
+  user,
+  onSignOut,
+  hub = false,
+}: {
+  user: PublicUser;
+  onSignOut: () => void;
+  /** A hub keeps no library, so there's nothing to import or export. */
+  hub?: boolean;
+}) {
   return (
     <>
-      <AccountSection user={user} onSignOut={onSignOut} />
+      <AccountSection user={user} onSignOut={onSignOut} hub={hub} />
       <EmailSection user={user} />
       <RecoverySection user={user} />
       <DevicesSection />
       {user.role === 'admin' && <InvitesSection />}
-      <OpmlSection />
-      <DeleteAccountSection user={user} onDeleted={onSignOut} />
+      {!hub && <OpmlSection />}
+      <DeleteAccountSection user={user} onDeleted={onSignOut} hub={hub} />
     </>
   );
 }
 
-function AccountSection({ user, onSignOut }: { user: PublicUser; onSignOut: () => void }) {
+function AccountSection({
+  user,
+  onSignOut,
+  hub,
+}: {
+  user: PublicUser;
+  onSignOut: () => void;
+  hub: boolean;
+}) {
   const [busy, setBusy] = useState(false);
   return (
     <Section title="Account">
       <Row
         label={`Signed in as ${user.username}`}
-        hint={`${user.role === 'admin' ? 'Admin of' : 'Account on'} ${location.host}. Use the same username and password in the Perch extension (Settings → Sync) to sync with it.`}
+        hint={
+          hub
+            ? `Your Perch account on ${location.host}: your name for sharing notes. Sign in with it in the extension or the iPhone app under Settings → Perch account.`
+            : `${user.role === 'admin' ? 'Admin of' : 'Account on'} ${location.host}. Use the same username and password in the Perch extension (Settings → Sync) to sync with it.`
+        }
       >
         <Button
           size="sm"
@@ -447,7 +468,15 @@ function RecoverySection({ user }: { user: PublicUser }) {
 }
 
 /** Deletes the account and everything on this server with it, after the password. */
-function DeleteAccountSection({ user, onDeleted }: { user: PublicUser; onDeleted: () => void }) {
+function DeleteAccountSection({
+  user,
+  onDeleted,
+  hub,
+}: {
+  user: PublicUser;
+  onDeleted: () => void;
+  hub: boolean;
+}) {
   const toast = useToast();
   const [open, setOpen] = useState(false);
   const [password, setPassword] = useState('');
@@ -472,7 +501,11 @@ function DeleteAccountSection({ user, onDeleted }: { user: PublicUser; onDeleted
     <Section title="Delete account">
       <Row
         label="Delete your account"
-        hint={`Removes your account on ${location.host} with your feeds, read state, settings, notes and shared pages. It can’t be undone. What’s stored on your devices stays there.`}
+        hint={
+          hub
+            ? `Removes your account on ${location.host} and every note you shared from it. It can’t be undone. Your library on your devices isn’t affected.`
+            : `Removes your account on ${location.host} with your feeds, read state, settings, notes and shared pages. It can’t be undone. What’s stored on your devices stays there.`
+        }
       >
         {!open && (
           <Button size="sm" variant="default" onClick={() => setOpen(true)}>

@@ -5,6 +5,7 @@ import type {
   EmailPurpose,
   PowChallenge,
   PreloginResponse,
+  SaveNoteRequest,
   ServerInfo,
   ShareResponse,
 } from '@perch/core/api';
@@ -176,12 +177,17 @@ export async function resetPassword(
   return { server, username: res.user.username, token: res.token, node: randomNode() };
 }
 
-export async function signOutRemote(account: ServerAccount): Promise<void> {
+export async function signOutRemote(
+  account: Pick<ServerAccount, 'server' | 'token'>,
+): Promise<void> {
   await call(account.server, '/auth/logout', { token: account.token, body: {} }).catch(() => {});
 }
 
 /** Delete the account on the server and everything stored there with it. */
-export async function deleteAccount(account: ServerAccount, password: string): Promise<void> {
+export async function deleteAccount(
+  account: Pick<ServerAccount, 'server' | 'token' | 'username'>,
+  password: string,
+): Promise<void> {
   const pre = await call<PreloginResponse>(account.server, '/auth/prelogin', {
     body: { username: account.username },
   });
@@ -189,17 +195,44 @@ export async function deleteAccount(account: ServerAccount, password: string): P
   await call(account.server, '/auth/delete', { token: account.token, body: { authKey } });
 }
 
-/** Publish a note (already synced to the server) as a public page. */
-export async function shareNote(account: ServerAccount, noteId: string): Promise<string> {
+/**
+ * Publish a note as a public page. With `note`, the page is made from it (a
+ * Perch account on a hub); without, from the copy a personal server already
+ * has through sync.
+ */
+export async function shareNote(
+  account: Pick<ServerAccount, 'server' | 'token'>,
+  noteId: string,
+  note?: SaveNoteRequest,
+): Promise<string> {
   const res = await call<ShareResponse>(account.server, `/shares/${encodeURIComponent(noteId)}`, {
     method: 'PUT',
     token: account.token,
-    body: {},
+    body: note ?? {},
   });
   return res.url;
 }
 
-export async function unshareNote(account: ServerAccount, noteId: string): Promise<void> {
+/** Replace the account's recovery code, once the password confirms it. */
+export async function setRecoveryCode(
+  account: Pick<ServerAccount, 'server' | 'token' | 'username'>,
+  password: string,
+  recoveryCode: string,
+): Promise<void> {
+  const pre = await call<PreloginResponse>(account.server, '/auth/prelogin', {
+    body: { username: account.username },
+  });
+  const { authKey } = await deriveKeys(password, pre.salt, pre.kdf);
+  await call(account.server, '/auth/recovery', {
+    token: account.token,
+    body: { authKey, recoveryCode },
+  });
+}
+
+export async function unshareNote(
+  account: Pick<ServerAccount, 'server' | 'token'>,
+  noteId: string,
+): Promise<void> {
   await call(account.server, `/shares/${encodeURIComponent(noteId)}`, {
     method: 'DELETE',
     token: account.token,

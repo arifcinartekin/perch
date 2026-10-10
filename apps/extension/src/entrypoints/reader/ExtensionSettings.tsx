@@ -20,6 +20,7 @@ import {
   type ImportResult,
 } from '@/lib/backup';
 import { clearPin, isPinEnabled, isValidPin, setPin } from '@/lib/lock';
+import { CommunitySection } from './pages/Community';
 import { SyncSection } from './pages/Sync';
 
 // Settings that only exist in the extension: site permissions, sync, local
@@ -74,6 +75,8 @@ export function ExtensionSettings() {
 
       <SyncSection />
 
+      <CommunitySection />
+
       <BackupSection />
 
       <LockSection />
@@ -89,6 +92,22 @@ export function ExtensionSettings() {
           >
             Clear cache
           </button>
+        </Row>
+      </Section>
+
+      <Section title="About">
+        <Row
+          label="Privacy"
+          hint="The extension collects nothing. Your library stays in this browser unless you sync it. A server you sign in to has its own policy."
+        >
+          <a
+            href="https://perch.ws/privacy"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[12.5px] font-medium text-[var(--accent-text)] hover:underline"
+          >
+            Privacy policy
+          </a>
         </Row>
       </Section>
     </>

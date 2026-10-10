@@ -1,3 +1,4 @@
+import type { SaveNoteRequest } from '@perch/core/api';
 import type { ReaderBackend } from '@perch/reader';
 import { sendMessage } from './messaging';
 import { hasHostPermission, requestHostPermission } from './permissions/host';
@@ -18,7 +19,16 @@ import {
   watchFeeds,
 } from './storage/feeds';
 import { watchLocal } from './storage/local';
-import { deleteNote, listNotes, putNote, watchNotes } from './storage/notes';
+import { getCommunity } from './community';
+import {
+  deleteNote,
+  getNoteMap,
+  listNotes,
+  putNote,
+  setSharedUrl,
+  watchNotes,
+  type NoteMap,
+} from './storage/notes';
 import { getSettings, saveSettings, watchSettings } from './storage/settings';
 import { clearWallpaper, loadWallpaper, saveWallpaper } from './storage/wallpaper';
 import { shareNote, unshareNote } from './sync/client';
@@ -118,37 +128,52 @@ export const localBackend: ReaderBackend = {
       article.url ? requestHostPermission(article.url) : Promise.resolve(false),
   },
 
+  // A shared note's page follows it: edits are published again, and deleting
+  // the note takes the page down.
   notes: {
     list: listNotes,
-    save: putNote,
-    remove: deleteNote,
+    async save(source, body) {
+      const note = await putNote(source, body);
+      if (note.sharedUrl) void republish(note.id).catch(() => undefined);
+      return note;
+    },
+    async remove(id) {
+      const note = (await getNoteMap())[id];
+      if (note?.sharedUrl) await takeDown(id, note.sharedUrl).catch(() => undefined);
+      await deleteNote(id);
+    },
   },
 
-  // Sharing publishes a note on the Perch Server this browser syncs with; it
-  // needs the note there first, so each step syncs.
+  // Sharing goes through the Perch account when there is one. Without it, a
+  // personal Perch Server this browser syncs with can publish the copy it has.
   sharing: {
     async unavailable() {
+      if (await getCommunity()) return null;
       const account = await getAccount();
-      if (!account) return 'Sign in to a Perch Server under Settings → Sync to share notes.';
-      if (isChain(account))
-        return 'Sharing needs a Perch Server account. Sync chains stay private.';
-      if ((await getStatus()).signedOut) return 'Sign in again under Settings → Sync to share.';
-      return null;
+      if (account && !isChain(account) && !(await getStatus()).signedOut) return null;
+      return 'Sign in to a Perch account under Settings → Perch account to share notes.';
     },
     async share(noteId) {
+      const community = await getCommunity();
+      if (community) {
+        const note = (await getNoteMap())[noteId];
+        if (!note) throw new Error('Save the note before sharing it.');
+        const url = await shareNote(community, noteId, noteBody(note));
+        await setSharedUrl(noteId, url);
+        return url;
+      }
       const account = await getAccount();
-      if (!account || isChain(account))
-        throw new Error('Sign in to a Perch Server to share notes.');
+      if (!account || isChain(account)) {
+        throw new Error('Sign in to a Perch account to share notes.');
+      }
       await sendMessage('sync:now');
       const url = await shareNote(account, noteId);
       await sendMessage('sync:now');
       return url;
     },
     async unshare(noteId) {
-      const account = await getAccount();
-      if (!account || isChain(account)) return;
-      await unshareNote(account, noteId);
-      await sendMessage('sync:now');
+      const note = (await getNoteMap())[noteId];
+      if (note?.sharedUrl) await takeDown(noteId, note.sharedUrl);
     },
   },
 
@@ -183,3 +208,38 @@ export const localBackend: ReaderBackend = {
       'Everything is stored in your browser. Nothing leaves it unless you turn on sync.',
   },
 };
+
+const noteBody = (note: NoteMap[string]): SaveNoteRequest => ({
+  title: note.title,
+  url: note.url,
+  feedTitle: note.feedTitle,
+  body: note.body,
+});
+
+/** The account a note's page lives on: the Perch account, or the sync server. */
+async function pageAccount(sharedUrl: string) {
+  const origin = new URL(sharedUrl).origin;
+  const community = await getCommunity();
+  if (community && new URL(community.server).origin === origin) return { account: community };
+  const sync = await getAccount();
+  if (sync && !isChain(sync) && new URL(sync.server).origin === origin) {
+    return { account: sync, viaSync: true };
+  }
+  return null;
+}
+
+async function republish(id: string) {
+  const note = (await getNoteMap())[id];
+  if (!note?.sharedUrl) return;
+  const found = await pageAccount(note.sharedUrl);
+  // A personal server follows the synced note by itself.
+  if (found && !found.viaSync) await shareNote(found.account, id, noteBody(note));
+}
+
+async function takeDown(id: string, sharedUrl: string) {
+  const found = await pageAccount(sharedUrl);
+  if (!found) throw new Error('Sign in to the account this note was shared from to stop sharing.');
+  await unshareNote(found.account, id);
+  await setSharedUrl(id, undefined);
+  if (found.viaSync) await sendMessage('sync:now');
+}
