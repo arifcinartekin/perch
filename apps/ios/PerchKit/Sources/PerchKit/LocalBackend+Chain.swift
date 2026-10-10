@@ -24,8 +24,30 @@ public struct ChainSyncState: Codable, Sendable {
   var parked: [String: ArticleState] = [:]
   public var lastSyncAt: Double?
   public var lastError: String?
+  /// The chain's devices as each describes itself, by clock node. Optional
+  /// so state saved before devices were listed still loads.
+  public var devices: [String: ChainDevice]?
+  /// Devices forgotten here, to remove from the chain on the next round.
+  var forgotten: [String]?
 
   public init() {}
+}
+
+/// A device in the chain, as in DeviceRecordData (packages/core/src/sync.ts).
+public struct ChainDevice: Codable, Sendable, Equatable {
+  public var name: String
+  public var platform: String
+  /// Epoch milliseconds; refreshed about twice a day while it syncs.
+  public var seenAt: Double
+
+  public init(name: String, platform: String, seenAt: Double = Date.now.timeIntervalSince1970 * 1000) {
+    self.name = name
+    self.platform = platform
+    self.seenAt = seenAt
+  }
+
+  /// How often a device refreshes its record (DEVICE_REFRESH_MS).
+  public static let refresh: Double = 12 * 60 * 60 * 1000
 }
 
 struct ArticleState: Codable, Sendable, Equatable {
@@ -64,27 +86,30 @@ extension LocalBackend {
     }
   }
 
-  /// Runs a round; a call while one is running shares it.
-  public func syncChain(keys: ChainKeys, client: ChainClient, node: String) async throws
-    -> ChainSyncResult
-  {
+  /// Runs a round; a call while one is running shares it. `device` is how
+  /// this phone describes itself to the chain's other devices.
+  public func syncChain(
+    keys: ChainKeys, client: ChainClient, node: String, device: ChainDevice? = nil
+  ) async throws -> ChainSyncResult {
     if let running = chainRun { return try await running.value }
-    let task = Task { try await self.runChainSync(keys: keys, client: client, node: node) }
+    let task = Task {
+      try await self.runChainSync(keys: keys, client: client, node: node, device: device)
+    }
     chainRun = task
     defer { chainRun = nil }
     return try await task.value
   }
 
-  private func runChainSync(keys: ChainKeys, client: ChainClient, node: String) async throws
-    -> ChainSyncResult
-  {
+  private func runChainSync(
+    keys: ChainKeys, client: ChainClient, node: String, device: ChainDevice?
+  ) async throws -> ChainSyncResult {
     var st = await chainState()
     var clock = HybridClock(node: node)
     if let last = st.hlc { clock.receive(last) }
     do {
       var result = ChainSyncResult()
       try await pull(&st, &clock, client, keys, &result)
-      result.pushed = try await push(&st, &clock, client, keys)
+      result.pushed = try await push(&st, &clock, client, keys, node: node, device: device)
       // Pick up anything that landed meanwhile (and our own writes, harmlessly).
       if result.pushed > 0 { try await pull(&st, &clock, client, keys, &result) }
       st.hlc = clock.now()
@@ -215,6 +240,16 @@ extension LocalBackend {
         }
         s.notes = notes
 
+      case "device":
+        var devices = st.devices ?? [:]
+        if r.deleted {
+          devices[r.id] = nil
+        } else if let d = r.data, let name = d["name"]?.string {
+          devices[r.id] = ChainDevice(
+            name: name, platform: d["platform"]?.string ?? "", seenAt: d["seenAt"]?.number ?? 0)
+        }
+        st.devices = devices
+
       case "state":
         // A change here that hasn't gone out yet wins on push.
         if pending.contains(r.id) || r.deleted { continue }
@@ -242,6 +277,24 @@ extension LocalBackend {
     return added
   }
 
+  /// Hides a device here and removes it from the chain on the next round. It
+  /// can still sync: only a new chain cuts a device off.
+  public func forgetChainDevice(_ id: String) async {
+    var st = await chainState()
+    st.devices?[id] = nil
+    st.forgotten = Array(Set((st.forgotten ?? []) + [id]))
+    await saveChainState(st)
+  }
+
+  /// Takes this phone off the other devices' lists, on the way out of a chain.
+  public func announceLeaving(keys: ChainKeys, client: ChainClient, node: String) async {
+    let st = await chainState()
+    var clock = HybridClock(node: node)
+    if let last = st.hlc { clock.receive(last) }
+    let record = ChainSyncRecord(type: "device", id: node, data: nil, hlc: clock.now(), deleted: true)
+    if let sealed = try? keys.seal(record) { _ = try? await client.push([sealed]) }
+  }
+
   /// Read and star changes from the chain for articles fetched since.
   func applyParkedStates() async {
     var st = await chainState()
@@ -257,10 +310,33 @@ extension LocalBackend {
 
   private func push(
     _ st: inout ChainSyncState, _ clock: inout HybridClock, _ client: ChainClient,
-    _ keys: ChainKeys
+    _ keys: ChainKeys, node: String, device: ChainDevice?
   ) async throws -> Int {
     let s = await load()
     var outgoing: [(record: ChainSyncRecord, canon: String?)] = []
+
+    // This phone keeps its own device record fresh, and removes the ones
+    // forgotten here.
+    var announced: ChainDevice?
+    if let device {
+      let known = st.devices?[node]
+      if known == nil || known?.name != device.name
+        || device.seenAt - (known?.seenAt ?? 0) > ChainDevice.refresh
+      {
+        announced = device
+        let data = JSONValue.object([
+          "name": .string(device.name), "platform": .string(device.platform),
+          "seenAt": .number(device.seenAt),
+        ])
+        outgoing.append(
+          (ChainSyncRecord(type: "device", id: node, data: data, hlc: clock.now()), nil))
+      }
+    }
+    let forgotten = st.forgotten ?? []
+    for id in forgotten {
+      outgoing.append(
+        (ChainSyncRecord(type: "device", id: id, data: nil, hlc: clock.now(), deleted: true), nil))
+    }
 
     func diff(_ type: String, _ local: [String: (data: JSONValue, canon: String)]) {
       for (id, value) in local.sorted(by: { $0.key < $1.key })
@@ -326,13 +402,15 @@ extension LocalBackend {
         let (record, canon) = batch[i]
         if item.status == "invalid" { Self.log.warning("relay refused \(record.key)") }
         pushed += 1
-        guard record.type != "state" else { continue }
+        guard record.type != "state" && record.type != "device" else { continue }
         st.shadow[record.key] = record.deleted ? nil : canon
       }
     }
     // Clear what went out, keeping anything that changed again meanwhile.
     let now = Set(await store.pending())
     await store.clearPending(pending.filter { now.contains($0) })
+    if let announced { st.devices = (st.devices ?? [:]).merging([node: announced]) { _, new in new } }
+    if !forgotten.isEmpty { st.forgotten = nil }
     return pushed
   }
 

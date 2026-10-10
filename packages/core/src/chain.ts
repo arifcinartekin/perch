@@ -249,7 +249,7 @@ export async function sealRecord(
   };
 }
 
-const RECORD_TYPES: readonly string[] = ['feed', 'category', 'setting', 'state', 'note'];
+const RECORD_TYPES: readonly string[] = ['feed', 'category', 'setting', 'state', 'note', 'device'];
 
 /**
  * The record inside a blob, or null when it doesn't decrypt or doesn't belong

@@ -1,5 +1,6 @@
 import { bareHost } from '@perch/core/url';
 import {
+  DEVICE_REFRESH_MS,
   Hlc,
   SYNCED_SETTING_KEYS,
   isSyncedSettingKey,
@@ -19,6 +20,7 @@ import { getNoteMap, saveNoteMap } from '../storage/notes';
 import { getSettings, saveSettings } from '../storage/settings';
 import { hasHostPermission } from '../permissions/host';
 import { chainApi } from './chain';
+import { getDevices, getForgotten, saveDevices, saveForgotten, thisDevice } from './devices';
 import { ServerError, syncApi } from './client';
 import {
   getAccount,
@@ -123,6 +125,8 @@ export async function applyRemote(records: StoredRecord[]): Promise<string[]> {
   let feeds = await getFeeds();
   let categories = await getCategories();
   let notes = await getNoteMap();
+  let devices = await getDevices();
+  let devicesChanged = false;
   const settings = await getSettings();
   const shadow = await getShadow();
   const outbox = await getOutbox();
@@ -226,6 +230,17 @@ export async function applyRemote(records: StoredRecord[]): Promise<string[]> {
         break;
       }
 
+      case 'device': {
+        devicesChanged = true;
+        if (r.deleted) {
+          const { [r.id]: _gone, ...rest } = devices;
+          devices = rest;
+        } else {
+          devices = { ...devices, [r.id]: r.data as RecordDataMap['device'] };
+        }
+        break;
+      }
+
       case 'state': {
         // A pending local change to the same article wins on push.
         if (r.id in outbox || r.deleted) break;
@@ -242,6 +257,7 @@ export async function applyRemote(records: StoredRecord[]): Promise<string[]> {
   if (feedsChanged) await saveFeeds(feeds);
   if (categoriesChanged) await saveCategories(categories);
   if (notesChanged) await saveNoteMap(notes);
+  if (devicesChanged) await saveDevices(devices);
   if (Object.keys(settingsPatch).length) {
     const saved = await saveSettings(settingsPatch);
     // Normalising may adjust a value; record what we actually hold.
@@ -323,6 +339,21 @@ async function push(account: SyncAccount, hlc: Hlc): Promise<number> {
   for (const [id, data] of Object.entries(outbox)) {
     outgoing.push({ record: { type: 'state', id, data, hlc: hlc.now() } });
   }
+  // In a chain, this browser keeps its own device record fresh, and removes
+  // the ones forgotten here.
+  let me: RecordDataMap['device'] | undefined;
+  const forgotten = isChain(account) ? await getForgotten() : [];
+  if (isChain(account)) {
+    const known = (await getDevices())[account.node];
+    const now = await thisDevice();
+    if (!known || known.name !== now.name || now.seenAt - known.seenAt > DEVICE_REFRESH_MS) {
+      me = now;
+      outgoing.push({ record: { type: 'device', id: account.node, data: me, hlc: hlc.now() } });
+    }
+    for (const id of forgotten) {
+      outgoing.push({ record: { type: 'device', id, hlc: hlc.now(), deleted: true } });
+    }
+  }
   if (outgoing.length === 0) return 0;
 
   const api = apiFor(account);
@@ -339,7 +370,7 @@ async function push(account: SyncAccount, hlc: Hlc): Promise<number> {
       if (res.status === 'invalid') console.warn('[sync] server rejected', res.key);
       pushed++;
       const key = recordKey(record.type, record.id);
-      if (record.type !== 'state') {
+      if (record.type !== 'state' && record.type !== 'device') {
         if (record.deleted) delete shadow[key];
         else shadow[key] = canon!;
       }
@@ -347,6 +378,11 @@ async function push(account: SyncAccount, hlc: Hlc): Promise<number> {
   }
   await saveShadow(shadow);
   await clearPushedStates(outbox);
+  if (me && isChain(account)) await saveDevices({ ...(await getDevices()), [account.node]: me });
+  if (forgotten.length) {
+    const left = (await getForgotten()).filter((id) => !forgotten.includes(id));
+    await saveForgotten(left);
+  }
   return pushed;
 }
 

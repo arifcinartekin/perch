@@ -39,6 +39,7 @@
 		A32E1B72217B04F5C1E6DF00 /* FeedEditSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9820D50B5167D72FD592FFE /* FeedEditSheet.swift */; };
 		A3E2CF5F0B32751D3D0F5EF1 /* OfflineSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16D59EB0C384D24D03E73507 /* OfflineSettingsView.swift */; };
 		ACAD3E4D8FB017B803231DD3 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B00D3F911F440538B501763 /* SettingsView.swift */; };
+		B11ACA17C2C027A100A6672B /* QRScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97D1CC3C778BF5883D09B768 /* QRScannerView.swift */; };
 		C0FA23DD4FD6880334ED109A /* PerchWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 756CEA9C9B1C110A1E27B59A /* PerchWidgets.swift */; };
 		C29B92C76B861FF08D135E51 /* PerchWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 41DD0921F6DAAC3FC42FC199 /* PerchWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		C4B9F75F8C58BA1709DC3215 /* RecoveryPDF.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76E2011C3C0551AB9424D215 /* RecoveryPDF.swift */; };
@@ -117,6 +118,7 @@
 		8FA84189C9C85EF03F9C74AB /* ChainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainView.swift; sourceTree = "<group>"; };
 		8FD692757B7C347A5C2BDD29 /* LocalLibraryUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalLibraryUITests.swift; sourceTree = "<group>"; };
 		919DE3B89AF84FDDA3735FDC /* ReaderUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderUITests.swift; sourceTree = "<group>"; };
+		97D1CC3C778BF5883D09B768 /* QRScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRScannerView.swift; sourceTree = "<group>"; };
 		9BFE3507078C2399F4F0E88D /* Reader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Reader.swift; sourceTree = "<group>"; };
 		9D81815F02D951B683871555 /* Session.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Session.swift; sourceTree = "<group>"; };
 		9DEC51BF47974BCC5F748D16 /* PerchUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = PerchUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -202,6 +204,7 @@
 				6A04F0519598EE4BAAF1557C /* MainTabView.swift */,
 				D2C6F632894A32B83E38C56E /* NoteViews.swift */,
 				16D59EB0C384D24D03E73507 /* OfflineSettingsView.swift */,
+				97D1CC3C778BF5883D09B768 /* QRScannerView.swift */,
 				B33E132281CEFE3D5A1B0680 /* RecoveryCodeView.swift */,
 				76E2011C3C0551AB9424D215 /* RecoveryPDF.swift */,
 				1B00D3F911F440538B501763 /* SettingsView.swift */,
@@ -455,6 +458,7 @@
 				8506BD826A1F884DD3EF7E21 /* OfflineSync.swift in Sources */,
 				6FB486DF2AA9F2C06344CEDB /* PerchApp.swift in Sources */,
 				9E62F76BCEC0A952AA8F3736 /* PerchLogoDrawing.swift in Sources */,
+				B11ACA17C2C027A100A6672B /* QRScannerView.swift in Sources */,
 				467A098C9959101B6914679F /* Reader.swift in Sources */,
 				56880F4CEC3AB4715CDA8CAC /* RecoveryCodeView.swift in Sources */,
 				C4B9F75F8C58BA1709DC3215 /* RecoveryPDF.swift in Sources */,
@@ -573,6 +577,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Perch/Support/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Perch;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Perch uses the camera only to scan a sync chain's QR code.";
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Perch connects to your Perch Server when it runs on your local network.";
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -705,6 +710,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Perch/Support/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Perch;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Perch uses the camera only to scan a sync chain's QR code.";
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Perch connects to your Perch Server when it runs on your local network.";
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";

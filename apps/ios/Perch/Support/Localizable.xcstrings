@@ -162,6 +162,16 @@
         }
       }
     },
+    "Active": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Etkin"
+          }
+        }
+      }
+    },
     "Add": {
       "localizations": {
         "tr": {
@@ -318,6 +328,16 @@
         }
       }
     },
+    "Allow Perch to use the camera in Settings, or type the chain's code instead.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ayarlar'dan Perch'ün kamerayı kullanmasına izin ver ya da zincirin kodunu yaz."
+          }
+        }
+      }
+    },
     "Always": {
       "localizations": {
         "tr": {
@@ -454,6 +474,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Düğmeler"
+          }
+        }
+      }
+    },
+    "Can't scan here": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Burada okutulamıyor"
           }
         }
       }
@@ -1224,6 +1254,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "%2$@ üzerinde @%1$@ için"
+          }
+        }
+      }
+    },
+    "Forget": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unut"
           }
         }
       }
@@ -2130,6 +2170,16 @@
         }
       }
     },
+    "Point the camera at the chain's QR code, shown on the device that started it.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kamerayı, zinciri başlatan cihazda gösterilen QR koda tut."
+          }
+        }
+      }
+    },
     "Preview": {
       "localizations": {
         "tr": {
@@ -2490,6 +2540,26 @@
         }
       }
     },
+    "Scan QR code": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "QR kodu okut"
+          }
+        }
+      }
+    },
+    "Scan the QR code shown on the device that started the chain, or type its code below.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zinciri başlatan cihazda gösterilen QR kodu okut ya da kodunu aşağıya yaz."
+          }
+        }
+      }
+    },
     "Search": {
       "localizations": {
         "tr": {
@@ -2816,6 +2886,16 @@
         }
       }
     },
+    "Started in the browser extension? Choose Join, then scan its QR code or enter its code. Each device fetches the feeds itself.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zinciri tarayıcı eklentisinde mi başlattın? Katıl'ı seç, ardından QR kodunu okut ya da kodunu gir. Her cihaz akışları kendisi çeker."
+          }
+        }
+      }
+    },
     "Stop sharing": {
       "localizations": {
         "tr": {
@@ -2862,6 +2942,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Burada tutmak için makaleyi sola kaydır ya da okurken yıldıza dokun."
+          }
+        }
+      }
+    },
+    "Swipe to forget a device you no longer use. That only hides it: to cut a device off, delete the chain and start a new one.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Artık kullanmadığın bir cihazı unutmak için kaydır. Bu yalnızca onu gizler; bir cihazın erişimini kesmek için zinciri silip yenisini başlat."
           }
         }
       }
@@ -3116,6 +3206,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Bu zincir başka bir cihazda silindi."
+          }
+        }
+      }
+    },
+    "This iPhone": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu iPhone"
           }
         }
       }

@@ -1,6 +1,7 @@
 import Foundation
 import Observation
 import PerchKit
+import UIKit
 
 /// The chain this phone is in: its relay, its code, and this device's clock id.
 struct ChainAccount: Codable, Sendable, Equatable {
@@ -19,6 +20,8 @@ final class ChainLink {
   private(set) var syncing = false
   private(set) var lastSyncAt: Date?
   private(set) var lastError: ChainLink.Problem?
+  /// The chain's devices, as each describes itself, by clock node.
+  private(set) var devices: [String: ChainDevice] = [:]
 
   enum Problem: Equatable {
     /// Another device deleted the chain.
@@ -38,6 +41,18 @@ final class ChainLink {
     await backend.setChain(enabled: account != nil, reset: false)
     let state = await backend.chainState()
     lastSyncAt = state.lastSyncAt.map { Date(timeIntervalSince1970: $0 / 1000) }
+    devices = state.devices ?? [:]
+  }
+
+  /// How this phone appears in the other devices' lists.
+  static var thisDevice: ChainDevice {
+    ChainDevice(name: UIDevice.current.model, platform: "ios")
+  }
+
+  /// Hides a device; the next round removes it from the chain.
+  func forget(_ id: String, _ backend: LocalBackend) async {
+    await backend.forgetChainDevice(id)
+    devices[id] = nil
   }
 
   /// Starts a chain on `server` with this phone's library in it.
@@ -69,7 +84,12 @@ final class ChainLink {
 
   /// Stops syncing here. The library stays on the phone.
   func leave(_ backend: LocalBackend) async {
+    if let account, let keys = ChainKeys(code: account.code) {
+      await backend.announceLeaving(
+        keys: keys, client: ChainClient(server: account.server, keys: keys), node: account.node)
+    }
     Keychain.setChain(nil)
+    devices = [:]
     account = nil
     lastError = nil
     lastSyncAt = nil
@@ -94,8 +114,10 @@ final class ChainLink {
     defer { syncing = false }
     do {
       let result = try await backend.syncChain(
-        keys: keys, client: ChainClient(server: account.server, keys: keys), node: account.node)
+        keys: keys, client: ChainClient(server: account.server, keys: keys), node: account.node,
+        device: Self.thisDevice)
       lastSyncAt = .now
+      devices = await backend.chainState().devices ?? [:]
       lastError = nil
       return result
     } catch ChainError.notFound {
@@ -115,7 +137,8 @@ final class ChainLink {
     }
     await backend.setChain(enabled: true, reset: false)
     return try? await backend.syncChain(
-      keys: keys, client: ChainClient(server: account.server, keys: keys), node: account.node)
+      keys: keys, client: ChainClient(server: account.server, keys: keys), node: account.node,
+      device: thisDevice)
   }
 
   static func describe(_ error: Error) -> String {

@@ -156,7 +156,8 @@ export class SyncService {
         .where(eq(syncRecords.userId, userId))
         .get()?.v ?? 0) + 1;
     const row = {
-      type: r.type,
+      // validate() turned away the types an account doesn't store.
+      type: r.type as Exclude<SyncRecord['type'], 'device'>,
       recordId: r.id,
       data: r.deleted ? null : r.data,
       hlc: r.hlc,
@@ -185,6 +186,8 @@ export function validate(r: SyncRecord): string | null {
   if (!r || typeof r !== 'object') return 'not an object';
   if (!isStr(r.id, 200) || !r.id) return 'bad id';
   if (!isValidHlc(r.hlc)) return 'bad hlc';
+  // Device records belong to sync chains, which a server account isn't.
+  if (r.type === 'device') return 'unknown type';
   if (r.deleted) return r.type === 'setting' && !isSyncedSettingKey(r.id) ? 'bad setting' : null;
 
   const d = r.data as unknown as Record<string, unknown> | undefined;

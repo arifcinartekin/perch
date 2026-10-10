@@ -312,6 +312,47 @@ final class RelayProtocol: URLProtocol, @unchecked Sendable {
       contentHtml: nil, enclosures: [])
   }
 
+  @Test func notesTravelBetweenDevices() async throws {
+    RelayProtocol.chains = [:]
+    let code = ChainCode.format(ChainCode.newSecret())
+    let phone = try await device("phone", code: code)
+    try await phone.client.create()
+    let tablet = try await device("tablet", code: code)
+    let source = NoteSource(
+      feedId: "f1", articleId: "a1", title: "An article", url: nil, feedTitle: nil)
+    _ = try await phone.backend.saveNote(source, body: "A thought")
+    _ = try await phone.sync()
+    _ = try await tablet.sync()
+    #expect(try await tablet.backend.notes().map(\.body) == ["A thought"])
+  }
+
+  @Test func devicesListThemselvesAndCanBeForgotten() async throws {
+    RelayProtocol.chains = [:]
+    let code = ChainCode.format(ChainCode.newSecret())
+    let phone = try await device("phone", code: code)
+    try await phone.client.create()
+    let tablet = try await device("tablet", code: code)
+    _ = try await phone.backend.syncChain(
+      keys: phone.keys, client: phone.client, node: "phone",
+      device: ChainDevice(name: "iPhone", platform: "ios"))
+    _ = try await tablet.backend.syncChain(
+      keys: tablet.keys, client: tablet.client, node: "tablet",
+      device: ChainDevice(name: "iPad", platform: "ios"))
+    _ = try await phone.sync()
+    #expect(await phone.backend.chainState().devices?.keys.sorted() == ["phone", "tablet"])
+    #expect(await tablet.backend.chainState().devices?["phone"]?.name == "iPhone")
+
+    await phone.backend.forgetChainDevice("tablet")
+    _ = try await phone.sync()
+    _ = try await tablet.sync()
+    #expect(await tablet.backend.chainState().devices?["tablet"] == nil)
+
+    // Leaving takes a device off the others' lists.
+    await phone.backend.announceLeaving(keys: phone.keys, client: phone.client, node: "phone")
+    _ = try await tablet.sync()
+    #expect(await tablet.backend.chainState().devices?["phone"] == nil)
+  }
+
   @Test func twoPhonesShareALibrary() async throws {
     RelayProtocol.chains = [:]
     let code = ChainCode.format(ChainCode.newSecret())

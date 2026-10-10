@@ -6,13 +6,15 @@ import {
   normalizeChainCode,
   parseChainLink,
 } from '@perch/core/chain';
+import { DEVICE_REFRESH_MS, Hlc } from '@perch/core/sync';
 import { relativeTime } from '@perch/core/time';
 import { suggestUsername } from '@perch/core/username';
 import { Button, Dialog, RecoveryCode, Row, Section, Spinner, useToast } from '@perch/reader';
 import { sendMessage } from '@/lib/messaging';
 import { requestHostPermission } from '@/lib/permissions/host';
 import { DEFAULT_HUB } from '@/lib/community';
-import { createChain, deleteChain, joinChain } from '@/lib/sync/chain';
+import { chainApi, createChain, deleteChain, joinChain } from '@/lib/sync/chain';
+import { forgetDevice, getDevices, watchDevices, type DeviceMap } from '@/lib/sync/devices';
 import {
   ServerError,
   deleteAccount,
@@ -268,6 +270,12 @@ function ChainConnected({
   };
 
   const leave = async () => {
+    // Take this browser off the others' device lists on the way out.
+    const hlc = new Hlc(account.node);
+    if (status.hlc) hlc.receive(status.hlc);
+    await chainApi(account)
+      .push([{ type: 'device', id: account.node, hlc: hlc.now(), deleted: true }])
+      .catch(() => undefined);
     await clearAccount();
     toast('Left the chain. Everything stays on this device.', 'info');
   };
@@ -316,6 +324,7 @@ function ChainConnected({
       {status.lastError && (
         <p className="text-[11.5px] text-[#ef4444]">Last sync failed: {status.lastError}</p>
       )}
+      <ChainDevices node={account.node} />
       <div className="flex gap-2">
         <Button size="sm" variant="ghost" onClick={leave}>
           Leave chain
@@ -348,6 +357,53 @@ function ChainConnected({
         </Dialog>
       )}
     </>
+  );
+}
+
+/** The devices in the chain, as each describes itself (sealed, so the relay can't see). */
+function ChainDevices({ node }: { node: string }) {
+  const [devices, setDevices] = useState<DeviceMap>({});
+  useEffect(() => {
+    const load = () => void getDevices().then(setDevices);
+    load();
+    return watchDevices(load);
+  }, []);
+  const list = Object.entries(devices).sort(
+    ([a, x], [b, y]) => Number(b === node) - Number(a === node) || y.seenAt - x.seenAt,
+  );
+  if (!list.length) return null;
+  return (
+    <div className="flex flex-col gap-1.5">
+      <div className="text-[11.5px] font-semibold uppercase tracking-wide text-[var(--text-faint)]">
+        Devices
+      </div>
+      {list.map(([id, d]) => (
+        <div key={id} className="flex items-center gap-2 text-[12.5px]">
+          <span className="flex-1">
+            {d.name}
+            <span className="ml-2 text-[var(--text-faint)]">
+              {id === node
+                ? 'this browser'
+                : Date.now() - d.seenAt < DEVICE_REFRESH_MS * 2
+                  ? 'active'
+                  : `last seen ${relativeTime(d.seenAt)}`}
+            </span>
+          </span>
+          {id !== node && (
+            <button
+              type="button"
+              className="text-[11.5px] text-[var(--text-faint)] hover:text-[var(--text)]"
+              onClick={() => void forgetDevice(id)}
+            >
+              Forget
+            </button>
+          )}
+        </div>
+      ))}
+      <p className="text-[11px] text-[var(--text-faint)]">
+        Forgetting only hides a device. To cut one off, delete the chain and start a new one.
+      </p>
+    </div>
   );
 }
 

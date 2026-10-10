@@ -245,7 +245,8 @@ public struct ChainKeys: Sendable {
         authenticating: Self.additionalData(stored.key, stored.hlc, stored.deleted)),
       case .object(let body)? = try? JSONDecoder().decode(JSONValue.self, from: plain),
       case .string(let type)? = body["type"], case .string(let id)? = body["id"],
-      ["feed", "category", "setting", "state"].contains(type),
+      // Must list every type the other clients seal (RECORD_TYPES in chain.ts).
+      ["feed", "category", "setting", "state", "note", "device"].contains(type),
       slot(type: type, id: id) == stored.key
     else { return nil }
     let data = stored.deleted ? nil : body["data"]

@@ -76,7 +76,7 @@ struct ChainSettingsView: View {
         .surfaceRow()
     } footer: {
       Text(
-        "Started in the browser extension? Choose Join and enter its code, or scan its QR code with the Camera app. Each device fetches the feeds itself."
+        "Started in the browser extension? Choose Join, then scan its QR code or enter its code. Each device fetches the feeds itself."
       )
     }
   }
@@ -141,6 +141,44 @@ struct ChainSettingsView: View {
         )
       }
 
+      if !chain.devices.isEmpty {
+        Section {
+          ForEach(sortedDevices(account), id: \.id) { id, device in
+            LabeledContent {
+              if id == account.node {
+                Text("This iPhone").foregroundStyle(theme.muted)
+              } else if Date.now.timeIntervalSince1970 * 1000 - device.seenAt
+                < ChainDevice.refresh * 2
+              {
+                Text("Active").foregroundStyle(theme.muted)
+              } else {
+                Text(
+                  Date(timeIntervalSince1970: device.seenAt / 1000),
+                  format: .relative(presentation: .named)
+                )
+                .foregroundStyle(theme.muted)
+              }
+            } label: {
+              Label(device.name, systemImage: icon(device.platform))
+            }
+            .surfaceRow()
+            .swipeActions {
+              if id != account.node {
+                Button("Forget", role: .destructive) {
+                  Task { if let local { await chain.forget(id, local) } }
+                }
+              }
+            }
+          }
+        } header: {
+          Text("Devices")
+        } footer: {
+          Text(
+            "Swipe to forget a device you no longer use. That only hides it: to cut a device off, delete the chain and start a new one."
+          )
+        }
+      }
+
       Section {
         Button("Leave chain") { Task { await leave() } }
           .surfaceRow()
@@ -172,6 +210,20 @@ struct ChainSettingsView: View {
         .foregroundStyle(theme.muted)
     } else {
       Text("On").foregroundStyle(theme.muted)
+    }
+  }
+
+  private func sortedDevices(_ account: ChainAccount) -> [(id: String, device: ChainDevice)] {
+    chain.devices.map { (id: $0.key, device: $0.value) }.sorted {
+      ($0.id == account.node ? 1 : 0, $0.device.seenAt) > ($1.id == account.node ? 1 : 0, $1.device.seenAt)
+    }
+  }
+
+  private func icon(_ platform: String) -> String {
+    switch platform {
+    case "ios": "iphone"
+    case "chrome", "firefox": "macwindow"
+    default: "desktopcomputer"
     }
   }
 
@@ -256,6 +308,7 @@ struct JoinChainView: View {
   var code = ""
 
   @State private var typed = ""
+  @State private var scanning = false
   @State private var relay = ""
   @State private var otherRelay = false
   @State private var busy = false
@@ -277,6 +330,13 @@ struct JoinChainView: View {
             .surfaceRow()
         }
       } else {
+        Section {
+          Button("Scan QR code", systemImage: "qrcode.viewfinder") { scanning = true }
+            .surfaceRow()
+        } footer: {
+          Text("Scan the QR code shown on the device that started the chain, or type its code below.")
+        }
+
         Section {
           TextField("Chain code", text: $typed, prompt: Text(verbatim: "7GQ2-M4XD-…"))
             .font(.system(.body, design: .monospaced))
@@ -329,6 +389,12 @@ struct JoinChainView: View {
       }
     }
     .perchBackdrop()
+    .sheet(isPresented: $scanning) {
+      ChainQRScanner { url in
+        typed = url.absoluteString
+        join()
+      }
+    }
     .navigationTitle("Join a chain")
     .navigationBarTitleDisplayMode(.inline)
     .toolbar {

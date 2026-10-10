@@ -1,6 +1,7 @@
 import { stateRecordId, type StateRecordData } from '@perch/core/sync';
 import type { Article } from '@perch/core/types';
 import { getLocal, setLocal, watchLocal } from '../storage/local';
+import { saveDevices, saveForgotten } from './devices';
 
 // Device-local sync bookkeeping, in storage.local. None of it is itself synced.
 
@@ -72,6 +73,8 @@ export async function saveAccount(account: SyncAccount): Promise<void> {
   await setLocal(SYNC_KEYS.status, { cursor: 0 } satisfies SyncStatus);
   await setLocal(SYNC_KEYS.shadow, {});
   await setLocal(SYNC_KEYS.outbox, {});
+  await saveDevices({});
+  await saveForgotten([]);
   await setLocal(SYNC_KEYS.account, account);
 }
 
@@ -80,6 +83,8 @@ export async function clearAccount(): Promise<void> {
   await setLocal(SYNC_KEYS.status, { cursor: 0 } satisfies SyncStatus);
   await setLocal(SYNC_KEYS.shadow, {});
   await setLocal(SYNC_KEYS.outbox, {});
+  await saveDevices({});
+  await saveForgotten([]);
 }
 
 /**

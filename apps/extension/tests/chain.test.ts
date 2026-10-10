@@ -62,16 +62,18 @@ async function device() {
   (globalThis as any).__deviceStore = store;
   globalThis.indexedDB = idb;
   vi.resetModules();
-  const [engine, state, chain, feeds, categories, settings, articles, db] = await Promise.all([
-    import('@/lib/sync/engine'),
-    import('@/lib/sync/state'),
-    import('@/lib/sync/chain'),
-    import('@/lib/storage/feeds'),
-    import('@/lib/storage/categories'),
-    import('@/lib/storage/settings'),
-    import('@/lib/storage/articles'),
-    import('@/lib/storage/db'),
-  ]);
+  const [engine, state, chain, feeds, categories, settings, articles, db, devices] =
+    await Promise.all([
+      import('@/lib/sync/engine'),
+      import('@/lib/sync/state'),
+      import('@/lib/sync/chain'),
+      import('@/lib/storage/feeds'),
+      import('@/lib/storage/categories'),
+      import('@/lib/storage/settings'),
+      import('@/lib/storage/articles'),
+      import('@/lib/storage/db'),
+      import('@/lib/sync/devices'),
+    ]);
   await db.getDB();
   const activate = () => {
     (globalThis as any).__deviceStore = store;
@@ -96,6 +98,7 @@ async function device() {
     categories: bind(categories),
     settings: bind(settings),
     articles: bind(articles),
+    devices: bind(devices),
     sync: () => {
       activate();
       return engine.syncNow();
@@ -142,6 +145,14 @@ describe('sync chains', () => {
     expect(feed).toMatchObject({ url: FEED_URL, title: 'Blog', categoryId: tech.id });
     expect((await phone.categories.getCategories()).map((c) => c.name)).toContain('Tech');
     expect((await phone.settings.getSettings()).theme).toBe('dark');
+
+    // Each device lists itself in the chain; the relay can't read the names.
+    await laptop.sync();
+    const listed = await laptop.devices.getDevices();
+    expect(Object.keys(listed).sort()).toEqual(
+      [account.node, (await phone.state.getAccount())!.node].sort(),
+    );
+    expect(JSON.stringify(ctx.db.select().from(chainRecords).all())).not.toContain('Chrome');
 
     // Read on the laptop, starred on the phone: both arrive on both.
     const [a, b] = (await laptop.articles.listArticles({})).items.sort((x, y) =>

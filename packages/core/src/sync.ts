@@ -8,7 +8,7 @@ import type { Settings } from './types';
 // the server, in personal mode) fetches feeds itself, and ids are derived from
 // URLs and guids, so the same article has the same id everywhere.
 
-export type RecordType = 'feed' | 'category' | 'setting' | 'state' | 'note';
+export type RecordType = 'feed' | 'category' | 'setting' | 'state' | 'note' | 'device';
 
 /** A subscription. id = feedIdFor(url). */
 export interface FeedRecordData {
@@ -38,6 +38,22 @@ export interface StateRecordData {
   starred: boolean;
 }
 
+/**
+ * A device in a sync chain, so the others can list it. id = the device's
+ * clock node. Chains only: it's sealed like every chain record, so the relay
+ * can't see device names.
+ */
+export interface DeviceRecordData {
+  /** "Chrome on macOS", "iPhone". */
+  name: string;
+  platform: 'chrome' | 'firefox' | 'ios' | 'web' | string;
+  /** Refreshed about once a day while the device syncs. */
+  seenAt: number;
+}
+
+/** How often a device refreshes its record, and when the others call it inactive. */
+export const DEVICE_REFRESH_MS = 12 * 60 * 60 * 1000;
+
 export interface RecordDataMap {
   feed: FeedRecordData;
   category: CategoryRecordData;
@@ -45,6 +61,7 @@ export interface RecordDataMap {
   state: StateRecordData;
   /** A note on an article. id = stateRecordId(feedId, articleId). */
   note: NoteRecordData;
+  device: DeviceRecordData;
 }
 
 export interface SyncRecord<T extends RecordType = RecordType> {
