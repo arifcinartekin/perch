@@ -366,6 +366,7 @@ function RecoverySection({ user }: { user: PublicUser }) {
         <div className="px-1 pb-2">
           <RecoveryCode
             code={shown}
+            username={user.username}
             host={location.host}
             doneLabel="Done"
             onDone={() => setShown(null)}

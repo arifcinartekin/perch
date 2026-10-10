@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { downloadText } from '../lib/download';
+import { recoveryPdf } from '@perch/core/recovery-pdf';
 import { Button } from './Button';
 
 // The recovery code, shown once after it's made. The server keeps only its
@@ -7,11 +7,13 @@ import { Button } from './Button';
 
 export function RecoveryCode({
   code,
+  username,
   host,
   onDone,
   doneLabel = 'Continue',
 }: {
   code: string;
+  username: string;
   host: string;
   onDone: () => void;
   doneLabel?: string;
@@ -41,15 +43,16 @@ export function RecoveryCode({
           size="sm"
           variant="default"
           type="button"
-          onClick={() =>
-            downloadText(
-              `perch-recovery-${host}.txt`,
-              `Perch recovery code for ${host}\n\n${code}\n`,
-              'text/plain',
-            )
-          }
+          onClick={() => {
+            const url = URL.createObjectURL(recoveryPdf({ code, username, host }));
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `perch-recovery-${username}.pdf`;
+            a.click();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+          }}
         >
-          Save as file
+          Save as PDF
         </Button>
       </div>
       <label className="flex items-center gap-2 text-[12.5px] text-[var(--text-muted)]">

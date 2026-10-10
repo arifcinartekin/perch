@@ -7,6 +7,7 @@ import {
   parseChainLink,
 } from '@perch/core/chain';
 import { relativeTime } from '@perch/core/time';
+import { suggestUsername } from '@perch/core/username';
 import { Button, Dialog, RecoveryCode, Row, Section, Spinner, useToast } from '@perch/reader';
 import { sendMessage } from '@/lib/messaging';
 import { requestHostPermission } from '@/lib/permissions/host';
@@ -644,6 +645,7 @@ function SignInForm({
         <div className="text-[13px] font-medium">Save your recovery code</div>
         <RecoveryCode
           code={created.code}
+          username={created.account.username}
           host={host}
           onDone={async () => {
             await saveAccount(created.account);
@@ -724,6 +726,17 @@ function SignInForm({
               autoCapitalize="off"
             />
           )}
+          {mode === 'up' && (
+            <Button
+              size="sm"
+              variant="default"
+              type="button"
+              title="Suggest a username"
+              onClick={() => setUsername(suggestUsername())}
+            >
+              Suggest
+            </Button>
+          )}
           <input
             className={inputClass}
             type="password"
@@ -734,6 +747,12 @@ function SignInForm({
             autoFocus={Boolean(initial)}
           />
         </div>
+      )}
+      {mode === 'up' && emailStep !== 'address' && (
+        <p className="text-[11.5px] leading-relaxed text-[var(--text-faint)]">
+          Your username is shown on notes you share. Don’t use your real name or anything that
+          identifies you.
+        </p>
       )}
       {mode === 'recover' && (
         <input

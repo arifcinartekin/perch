@@ -461,7 +461,10 @@ struct RecoveryCodeSettingsView: View {
       Form {
         if let code {
           Section {
-            RecoveryCodeView(code: code, host: session.server?.host() ?? "", doneTitle: "Done") {
+            RecoveryCodeView(
+              code: code, username: session.user?.username ?? session.username ?? "",
+              host: session.server?.host() ?? "", doneTitle: "Done"
+            ) {
               dismiss()
             }
           }

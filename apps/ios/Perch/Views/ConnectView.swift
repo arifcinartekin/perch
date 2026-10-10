@@ -204,7 +204,10 @@ struct ConnectView: View {
     if let created {
       VStack(alignment: .leading, spacing: 14) {
         Text("Save your recovery code").font(.headline)
-        RecoveryCodeView(code: created.code, host: url.host() ?? url.absoluteString) {
+        RecoveryCodeView(
+          code: created.code, username: created.res.user.username,
+          host: url.host() ?? url.absoluteString
+        ) {
           Task { await session.finishSignUp(server: url, created.res) }
         }
       }
@@ -331,14 +334,27 @@ struct ConnectView: View {
         .foregroundStyle(theme.muted)
     }
     if !resetting {
-      TextField("Username", text: $username)
-        .textContentType(.username)
-        .textInputAutocapitalization(.never)
-        .autocorrectionDisabled()
-        .focused($focus, equals: .username)
-        .submitLabel(.next)
-        .onSubmit { focus = recovering ? .recovery : .password }
-        .fieldStyle()
+      HStack(spacing: 10) {
+        TextField("Username", text: $username)
+          .textContentType(.username)
+          .textInputAutocapitalization(.never)
+          .autocorrectionDisabled()
+          .focused($focus, equals: .username)
+          .submitLabel(.next)
+          .onSubmit { focus = recovering ? .recovery : .password }
+          .fieldStyle()
+        if creating {
+          Button("Suggest", systemImage: "dice") { username = UsernameSuggestion.make() }
+            .labelStyle(.iconOnly)
+            .buttonStyle(.glass)
+            .accessibilityLabel("Suggest a username")
+        }
+      }
+      if creating {
+        Text("Your username is shown on notes you share. Don't use your real name or anything that identifies you.")
+          .font(.footnote)
+          .foregroundStyle(theme.muted)
+      }
     }
     if recovering {
       TextField("Recovery code", text: $recoveryInput)

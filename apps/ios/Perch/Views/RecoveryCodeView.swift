@@ -5,12 +5,14 @@ import SwiftUI
 struct RecoveryCodeView: View {
   @Environment(\.theme) private var theme
   let code: String
+  let username: String
   let host: String
   var doneTitle: LocalizedStringKey = "Continue"
   let onDone: () -> Void
 
   @State private var saved = false
   @State private var copied = false
+  @State private var pdf: URL?
 
   var body: some View {
     VStack(alignment: .leading, spacing: 14) {
@@ -33,8 +35,10 @@ struct RecoveryCodeView: View {
           copied = true
         }
         Spacer()
-        ShareLink(item: "Perch recovery code for \(host)\n\n\(code)") {
-          Label("Save…", systemImage: "square.and.arrow.up")
+        if let pdf {
+          ShareLink(item: pdf) {
+            Label("Save as PDF…", systemImage: "square.and.arrow.down")
+          }
         }
       }
       .font(.subheadline.weight(.medium))
@@ -53,5 +57,6 @@ struct RecoveryCodeView: View {
       .tint(theme.button)
       .disabled(!saved)
     }
+    .task { pdf = RecoveryPDF.write(code: code, username: username, host: host) }
   }
 }

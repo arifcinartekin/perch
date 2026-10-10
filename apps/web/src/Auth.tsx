@@ -10,6 +10,7 @@ import type {
 import { DEFAULT_KDF, deriveKeys, newSalt } from '@perch/core/auth';
 import { proveSignup } from '@perch/core/pow';
 import { newRecoveryCode } from '@perch/core/recovery';
+import { suggestUsername } from '@perch/core/username';
 import { Button, PerchLogo, RecoveryCode } from '@perch/reader';
 import { ServerError, api } from './api';
 
@@ -153,6 +154,7 @@ export function Auth({
           <h2 className="mb-3 text-[15px] font-semibold">Save your recovery code</h2>
           <RecoveryCode
             code={created.code}
+            username={created.user.username}
             host={location.host}
             onDone={() => onSignedIn(created.user)}
           />
@@ -230,16 +232,34 @@ export function Auth({
               </p>
             )}
             {mode !== 'reset' && (
-              <input
-                className={inputClass}
-                placeholder="Username"
-                autoComplete="username"
-                autoCapitalize="off"
-                spellCheck={false}
-                autoFocus={!sentTo}
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-              />
+              <div className="flex gap-2">
+                <input
+                  className={inputClass}
+                  placeholder="Username"
+                  autoComplete="username"
+                  autoCapitalize="off"
+                  spellCheck={false}
+                  autoFocus={!sentTo}
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                />
+                {mode === 'up' && (
+                  <Button
+                    variant="default"
+                    type="button"
+                    title="Suggest a username"
+                    onClick={() => setUsername(suggestUsername())}
+                  >
+                    Suggest
+                  </Button>
+                )}
+              </div>
+            )}
+            {mode === 'up' && (
+              <p className="text-[11.5px] leading-relaxed text-[var(--text-faint)]">
+                Your username is shown on notes you share. Don’t use your real name or anything that
+                identifies you.
+              </p>
             )}
             {mode === 'recover' && (
               <input

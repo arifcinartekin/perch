@@ -34,3 +34,15 @@ describe('recovery codes', () => {
     expect(formatRecoveryCode(raw)).toBe(code);
   });
 });
+
+describe('suggested usernames', async () => {
+  const { normalizeUsername, suggestUsername, usernameProblem } = await import('../src/username');
+  it('are valid and vary', () => {
+    const names = new Set(Array.from({ length: 50 }, suggestUsername));
+    for (const name of names) {
+      expect(normalizeUsername(name)).toBe(name);
+      expect(usernameProblem(name)).toBeNull();
+    }
+    expect(names.size).toBeGreaterThan(40);
+  });
+});

@@ -41,6 +41,7 @@
 		ACAD3E4D8FB017B803231DD3 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B00D3F911F440538B501763 /* SettingsView.swift */; };
 		C0FA23DD4FD6880334ED109A /* PerchWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 756CEA9C9B1C110A1E27B59A /* PerchWidgets.swift */; };
 		C29B92C76B861FF08D135E51 /* PerchWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 41DD0921F6DAAC3FC42FC199 /* PerchWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		C4B9F75F8C58BA1709DC3215 /* RecoveryPDF.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76E2011C3C0551AB9424D215 /* RecoveryPDF.swift */; };
 		C5D454879992C50B9D388CCD /* WidgetSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C002131DCED71D23198C29F /* WidgetSnapshot.swift */; };
 		C7FE0EA06BE6282AA1BDF852 /* ChainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FA84189C9C85EF03F9C74AB /* ChainView.swift */; };
 		C8B0B9C201E2B46B332B32F3 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 784DC81B4DF2892831D4E1BF /* Localizable.xcstrings */; };
@@ -110,6 +111,7 @@
 		70BBDD6EDC6471189293BDD1 /* PerchLogoDrawing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerchLogoDrawing.swift; sourceTree = "<group>"; };
 		756CEA9C9B1C110A1E27B59A /* PerchWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerchWidgets.swift; sourceTree = "<group>"; };
 		76BBF3114C6EAD96BD58E6A2 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		76E2011C3C0551AB9424D215 /* RecoveryPDF.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecoveryPDF.swift; sourceTree = "<group>"; };
 		784DC81B4DF2892831D4E1BF /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		82260F0564F0916912CA9610 /* Glance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Glance.swift; sourceTree = "<group>"; };
 		8FA84189C9C85EF03F9C74AB /* ChainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainView.swift; sourceTree = "<group>"; };
@@ -201,6 +203,7 @@
 				D2C6F632894A32B83E38C56E /* NoteViews.swift */,
 				16D59EB0C384D24D03E73507 /* OfflineSettingsView.swift */,
 				B33E132281CEFE3D5A1B0680 /* RecoveryCodeView.swift */,
+				76E2011C3C0551AB9424D215 /* RecoveryPDF.swift */,
 				1B00D3F911F440538B501763 /* SettingsView.swift */,
 			);
 			path = Views;
@@ -454,6 +457,7 @@
 				9E62F76BCEC0A952AA8F3736 /* PerchLogoDrawing.swift in Sources */,
 				467A098C9959101B6914679F /* Reader.swift in Sources */,
 				56880F4CEC3AB4715CDA8CAC /* RecoveryCodeView.swift in Sources */,
+				C4B9F75F8C58BA1709DC3215 /* RecoveryPDF.swift in Sources */,
 				241FF41B2764A040F6F901C6 /* Session.swift in Sources */,
 				ACAD3E4D8FB017B803231DD3 /* SettingsView.swift in Sources */,
 				4FA21E71EC99A47ADAFCA162 /* WidgetSnapshot.swift in Sources */,

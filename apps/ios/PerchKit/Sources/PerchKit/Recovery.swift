@@ -66,3 +66,24 @@ public enum ProofOfWork {
     }.value
   }
 }
+
+/// Suggested usernames, as in @perch/core/username: two plain words and a
+/// number, so nobody has to put their own name on a public profile.
+public enum UsernameSuggestion {
+  static let adjectives = [
+    "quiet", "amber", "misty", "calm", "brisk", "gentle", "golden", "hidden", "lucky", "mellow",
+    "nimble", "patient", "rustic", "silver", "sleepy", "steady", "sunny", "tidy", "wild", "windy",
+    "bright", "cosy", "curious", "dusky", "early", "fuzzy", "hazel", "humble", "jolly", "little",
+    "lofty", "merry", "olive", "plucky", "rapid", "shy", "snowy", "swift", "velvet", "wandering",
+  ]
+  static let nouns = [
+    "heron", "finch", "wren", "robin", "owl", "sparrow", "swallow", "lark", "kestrel", "puffin",
+    "otter", "badger", "fox", "hare", "lynx", "marten", "beaver", "seal", "moth", "beetle",
+    "birch", "cedar", "fern", "maple", "willow", "pine", "reed", "moss", "brook", "cove",
+    "dune", "glade", "harbor", "meadow", "pebble", "ridge", "tide", "valley", "reader", "page",
+  ]
+
+  public static func make() -> String {
+    "\(adjectives.randomElement()!)_\(nouns.randomElement()!)\(Int.random(in: 10...99))"
+  }
+}

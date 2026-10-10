@@ -92,6 +92,16 @@
     "%lld%@": {
       "shouldTranslate": false
     },
+    "1. Open Perch, choose Sign in, then \"Forgot your password?\".\n2. Enter your username, this code and a new password.\n3. Your other devices are signed out. You can make a new code in Settings, which replaces this one.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1. Perch'ü aç, Giriş yap'ı, ardından \"Şifreni mi unuttun?\"u seç.\n2. Kullanıcı adını, bu kodu ve yeni bir şifre gir.\n3. Diğer cihazlarının oturumu kapanır. Ayarlar'dan bunun yerini alacak yeni bir kod oluşturabilirsin."
+          }
+        }
+      }
+    },
     "A calm place for your feeds": {
       "localizations": {
         "tr": {
@@ -1198,6 +1208,16 @@
         }
       }
     },
+    "For @%@ on %@": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%2$@ üzerinde @%1$@ için"
+          }
+        }
+      }
+    },
     "Forgot your password?": {
       "localizations": {
         "tr": {
@@ -1274,6 +1294,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Kurtarma kodumu kaydettim"
+          }
+        }
+      }
+    },
+    "If you forget your password, this code is the only way back into your account. The server keeps only a scrambled copy, so nobody can tell it to you again. Store it somewhere private: a password manager, or printed and put away. Anyone with this code and your username can set a new password for your account.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Şifreni unutursan hesabına dönmenin tek yolu bu kod. Sunucu yalnızca karıştırılmış bir kopyasını saklar; bu yüzden kimse onu sana tekrar söyleyemez. Gizli bir yerde sakla: bir parola yöneticisinde ya da yazdırıp kaldırarak. Bu koda ve kullanıcı adına sahip olan herkes hesabın için yeni bir şifre belirleyebilir."
           }
         }
       }
@@ -1408,6 +1438,26 @@
         }
       }
     },
+    "Keep it safe": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Güvende tut"
+          }
+        }
+      }
+    },
+    "Keep this page private.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu sayfayı kimseyle paylaşma."
+          }
+        }
+      }
+    },
     "Keep unread": {
       "localizations": {
         "tr": {
@@ -1524,6 +1574,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Makaleler yükleniyor"
+          }
+        }
+      }
+    },
+    "Made on %@": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Oluşturulma: %@"
           }
         }
       }
@@ -2340,6 +2400,16 @@
         }
       }
     },
+    "Save as PDF…": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PDF olarak kaydet…"
+          }
+        }
+      }
+    },
     "Save your recovery code": {
       "localizations": {
         "tr": {
@@ -2672,6 +2742,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Depolama"
+          }
+        }
+      }
+    },
+    "Suggest": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Öner"
+          }
+        }
+      }
+    },
+    "Suggest a username": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kullanıcı adı öner"
           }
         }
       }
@@ -3030,6 +3120,16 @@
         }
       }
     },
+    "To use it": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nasıl kullanılır"
+          }
+        }
+      }
+    },
     "Transparency": {
       "localizations": {
         "tr": {
@@ -3326,6 +3426,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Notun · Düzenle"
+          }
+        }
+      }
+    },
+    "Your username is shown on notes you share. Don't use your real name or anything that identifies you.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kullanıcı adın paylaştığın notlarda görünür. Gerçek adını ya da seni tanıtan herhangi bir şeyi kullanma."
           }
         }
       }
