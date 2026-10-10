@@ -326,6 +326,18 @@ export function authRoutes(ctx: AppContext) {
     return issue(c, user, str(body, 'deviceName', { max: 80, optional: true }));
   });
 
+  // Works whether or not the server sends email, so an address added while it
+  // did can always be taken off.
+  app.delete('/email', auth, (c) => {
+    const user = db
+      .update(users)
+      .set({ emailId: null })
+      .where(eq(users.id, c.get('user').id))
+      .returning()
+      .get()!;
+    return c.json({ user: publicUser(user) });
+  });
+
   app.post('/email', auth, async (c) => {
     const body = await jsonBody(c);
     const email = await idOf(normalizeEmail(str(body, 'email', { max: 320 })));

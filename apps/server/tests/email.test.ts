@@ -283,3 +283,23 @@ describe('servers that stored addresses before', () => {
     }
   });
 });
+
+describe('removing the address', () => {
+  it('works even when the server no longer sends email', async () => {
+    const t = setup({ signup: 'email' }, { email: true });
+    await t.call('POST', '/auth/email/code', {
+      body: { email: 'ada@example.com', purpose: 'signup' },
+    });
+    const ada = await t.register('ada', {
+      email: 'ada@example.com',
+      emailCode: t.mailer!.codeFor('ada@example.com'),
+    });
+    expect(ada.body.user.hasEmail).toBe(true);
+    const res = await t.call('DELETE', '/auth/email', { token: ada.token });
+    expect(res.body.user.hasEmail).toBeUndefined();
+    expect((await t.call('GET', '/auth/me', { token: ada.token })).body.user.hasEmail).toBe(
+      undefined,
+    );
+    t.close();
+  });
+});

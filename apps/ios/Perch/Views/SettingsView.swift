@@ -20,6 +20,7 @@ struct SettingsView: View {
   /// runs it is responsible for it) and whether it takes recovery codes.
   @State private var serverInfo: ServerInfo?
   @State private var makingRecoveryCode = false
+  @State private var confirmingEmailRemoval = false
   @State private var importing = false
   @State private var exported: ExportedFile?
   @State private var exporting = false
@@ -239,14 +240,33 @@ struct SettingsView: View {
 
   private var account: some View {
     Section("Account") {
-      Button { changingEmail = true } label: {
-        LabeledContent {
-          Text(session.user?.hasEmail == true ? String(localized: "Added") : String(localized: "Add"))
+      // Servers that don't send email have no use for an address; one added
+      // while they did can still be removed.
+      if serverInfo?.email == true || session.user?.hasEmail == true {
+        Button {
+          if serverInfo?.email == true { changingEmail = true } else { confirmingEmailRemoval = true }
         } label: {
-          Label("Email", systemImage: "envelope")
+          LabeledContent {
+            Text(
+              session.user?.hasEmail == true ? String(localized: "Added") : String(localized: "Add"))
+          } label: {
+            Label("Email", systemImage: "envelope")
+          }
+        }
+        .surfaceRow()
+        .confirmationDialog(
+          "Remove your email address?", isPresented: $confirmingEmailRemoval,
+          titleVisibility: .visible
+        ) {
+          Button("Remove", role: .destructive) {
+            Task {
+              do { try await session.removeEmail() } catch { message = error.localizedDescription }
+            }
+          }
+        } message: {
+          Text("This server doesn't send email, so the address isn't used.")
         }
       }
-      .surfaceRow()
       Button("Change password…", systemImage: "key") { changingPassword = true }
         .surfaceRow()
       if serverInfo?.recovery == true {
@@ -630,6 +650,22 @@ struct EmailView: View {
             Text(
               "Used only to reset your password. The server keeps a hash of it, not the address. We'll email you a code to confirm it."
             )
+          }
+        }
+        if sentTo == nil && session.user?.hasEmail == true {
+          Section {
+            Button("Remove email address", role: .destructive) {
+              busy = true
+              Task {
+                defer { busy = false }
+                do {
+                  try await session.removeEmail()
+                  dismiss()
+                } catch {
+                  self.error = error.localizedDescription
+                }
+              }
+            }
           }
         }
         if let error {

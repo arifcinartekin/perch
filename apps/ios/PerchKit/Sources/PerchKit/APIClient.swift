@@ -169,6 +169,13 @@ public final class APIClient: Sendable {
     return res.user
   }
 
+  /// Takes the address off the account. Works whether or not the server sends email.
+  public func removeEmail() async throws -> PublicUser {
+    struct Res: Decodable { var user: PublicUser }
+    let res: Res = try await send("auth/email", method: "DELETE", body: nil as String?)
+    return res.user
+  }
+
   /// Set a new password with an emailed code. Every other device is signed out.
   public func resetPassword(email: String, code: String, password: String, deviceName: String)
     async throws -> AuthResponse

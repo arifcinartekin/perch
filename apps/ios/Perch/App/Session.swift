@@ -115,6 +115,11 @@ final class Session {
     user = try await client.changeEmail(email: email, code: code)
   }
 
+  func removeEmail() async throws {
+    guard let client else { return }
+    user = try await client.removeEmail()
+  }
+
   func resetPassword(server: URL, email: String, code: String, password: String) async throws {
     let res = try await APIClient(baseURL: server).resetPassword(
       email: email, code: code, password: password, deviceName: Self.deviceName)

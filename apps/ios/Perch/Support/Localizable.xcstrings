@@ -2240,6 +2240,16 @@
         }
       }
     },
+    "Remove email address": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "E-posta adresini kaldır"
+          }
+        }
+      }
+    },
     "Remove photo": {
       "localizations": {
         "tr": {
@@ -2276,6 +2286,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Kaydedilen görselleri sil"
+          }
+        }
+      }
+    },
+    "Remove your email address?": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "E-posta adresin kaldırılsın mı?"
           }
         }
       }
@@ -3076,6 +3096,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Bu sunucu senkron zincirlerini aktarmıyor."
+          }
+        }
+      }
+    },
+    "This server doesn't send email, so the address isn't used.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu sunucu e-posta göndermiyor, bu yüzden adres kullanılmıyor."
           }
         }
       }

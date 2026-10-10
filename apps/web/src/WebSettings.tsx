@@ -60,7 +60,10 @@ function AccountSection({ user, onSignOut }: { user: PublicUser; onSignOut: () =
 const fieldClass =
   'w-full rounded-[9px] border border-[var(--border-strong)] bg-[var(--bg-solid)] px-3 py-1.5 text-[13px] outline-none focus:border-[var(--accent)]';
 
-/** Add or change the account's address, confirmed with an emailed code. Hidden when the server can't send mail. */
+/**
+ * Add or change the account's address, confirmed with an emailed code, or
+ * remove it. Hidden when the server can't send mail and there's none to remove.
+ */
 function EmailSection({ user }: { user: PublicUser }) {
   const toast = useToast();
   const [available, setAvailable] = useState(false);
@@ -76,7 +79,7 @@ function EmailSection({ user }: { user: PublicUser }) {
       () => {},
     );
   }, []);
-  if (!available) return null;
+  if (!available && !current) return null;
 
   const run = async (fn: () => Promise<void>) => {
     setBusy(true);
@@ -112,15 +115,39 @@ function EmailSection({ user }: { user: PublicUser }) {
       <Row
         label={current ? 'An email address is added' : 'No email address'}
         hint={
-          current
-            ? 'Used only to reset your password. The server keeps a hash of it, not the address, so it can’t show it here.'
-            : 'Add one so you can reset your password if you forget it.'
+          !available
+            ? 'This server doesn’t send email any more, so the address isn’t used. You can remove it.'
+            : current
+              ? 'Used only to reset your password. The server keeps a hash of it, not the address, so it can’t show it here.'
+              : 'Add one so you can reset your password if you forget it.'
         }
       >
         {!editing && (
-          <Button size="sm" variant="default" onClick={() => setEditing(true)}>
-            {current ? 'Change' : 'Add'}
-          </Button>
+          <div className="flex gap-2">
+            {available && (
+              <Button size="sm" variant="default" onClick={() => setEditing(true)}>
+                {current ? 'Change' : 'Add'}
+              </Button>
+            )}
+            {current && (
+              <Button
+                size="sm"
+                variant="ghost"
+                loading={busy}
+                onClick={() =>
+                  run(async () => {
+                    const res = await api<{ user: PublicUser }>('/auth/email', {
+                      method: 'DELETE',
+                    });
+                    setCurrent(!!res.user.hasEmail);
+                    toast('Email address removed', 'success');
+                  })
+                }
+              >
+                Remove
+              </Button>
+            )}
+          </div>
         )}
       </Row>
       {editing && (
