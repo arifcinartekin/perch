@@ -34,6 +34,12 @@ export interface ServerInfo {
   pow?: number;
   /** Accounts can set a recovery code and reset the password with it. */
   recovery?: boolean;
+  /**
+   * The commit this server was built from, as the image says. Official images
+   * are built and attested by the repository's CI, so this can be checked
+   * against the published provenance (see perch.ws/transparency).
+   */
+  build?: { commit: string; source: string };
 }
 
 export interface ApiError {

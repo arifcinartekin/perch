@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import type { PublicUser, SharedNoteSummary } from '@perch/core/api';
+import type { PublicUser, ServerInfo, SharedNoteSummary } from '@perch/core/api';
 import { relativeTime } from '@perch/core/time';
 import { Button, PerchLogo, Section, Spinner, ToastProvider, useToast } from '@perch/reader';
 import { ServerError, api } from './api';
@@ -9,7 +9,15 @@ import { WebSettings } from './WebSettings';
 // here, so it's your Perch account: the notes you've shared, and settings.
 // Reading happens in the extension and the iPhone app, synced by chain.
 
-export function Hub({ user, onSignOut }: { user: PublicUser; onSignOut: () => void }) {
+export function Hub({
+  user,
+  info,
+  onSignOut,
+}: {
+  user: PublicUser;
+  info: ServerInfo;
+  onSignOut: () => void;
+}) {
   return (
     <ToastProvider>
       <div className="min-h-screen px-4 py-8 text-[var(--text)]">
@@ -37,6 +45,24 @@ export function Hub({ user, onSignOut }: { user: PublicUser; onSignOut: () => vo
           <div className="glass rounded-[18px] p-5">
             <WebSettings user={user} onSignOut={onSignOut} hub />
           </div>
+
+          {info.build && (
+            <p className="px-1 text-center text-[11.5px] text-[var(--text-faint)]">
+              Running{' '}
+              <a
+                href={`${info.build.source}/commit/${info.build.commit}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-mono underline"
+              >
+                {info.build.commit.slice(0, 7)}
+              </a>{' '}
+              ·{' '}
+              <a href="https://perch.ws/transparency" className="underline">
+                how to check
+              </a>
+            </p>
+          )}
         </div>
       </div>
     </ToastProvider>

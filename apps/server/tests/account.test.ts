@@ -84,3 +84,17 @@ describe('configuration', () => {
     expect(config.chain).toBe(true);
   });
 });
+
+describe('build', () => {
+  it('reports the commit the image was built from', async () => {
+    const t = setup({ commit: 'abc1234def' });
+    expect((await t.call('GET', '/server')).body.build).toEqual({
+      commit: 'abc1234def',
+      source: 'https://github.com/arifcinartekin/perch',
+    });
+    t.close();
+    const plain = setup();
+    expect((await plain.call('GET', '/server')).body.build).toBeUndefined();
+    plain.close();
+  });
+});

@@ -153,6 +153,9 @@ export function createApp(ctx: AppContext) {
       needsSetup: users_ === 0,
       email: ctx.mailer != null,
       recovery: true,
+      ...(ctx.config.commit && {
+        build: { commit: ctx.config.commit, source: 'https://github.com/arifcinartekin/perch' },
+      }),
       ...(ctx.config.signupPow > 0 && { pow: ctx.config.signupPow }),
       ...((ctx.config.privacyUrl || ctx.config.termsUrl) && {
         legal: { privacy: ctx.config.privacyUrl, terms: ctx.config.termsUrl },

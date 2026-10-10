@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
-# Pulls the latest Perch, rebuilds and restarts it, then waits until it answers.
+# Pulls the latest Perch and restarts it, then waits until it answers. With
+# PERCH_IMAGE in .env (e.g. ghcr.io/arifcinartekin/perch-server) it runs the
+# image CI built and attested for the checked-out commit; otherwise it builds
+# one here.
 #   sudo /opt/perch/deploy/update.sh
 set -euo pipefail
 
@@ -11,7 +14,20 @@ if [[ "${1:-}" != --wait-only ]]; then
   echo "Now at $(git -C "$DIR" log -1 --format='%h %s')"
   # A copy of the database before the new version migrates it.
   "$DIR/deploy/backup.sh"
-  "${COMPOSE[@]}" up -d --build
+  export PERCH_COMMIT PERCH_IMAGE_TAG
+  PERCH_COMMIT="$(git -C "$DIR" rev-parse HEAD)"
+  if grep -qE '^PERCH_IMAGE=.+' "$DIR/deploy/.env" 2>/dev/null; then
+    PERCH_IMAGE_TAG="$PERCH_COMMIT"
+    if ! "${COMPOSE[@]}" pull -q perch; then
+      echo "No image for $PERCH_COMMIT yet; CI may still be building it. Try again in a few minutes."
+      exit 1
+    fi
+    "${COMPOSE[@]}" up -d
+    echo "Running $(docker inspect --format '{{index .RepoDigests 0}}' "$(grep -E '^PERCH_IMAGE=' "$DIR/deploy/.env" | cut -d= -f2-):$PERCH_COMMIT")"
+  else
+    PERCH_IMAGE_TAG=latest
+    "${COMPOSE[@]}" up -d --build
+  fi
   docker image prune -f >/dev/null
 fi
 

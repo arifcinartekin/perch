@@ -65,7 +65,14 @@ function App() {
   }
   // A hub keeps no libraries: its web app is the Perch account.
   if (session.info.mode === 'hub') {
-    return <Hub key={session.user.id} user={session.user} onSignOut={() => void check()} />;
+    return (
+      <Hub
+        key={session.user.id}
+        user={session.user}
+        info={session.info}
+        onSignOut={() => void check()}
+      />
+    );
   }
   return <Reader key={session.user.id} user={session.user} onSignOut={() => void check()} />;
 }

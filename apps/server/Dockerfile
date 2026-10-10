@@ -20,8 +20,14 @@ COPY apps/web apps/web
 RUN npm run build -w @perch/server && npm run build -w @perch/web
 
 FROM node:22-alpine
+# The commit this image is built from; CI sets it, and /api/v1/server reports it.
+ARG PERCH_COMMIT=
+LABEL org.opencontainers.image.source="https://github.com/arifcinartekin/perch" \
+      org.opencontainers.image.revision="${PERCH_COMMIT}" \
+      org.opencontainers.image.licenses="MIT"
 WORKDIR /app
 ENV NODE_ENV=production \
+    PERCH_COMMIT=${PERCH_COMMIT} \
     PORT=8080 \
     DATABASE_URL=/data/perch.db \
     PERCH_WEB_ROOT=/app/web

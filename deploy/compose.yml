@@ -1,14 +1,18 @@
 # Perch Server and Caddy (automatic HTTPS) on one machine.
-# setup.sh writes .env next to this file; update.sh rebuilds from the checkout.
+# setup.sh writes .env next to this file. update.sh either rebuilds from the
+# checkout, or (with PERCH_IMAGE set) runs the image CI built and attested for
+# the checked-out commit.
 
 name: perch
 
 services:
   perch:
-    image: perch/server
+    image: ${PERCH_IMAGE:-perch/server}:${PERCH_IMAGE_TAG:-latest}
     build:
       context: ..
       dockerfile: apps/server/Dockerfile
+      args:
+        PERCH_COMMIT: ${PERCH_COMMIT:-}
     restart: unless-stopped
     environment:
       PERCH_PUBLIC_URL: https://${PERCH_DOMAIN:?set PERCH_DOMAIN in .env}

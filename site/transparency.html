@@ -1,0 +1,165 @@
+<!doctype html>
+<html
+  lang="en"
+  data-title-tr="Şeffaflık — Perch"
+  data-description-tr="app.perch.ws'in hangi kodu çalıştırdığını nasıl kontrol edebileceğin."
+>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Transparency — Perch</title>
+    <meta name="description" content="How to check which code app.perch.ws runs." />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="sky" aria-hidden="true">
+      <span class="glow glow-1"></span>
+      <span class="glow glow-2"></span>
+    </div>
+
+    <header class="legal-bar">
+      <a class="home" href="/" aria-label="Perch">
+        <svg viewBox="39 53 440 440" aria-hidden="true">
+          <polygon style="fill: var(--accent)" points="362,132 462,168 372,192" />
+          <path
+            style="fill: var(--text)"
+            d="M 392 176 C 392 120 352 84 304 84 C 252 84 214 118 208 164 C 150 188 96 250 56 330 L 172 336 C 188 388 232 416 284 416 C 350 416 400 366 404 296 C 406 262 394 236 380 222 C 388 210 392 194 392 176 Z"
+          />
+          <g style="stroke: var(--accent)" fill="none" stroke-width="15" stroke-linecap="round">
+            <path d="M 214 266 A 64 64 0 0 1 278 330" />
+            <path d="M 214 216 A 114 114 0 0 1 328 330" />
+          </g>
+          <circle style="fill: var(--accent)" cx="214" cy="330" r="14" />
+          <circle style="fill: var(--logo-eye)" cx="338" cy="150" r="10" />
+          <rect style="fill: var(--logo-perch)" x="96" y="436" width="340" height="26" rx="13" />
+        </svg>
+        Perch
+      </a>
+      <button class="lang" type="button" data-lang-toggle aria-label="Türkçe">TR</button>
+    </header>
+
+    <!-- ===================================================================
+         English
+         =================================================================== -->
+    <main class="legal" data-lang="en">
+      <h1>Transparency</h1>
+      <p class="updated">
+        How to check what app.perch.ws runs · <a href="/privacy">Privacy policy</a>
+      </p>
+
+      <p>
+        Perch's privacy promises are meant to be checked, not taken on trust. There are two levels
+        to that, and it's worth being clear about which is which.
+      </p>
+
+      <h2>1. What the design guarantees</h2>
+      <p>
+        The strongest guarantee doesn't depend on our server at all. Sync chains are encrypted on
+        your devices with a key that never leaves them, and app.perch.ws keeps no libraries. Even a
+        server changed to misbehave couldn't read your feeds, what you read or your private notes.
+        You can check this in the open-source code of the apps, which is where the encryption
+        happens.
+      </p>
+
+      <h2>2. Which code the server runs</h2>
+      <p>
+        For the rest (accounts, shared notes, what the server logs) you need to know which code it
+        runs. Every server image is built by the project's public CI from a commit on GitHub,
+        published to GitHub's registry, and given a signed attestation saying exactly which commit
+        and workflow produced it. app.perch.ws runs those images and reports its commit:
+      </p>
+      <pre><code>curl -s https://app.perch.ws/api/v1/server</code></pre>
+      <p>
+        The <code>build.commit</code> it returns is a commit you can read on GitHub. To check that
+        the image for it was built there, from that code:
+      </p>
+      <pre><code>gh attestation verify \
+  oci://ghcr.io/arifcinartekin/perch-server:&lt;commit&gt; \
+  --repo arifcinartekin/perch</code></pre>
+      <p>
+        This proves the image is genuine. It can't prove, from the outside, that the machine
+        answering at app.perch.ws is running it: no ordinary server can prove that about itself.
+        That's why the design in point 1 matters more, and why we keep as little as possible on the
+        server in the first place.
+      </p>
+
+      <h2>Other servers</h2>
+      <p>
+        Anyone can run Perch, and change it. A server you don't run yourself may run different code.
+        The apps show which server you're connected to; trust it as much as you trust whoever runs
+        it.
+      </p>
+    </main>
+
+    <!-- ===================================================================
+         Türkçe
+         =================================================================== -->
+    <main class="legal" data-lang="tr" hidden>
+      <h1>Şeffaflık</h1>
+      <p class="updated">
+        app.perch.ws'in ne çalıştırdığını nasıl kontrol edersin ·
+        <a href="/privacy">Gizlilik politikası</a>
+      </p>
+
+      <p>
+        Perch'ün gizlilik sözleri güvenle kabul edilmek için değil, kontrol edilmek için. Bunun iki
+        düzeyi var ve hangisinin ne sağladığını açıkça söylemek gerekiyor.
+      </p>
+
+      <h2>1. Tasarımın garanti ettiği</h2>
+      <p>
+        En güçlü garanti sunucumuza hiç bağlı değil. Senkron zincirleri, cihazlarından hiç çıkmayan
+        bir anahtarla cihazlarında şifrelenir ve app.perch.ws kitaplık tutmaz. Kötü davranacak
+        şekilde değiştirilmiş bir sunucu bile akışlarını, ne okuduğunu ya da özel notlarını
+        okuyamaz. Bunu, şifrelemenin yapıldığı yer olan uygulamaların açık kaynak kodunda kontrol
+        edebilirsin.
+      </p>
+
+      <h2>2. Sunucunun hangi kodu çalıştırdığı</h2>
+      <p>
+        Geri kalanı için (hesaplar, paylaşılan notlar, sunucunun neyi kaydettiği) sunucunun hangi
+        kodu çalıştırdığını bilmen gerekir. Her sunucu imajı, projenin herkese açık CI'ı tarafından
+        GitHub'daki bir commit'ten derlenir, GitHub'ın kayıt deposunda yayınlanır ve onu tam olarak
+        hangi commit'in ve iş akışının ürettiğini söyleyen imzalı bir belge (attestation) alır.
+        app.perch.ws bu imajları çalıştırır ve commit'ini bildirir:
+      </p>
+      <pre><code>curl -s https://app.perch.ws/api/v1/server</code></pre>
+      <p>
+        Dönen <code>build.commit</code>, GitHub'da okuyabileceğin bir commit'tir. O commit'in
+        imajının orada, o koddan derlendiğini kontrol etmek için:
+      </p>
+      <pre><code>gh attestation verify \
+  oci://ghcr.io/arifcinartekin/perch-server:&lt;commit&gt; \
+  --repo arifcinartekin/perch</code></pre>
+      <p>
+        Bu, imajın gerçek olduğunu kanıtlar. app.perch.ws'te cevap veren makinenin onu
+        çalıştırdığını ise dışarıdan kanıtlayamaz; hiçbir sıradan sunucu bunu kendisi için
+        kanıtlayamaz. 1. maddedeki tasarımın daha önemli olmasının ve sunucuda en baştan
+        olabildiğince az şey tutmamızın nedeni bu.
+      </p>
+
+      <h2>Diğer sunucular</h2>
+      <p>
+        Perch'ü herkes çalıştırabilir ve değiştirebilir. Kendi çalıştırmadığın bir sunucu farklı bir
+        kod çalıştırıyor olabilir. Uygulamalar hangi sunucuya bağlı olduğunu gösterir; ona, onu
+        işleten kişiye güvendiğin kadar güven.
+      </p>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        <p data-i18n="footer.line">© 2026 Perch contributors · MIT License</p>
+        <nav aria-label="Footer">
+          <a href="/" data-i18n="legal.home">Home</a>
+          <a href="/privacy" data-i18n="footer.privacy">Privacy</a>
+          <a href="/terms" data-i18n="footer.terms">Terms</a>
+          <a href="https://github.com/arifcinartekin/perch">GitHub</a>
+        </nav>
+      </div>
+    </footer>
+
+    <script src="/script.js" defer></script>
+  </body>
+</html>

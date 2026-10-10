@@ -66,6 +66,7 @@ const TR = {
   'footer.app': 'Web uygulaması',
   'footer.privacy': 'Gizlilik',
   'footer.terms': 'Koşullar',
+  'footer.transparency': 'Şeffaflık',
   'legal.home': 'Ana sayfa',
 };
 

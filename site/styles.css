@@ -1232,3 +1232,13 @@ h2 {
 .legal code {
   font-size: 0.9em;
 }
+
+.legal pre {
+  overflow-x: auto;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: var(--glass-strong);
+  border: 1px solid var(--border);
+  font-size: 14px;
+  line-height: 1.5;
+}

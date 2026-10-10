@@ -70,6 +70,21 @@ new key nobody could reset their password by email. The Resend key only ever liv
 Email also turns on password reset by email (recovery codes keep working) and lets accounts add
 an address under Settings.
 
+### Run the attested image instead of building
+
+CI builds an image for every commit to main, publishes it as
+`ghcr.io/arifcinartekin/perch-server:<commit>` and attests where it came from
+([perch.ws/transparency](https://perch.ws/transparency)). To run those instead of building on the
+server, add to `.env`:
+
+```sh
+PERCH_IMAGE=ghcr.io/arifcinartekin/perch-server
+```
+
+`update.sh` then pulls the image for the commit it checked out (wait for the "Server image"
+workflow to finish after a push) and prints its digest. The server reports the commit at
+`/api/v1/server`.
+
 ### Policies
 
 The sign-up form, shared notes and the apps link to the privacy policy and terms when they're

@@ -37,6 +37,8 @@ export interface Config {
   signupPow: number;
   /** Hub mode: delete libraries left from when the server was personal. */
   purgeLibraries: boolean;
+  /** Set by the image build (PERCH_COMMIT). */
+  commit?: string;
 }
 
 export type EmailConfig =
@@ -112,6 +114,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     emailKey: emailKey(env.PERCH_EMAIL_KEY),
     signupPow: int(env.PERCH_SIGNUP_POW, 0, 0, 28),
     purgeLibraries: bool(env.PERCH_PURGE_LIBRARIES, false),
+    commit: /^[0-9a-f]{7,40}$/.test(env.PERCH_COMMIT ?? '') ? env.PERCH_COMMIT : undefined,
   };
 }
 

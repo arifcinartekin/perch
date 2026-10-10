@@ -1,0 +1,57 @@
+name: Server image
+
+# Builds the Perch Server image for every push to main, publishes it to
+# GitHub's registry tagged with the commit, and attests where it came from.
+# app.perch.ws runs these images, so anyone can check that the commit it
+# reports (/api/v1/server) is an image built here, from this code:
+#   gh attestation verify oci://ghcr.io/arifcinartekin/perch-server:<commit> --repo arifcinartekin/perch
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - apps/server/**
+      - apps/web/**
+      - packages/**
+      - package-lock.json
+      - .github/workflows/image.yml
+
+permissions:
+  contents: read
+  packages: write
+  id-token: write
+  attestations: write
+
+jobs:
+  image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        id: push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/server/Dockerfile
+          platforms: linux/amd64
+          push: true
+          build-args: PERCH_COMMIT=${{ github.sha }}
+          tags: |
+            ghcr.io/arifcinartekin/perch-server:${{ github.sha }}
+            ghcr.io/arifcinartekin/perch-server:latest
+
+      - name: Attest provenance
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-name: ghcr.io/arifcinartekin/perch-server
+          subject-digest: ${{ steps.push.outputs.digest }}
+          push-to-registry: true
