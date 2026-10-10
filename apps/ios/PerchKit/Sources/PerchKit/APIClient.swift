@@ -109,6 +109,14 @@ public final class APIClient: Sendable {
       "auth/email/code", body: Body(email: email, purpose: purpose, lang: lang))
   }
 
+  /// Add or change the signed-in account's address with a code sent by
+  /// `requestEmailCode(email:purpose: .change, …)`. Returns the updated account.
+  public func changeEmail(email: String, code: String) async throws -> PublicUser {
+    struct Res: Decodable { var user: PublicUser }
+    let res: Res = try await send("auth/email", body: ["email": email, "code": code])
+    return res.user
+  }
+
   /// Set a new password with an emailed code. Every other device is signed out.
   public func resetPassword(email: String, code: String, password: String, deviceName: String)
     async throws -> AuthResponse

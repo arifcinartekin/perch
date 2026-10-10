@@ -14,6 +14,7 @@ struct SettingsView: View {
   @State private var confirmingSignOut = false
   @State private var connecting = false
   @State private var changingPassword = false
+  @State private var changingEmail = false
   @State private var importing = false
   @State private var exported: ExportedFile?
   @State private var exporting = false
@@ -161,6 +162,7 @@ struct SettingsView: View {
         }
       #endif
       .sheet(isPresented: $changingPassword) { ChangePasswordView() }
+      .sheet(isPresented: $changingEmail) { EmailView() }
       .sheet(isPresented: $connecting) {
         NavigationStack { ConnectView(localFeeds: reader.library.feeds.count) }
       }
@@ -193,6 +195,16 @@ struct SettingsView: View {
 
   private var account: some View {
     Section("Account") {
+      Button { changingEmail = true } label: {
+        LabeledContent {
+          Text(session.user?.email ?? String(localized: "Add"))
+            .lineLimit(1)
+            .truncationMode(.middle)
+        } label: {
+          Label("Email", systemImage: "envelope")
+        }
+      }
+      .surfaceRow()
       Button("Change password…", systemImage: "key") { changingPassword = true }
         .surfaceRow()
       NavigationLink(value: Page.devices) {
@@ -371,6 +383,120 @@ struct ChangePasswordView: View {
       do {
         try await reader.server?.changePassword(username: username, current: current, new: new)
         dismiss()
+      } catch {
+        self.error = error.localizedDescription
+      }
+    }
+  }
+}
+
+/// Add or change the account's email address: the server mails a code, and
+/// the address is saved once the code is entered. It's used for password reset.
+struct EmailView: View {
+  @Environment(Session.self) private var session
+  @Environment(\.dismiss) private var dismiss
+  @State private var email = ""
+  @State private var code = ""
+  /// Where the code went; nil until one is sent.
+  @State private var sentTo: String?
+  @State private var busy = false
+  @State private var error: String?
+  @FocusState private var focus: Field?
+  private enum Field { case email, code }
+
+  var body: some View {
+    NavigationStack {
+      Form {
+        if let sentTo {
+          Section {
+            TextField("Code", text: $code)
+              .textContentType(.oneTimeCode)
+              .keyboardType(.numberPad)
+              .focused($focus, equals: .code)
+          } footer: {
+            Text("We sent a 6-digit code to \(sentTo). It works for 10 minutes.")
+          }
+          Section {
+            Button("Use a different address or send a new code") {
+              self.sentTo = nil
+              code = ""
+              error = nil
+              focus = .email
+            }
+          }
+        } else {
+          Section {
+            TextField("Email", text: $email)
+              .textContentType(.emailAddress)
+              .keyboardType(.emailAddress)
+              .textInputAutocapitalization(.never)
+              .autocorrectionDisabled()
+              .focused($focus, equals: .email)
+              .submitLabel(.send)
+              .onSubmit(send)
+          } header: {
+            if let current = session.user?.email {
+              Text("Now: \(current)")
+            }
+          } footer: {
+            Text(
+              "Used to reset your password if you forget it. It's never shown to anyone. We'll email you a code to confirm it."
+            )
+          }
+        }
+        if let error {
+          Section {
+            Label(error, systemImage: "exclamationmark.triangle.fill").foregroundStyle(.red)
+          }
+        }
+      }
+      .navigationTitle(session.user?.email == nil ? "Add email" : "Change email")
+      .navigationBarTitleDisplayMode(.inline)
+      .onAppear { focus = .email }
+      .toolbar {
+        ToolbarItem(placement: .cancellationAction) {
+          Button("Cancel", systemImage: "xmark") { dismiss() }
+        }
+        ToolbarItem(placement: .confirmationAction) {
+          if busy {
+            ProgressView()
+          } else if sentTo != nil {
+            Button("Confirm", systemImage: "checkmark", action: confirm)
+              .disabled(code.filter(\.isNumber).count != 6)
+          } else {
+            Button("Send code", systemImage: "paperplane", action: send)
+              .disabled(email.trimmingCharacters(in: .whitespaces).isEmpty)
+          }
+        }
+      }
+    }
+  }
+
+  private func send() {
+    let address = email.trimmingCharacters(in: .whitespaces)
+    guard !address.isEmpty else { return }
+    run {
+      try await session.requestEmailChange(address)
+      sentTo = address
+      focus = .code
+    }
+  }
+
+  private func confirm() {
+    guard let sentTo else { return }
+    run {
+      try await session.confirmEmail(sentTo, code: code.filter(\.isNumber))
+      dismiss()
+    }
+  }
+
+  private func run(_ work: @escaping () async throws -> Void) {
+    busy = true
+    error = nil
+    Task {
+      defer { busy = false }
+      do {
+        try await work()
       } catch {
         self.error = error.localizedDescription
       }

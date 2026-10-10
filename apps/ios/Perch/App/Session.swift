@@ -78,6 +78,18 @@ final class Session {
     await adopt(server: server, res)
   }
 
+  /// Email a code for adding or changing the account's address.
+  func requestEmailChange(_ email: String) async throws {
+    guard let client else { return }
+    try await client.requestEmailCode(
+      email: email, purpose: .change, lang: Locale.current.language.languageCode?.identifier)
+  }
+
+  func confirmEmail(_ email: String, code: String) async throws {
+    guard let client else { return }
+    user = try await client.changeEmail(email: email, code: code)
+  }
+
   func resetPassword(server: URL, email: String, code: String, password: String) async throws {
     let res = try await APIClient(baseURL: server).resetPassword(
       email: email, code: code, password: password, deviceName: Self.deviceName)

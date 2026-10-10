@@ -172,6 +172,16 @@
         }
       }
     },
+    "Add email": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "E-posta ekle"
+          }
+        }
+      }
+    },
     "Add your first feed: paste a site or feed address.": {
       "localizations": {
         "tr": {
@@ -408,6 +418,16 @@
         }
       }
     },
+    "Change email": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "E-postayı değiştir"
+          }
+        }
+      }
+    },
     "Change password": {
       "localizations": {
         "tr": {
@@ -484,6 +504,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Renkler"
+          }
+        }
+      }
+    },
+    "Confirm": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Onayla"
           }
         }
       }
@@ -1510,6 +1540,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Perch'ün bildirimleri kapalı. Ayarlar uygulamasında Bildirimler bölümünden açabilirsin."
+          }
+        }
+      }
+    },
+    "Now: %@": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Şu an: %@"
           }
         }
       }
@@ -2656,6 +2696,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Kullanılmış"
+          }
+        }
+      }
+    },
+    "Used to reset your password if you forget it. It's never shown to anyone. We'll email you a code to confirm it.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Şifreni unutursan sıfırlamak için kullanılır ve kimseye gösterilmez. Doğrulamak için sana e-postayla bir kod göndereceğiz."
           }
         }
       }
