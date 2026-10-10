@@ -17,16 +17,19 @@ export function findWebRoot(configured?: string): string | undefined {
   return undefined;
 }
 
-// Feed content shows images and media from anywhere; scripts and connections
-// only from here. 'wasm-unsafe-eval' lets the page run its own bundled Argon2id.
+// Feed content shows images and media from anywhere; scripts only from here.
+// Connections go here, and to the sync chain relay, which may be any https
+// server (feeds themselves come through this server). Embedded video only
+// from the players the sanitizer lets through (packages/reader lib/sanitize).
+// 'wasm-unsafe-eval' lets the page run its own bundled Argon2id.
 const CSP = [
   "default-src 'self'",
   "script-src 'self' 'wasm-unsafe-eval'",
   "style-src 'self' 'unsafe-inline'",
   'img-src * data: blob:',
   'media-src *',
-  "connect-src 'self'",
-  "frame-src 'none'",
+  "connect-src 'self' https:",
+  'frame-src https://www.youtube.com https://youtube.com https://www.youtube-nocookie.com https://player.vimeo.com',
   "frame-ancestors 'none'",
   "object-src 'none'",
   "base-uri 'self'",

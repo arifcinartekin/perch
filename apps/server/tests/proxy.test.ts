@@ -55,3 +55,25 @@ describe('feed proxy (hub mode)', () => {
     t.close();
   });
 });
+
+describe('the web app’s security policy', () => {
+  it('lets the page reach a chain relay elsewhere and embedded players, nothing else new', async () => {
+    const { mkdtempSync, writeFileSync, rmSync } = await import('node:fs');
+    const { tmpdir } = await import('node:os');
+    const { join } = await import('node:path');
+    const { serveWeb } = await import('../src/web');
+    const root = mkdtempSync(join(tmpdir(), 'perch-web-'));
+    writeFileSync(join(root, 'index.html'), '<!doctype html>');
+    const t = setup({ mode: 'hub' });
+    try {
+      serveWeb(t.app, root);
+      const csp = (await t.app.request('/')).headers.get('content-security-policy') ?? '';
+      expect(csp).toContain("connect-src 'self' https:");
+      expect(csp).toContain('https://www.youtube-nocookie.com');
+      expect(csp).toContain("script-src 'self' 'wasm-unsafe-eval'");
+    } finally {
+      t.close();
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+});
