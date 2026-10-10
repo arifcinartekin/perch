@@ -30,6 +30,13 @@ public struct ServerInfo: Codable, Sendable, Equatable {
   public var needsSetup: Bool
   /// The server can email codes (signup, password reset); absent on older servers.
   public var email: Bool?
+  /// The operator's own privacy policy and terms, when they've published them.
+  public var legal: Legal?
+
+  public struct Legal: Codable, Sendable, Equatable {
+    public var privacy: String?
+    public var terms: String?
+  }
 }
 
 public struct KdfParams: Codable, Sendable, Equatable {

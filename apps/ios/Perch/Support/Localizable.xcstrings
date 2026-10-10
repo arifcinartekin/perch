@@ -1,6 +1,26 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "%@ is run by its operator, who is responsible for your data there.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ kendi işletmecisi tarafından çalıştırılır; oradaki verinden o sorumludur."
+          }
+        }
+      }
+    },
+    "%@ is run by its operator, who is responsible for your data there. It hasn't published a privacy policy.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ kendi işletmecisi tarafından çalıştırılır; oradaki verinden o sorumludur. Bu sunucu bir gizlilik politikası yayınlamamış."
+          }
+        }
+      }
+    },
     "%@ options": {
       "localizations": {
         "tr": {
@@ -304,6 +324,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Bu koda sahip herkes zincirin senkronladıklarını okuyup değiştirebilir. Yalnızca kendi cihazlarınıza gösterin."
+          }
+        }
+      }
+    },
+    "App privacy": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uygulama gizliliği"
           }
         }
       }
@@ -2696,6 +2726,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Senin ya da bir arkadaşının çalıştırdığı Perch Server'ın adresi. Simülatörde Mac'in kendi sunucusu %@."
+          }
+        }
+      }
+    },
+    "The app collects nothing. Your library stays on this iPhone unless you sync it.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uygulama hiçbir veri toplamaz. Senkronlamadığın sürece kitaplığın bu iPhone'da kalır."
           }
         }
       }

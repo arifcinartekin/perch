@@ -16,6 +16,8 @@ struct SettingsView: View {
   @State private var changingPassword = false
   @State private var changingEmail = false
   @State private var deletingAccount = false
+  /// The signed-in server's own policy links; whoever runs it is responsible for it.
+  @State private var serverLegal: ServerInfo.Legal?
   @State private var importing = false
   @State private var exported: ExportedFile?
   @State private var exporting = false
@@ -133,15 +135,36 @@ struct SettingsView: View {
           Text("OPML, the format every feed reader understands.")
         }
 
+        if let host = session.server?.host() {
+          Section {
+            if let url = serverLegal?.privacy.flatMap(URL.init(string:)) {
+              Link(destination: url) { Label("Privacy policy", systemImage: "hand.raised") }
+                .surfaceRow()
+            }
+            if let url = serverLegal?.terms.flatMap(URL.init(string:)) {
+              Link(destination: url) { Label("Terms of use", systemImage: "doc.text") }
+                .surfaceRow()
+            }
+          } header: {
+            Text(verbatim: host)
+          } footer: {
+            if serverLegal == nil {
+              Text(
+                "\(host) is run by its operator, who is responsible for your data there. It hasn't published a privacy policy."
+              )
+            } else {
+              Text("\(host) is run by its operator, who is responsible for your data there.")
+            }
+          }
+        }
+
         Section {
           Link(destination: URL(string: "https://perch.ws/privacy")!) {
-            Label("Privacy policy", systemImage: "hand.raised")
+            Label("App privacy", systemImage: "hand.raised")
           }
           .surfaceRow()
-          Link(destination: URL(string: "https://perch.ws/terms")!) {
-            Label("Terms of use", systemImage: "doc.text")
-          }
-          .surfaceRow()
+        } footer: {
+          Text("The app collects nothing. Your library stays on this iPhone unless you sync it.")
         }
 
         Section {
@@ -176,6 +199,11 @@ struct SettingsView: View {
       .sheet(isPresented: $changingPassword) { ChangePasswordView() }
       .sheet(isPresented: $changingEmail) { EmailView() }
       .sheet(isPresented: $deletingAccount) { DeleteAccountView() }
+      .task(id: session.server) {
+        serverLegal = nil
+        guard let server = session.server else { return }
+        serverLegal = try? await APIClient(baseURL: server).serverInfo().legal
+      }
       .sheet(isPresented: $connecting) {
         NavigationStack { ConnectView(localFeeds: reader.library.feeds.count) }
       }

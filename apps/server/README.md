@@ -52,6 +52,15 @@ open http://localhost:5173 — Vite proxies `/api` to the server.
 | `PERCH_CHAIN`               | `false`            | Relay sync chains (sync without an account) for anyone. See below.                                                                                           |
 | `PERCH_WEB_ROOT`            | `apps/web/dist`    | Folder with the built web reader. The Docker image sets it.                                                                                                  |
 
+## Running it for other people
+
+Whoever runs a server is responsible for it. If other people use yours, you hold their data:
+you are its data controller, and you need your own privacy policy and terms (set
+`PERCH_PRIVACY_URL` and `PERCH_TERMS_URL` so the apps link to them). The policy at perch.ws
+covers only the servers Perch's maintainer runs (app.perch.ws, sync.perch.ws); don't point
+these settings at it. If you let people share notes, reports reach you at `/admin/reports`, and
+handling them is up to you.
+
 ## How it works
 
 - **Passwords never reach the server.** Clients stretch the password with Argon2id
