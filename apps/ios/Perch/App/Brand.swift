@@ -30,6 +30,13 @@ struct AppTheme: Equatable {
   static let `default` = AppTheme(
     palette: Theme.palette(.light), glass: .default, serif: false, wallpaper: nil)
 
+  /// The default palette for the system's light or dark mode.
+  static func forScheme(_ scheme: ColorScheme) -> AppTheme {
+    var theme = AppTheme.default
+    theme.palette = Theme.palette(scheme == .dark ? .dark : .light)
+    return theme
+  }
+
   var background: Color { Color(hex: palette.background) }
   var solid: Color { Color(hex: palette.solid) }
   var text: Color { Color(hex: palette.text) }

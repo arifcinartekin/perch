@@ -32,6 +32,7 @@
 		8506BD826A1F884DD3EF7E21 /* OfflineSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC2FE76BD6C0799CC419FA49 /* OfflineSync.swift */; };
 		8B03761A51FCCFD6A12DEACF /* Brand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 323845EBB2AE8AABB41A1503 /* Brand.swift */; };
 		8CB8FCA647230A276F23A576 /* ImageCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5982BDE739B05EE8EAF104B /* ImageCache.swift */; };
+		8D4FE2DF19E952FE4EC0EFE2 /* AppLock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A27BFE8054CC4305A505B08 /* AppLock.swift */; };
 		8F8839D6C143904295467570 /* DeepLinks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48110E4208AD640A9BCE88D9 /* DeepLinks.swift */; };
 		9E2B694750934D2EEF66C266 /* ChainUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27F0387D28DCB4DC90BC12D9 /* ChainUITests.swift */; };
 		9E62F76BCEC0A952AA8F3736 /* PerchLogoDrawing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70BBDD6EDC6471189293BDD1 /* PerchLogoDrawing.swift */; };
@@ -52,6 +53,7 @@
 		E694A9F5C25936946F2C5F40 /* ConnectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 655E06FA19C1CD5AF49DDF1B /* ConnectView.swift */; };
 		F317DF96E4AB0F2B532938F0 /* DeviceSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AC49BD3F4ABE421B671D9FE /* DeviceSettings.swift */; };
 		F6D5AA773490F7ACE656DD29 /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 0B38BABEE4FFF5518DD3A8C6 /* InfoPlist.xcstrings */; };
+		F9BA724330B7D06328BFA2BB /* LockViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56B9F8351AAFF21F855FA8AC /* LockViews.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -93,6 +95,7 @@
 		1B00D3F911F440538B501763 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		1C002131DCED71D23198C29F /* WidgetSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetSnapshot.swift; sourceTree = "<group>"; };
 		27F0387D28DCB4DC90BC12D9 /* ChainUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainUITests.swift; sourceTree = "<group>"; };
+		2A27BFE8054CC4305A505B08 /* AppLock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLock.swift; sourceTree = "<group>"; };
 		2AC49BD3F4ABE421B671D9FE /* DeviceSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceSettings.swift; sourceTree = "<group>"; };
 		2CF9DC10E248AF05EC2A5727 /* AppearanceUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppearanceUITests.swift; sourceTree = "<group>"; };
 		2E4BBD38308D35941FE4CF73 /* PerchKit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = PerchKit; path = PerchKit; sourceTree = SOURCE_ROOT; };
@@ -103,6 +106,7 @@
 		4AFBD2AF69D4E3C3D7CF7E51 /* WidgetUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetUITests.swift; sourceTree = "<group>"; };
 		53F5CA3D96CAEDA6AACDFF56 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		547BB3F69F49024BA65F0A6F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		56B9F8351AAFF21F855FA8AC /* LockViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockViews.swift; sourceTree = "<group>"; };
 		5AD33D28974BE522ACB04697 /* NotificationUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationUITests.swift; sourceTree = "<group>"; };
 		5D2C8281A15D24FE521E108C /* LibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryView.swift; sourceTree = "<group>"; };
 		655340A93FD076C55BABDD92 /* AddFeedSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddFeedSheet.swift; sourceTree = "<group>"; };
@@ -201,6 +205,7 @@
 				655E06FA19C1CD5AF49DDF1B /* ConnectView.swift */,
 				A9820D50B5167D72FD592FFE /* FeedEditSheet.swift */,
 				5D2C8281A15D24FE521E108C /* LibraryView.swift */,
+				56B9F8351AAFF21F855FA8AC /* LockViews.swift */,
 				6A04F0519598EE4BAAF1557C /* MainTabView.swift */,
 				D2C6F632894A32B83E38C56E /* NoteViews.swift */,
 				16D59EB0C384D24D03E73507 /* OfflineSettingsView.swift */,
@@ -260,6 +265,7 @@
 		EEC16C9E619B957A56177B83 /* App */ = {
 			isa = PBXGroup;
 			children = (
+				2A27BFE8054CC4305A505B08 /* AppLock.swift */,
 				0E3E523673D21B622A82627B /* ArticlePreview.swift */,
 				16DB99A3BC6609013D614C6A /* BackgroundRefresh.swift */,
 				323845EBB2AE8AABB41A1503 /* Brand.swift */,
@@ -436,6 +442,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				75C83EEB1EC0AA2A6B5E5CAF /* AddFeedSheet.swift in Sources */,
+				8D4FE2DF19E952FE4EC0EFE2 /* AppLock.swift in Sources */,
 				3CC263518A8DB08FE7FE3A01 /* AppearanceSettingsView.swift in Sources */,
 				D6603A9321C3D2CB3A192A7F /* ArticleListView.swift in Sources */,
 				CFA786A4CCFEB8FE1381735A /* ArticlePreview.swift in Sources */,
@@ -452,6 +459,7 @@
 				8CB8FCA647230A276F23A576 /* ImageCache.swift in Sources */,
 				1D211E57B19AB93D14A23D11 /* Keychain.swift in Sources */,
 				78120E6FD0CB355F794B2B46 /* LibraryView.swift in Sources */,
+				F9BA724330B7D06328BFA2BB /* LockViews.swift in Sources */,
 				105023448514C3FCC6015A94 /* MainTabView.swift in Sources */,
 				6F527C13A9E9966F5C687A1D /* NoteViews.swift in Sources */,
 				A3E2CF5F0B32751D3D0F5EF1 /* OfflineSettingsView.swift in Sources */,
@@ -578,6 +586,7 @@
 				INFOPLIST_FILE = Perch/Support/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Perch;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Perch uses the camera only to scan a sync chain's QR code.";
+				INFOPLIST_KEY_NSFaceIDUsageDescription = "Perch uses Face ID to unlock the app when you've turned on the app lock.";
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Perch connects to your Perch Server when it runs on your local network.";
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -711,6 +720,7 @@
 				INFOPLIST_FILE = Perch/Support/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Perch;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Perch uses the camera only to scan a sync chain's QR code.";
+				INFOPLIST_KEY_NSFaceIDUsageDescription = "Perch uses Face ID to unlock the app when you've turned on the app lock.";
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Perch connects to your Perch Server when it runs on your local network.";
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";

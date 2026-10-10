@@ -10,6 +10,7 @@ import UniformTypeIdentifiers
 struct SettingsView: View {
   @Environment(Session.self) private var session
   @Environment(Reader.self) private var reader
+  @Environment(AppLock.self) private var lock
   @Environment(\.theme) private var theme
   @State private var confirmingSignOut = false
   @State private var connecting = false
@@ -30,7 +31,7 @@ struct SettingsView: View {
   @State private var message: String?
   @State private var path = NavigationPath()
 
-  enum Page: String, Hashable { case appearance, offline, devices, invites, chain }
+  enum Page: String, Hashable { case appearance, offline, devices, invites, chain, lock }
 
   var body: some View {
     NavigationStack(path: $path) {
@@ -85,6 +86,17 @@ struct SettingsView: View {
           Text(
             "A notification when background refresh finds new articles. iOS decides how often that runs, usually every hour or so."
           )
+        }
+
+        Section {
+          NavigationLink(value: Page.lock) {
+            LabeledContent {
+              Text(lock.isEnabled ? "On" : "Off")
+            } label: {
+              Label("App lock", systemImage: "lock")
+            }
+          }
+          .surfaceRow()
         }
 
         if reader.isLocal {
@@ -194,6 +206,7 @@ struct SettingsView: View {
         case .devices: DevicesView()
         case .invites: InvitesView()
         case .chain: ChainSettingsView()
+        case .lock: AppLockSettingsView()
         }
       }
       #if DEBUG

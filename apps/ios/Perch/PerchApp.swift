@@ -6,6 +6,7 @@ import UserNotifications
 @main
 struct PerchApp: App {
   @State private var session = Session()
+  @State private var lock = AppLock()
   @Environment(\.scenePhase) private var scenePhase
 
   init() {
@@ -17,10 +18,22 @@ struct PerchApp: App {
     WindowGroup {
       RootView()
         .environment(session)
+        .environment(lock)
+        .overlay {
+          // Locked, or (with the lock on) leaving the app: the app switcher
+          // shouldn't show what you were reading.
+          if lock.isLocked {
+            LockScreen().environment(lock)
+          } else if lock.isEnabled && scenePhase != .active {
+            PrivacyCover()
+          }
+        }
         .onOpenURL { DeepLinks.shared.open($0) }
     }
-    .onChange(of: scenePhase) { _, phase in
+    .onChange(of: scenePhase) { old, phase in
+      if phase == .active && old == .background { lock.willEnterForeground() }
       if phase == .background {
+        lock.didEnterBackground()
         BackgroundRefresh.schedule()
         #if DEBUG
           BackgroundRefresh.runOnBackgroundForTesting()

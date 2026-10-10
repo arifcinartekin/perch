@@ -25,6 +25,41 @@ enum Keychain {
     SecItemAdd(query as CFDictionary, nil)
   }
 
+  // MARK: App lock
+
+  struct LockPin: Codable {
+    var salt: String
+    var hash: String
+  }
+
+  private static var lockQuery: [String: Any] {
+    [
+    kSecClass as String: kSecClassGenericPassword,
+    kSecAttrService as String: "app.perch.lock",
+    kSecAttrAccount as String: "pin",
+    ]
+  }
+
+  static func lockPin() -> LockPin? {
+    var query = lockQuery
+    query[kSecReturnData as String] = true
+    query[kSecMatchLimit as String] = kSecMatchLimitOne
+    var item: CFTypeRef?
+    guard SecItemCopyMatching(query as CFDictionary, &item) == errSecSuccess,
+      let data = item as? Data
+    else { return nil }
+    return try? JSONDecoder().decode(LockPin.self, from: data)
+  }
+
+  static func setLockPin(_ pin: LockPin?) {
+    SecItemDelete(lockQuery as CFDictionary)
+    guard let pin, let data = try? JSONEncoder().encode(pin) else { return }
+    var query = lockQuery
+    query[kSecValueData as String] = data
+    query[kSecAttrAccessible as String] = kSecAttrAccessibleWhenUnlockedThisDeviceOnly
+    SecItemAdd(query as CFDictionary, nil)
+  }
+
   // MARK: Perch account
 
   private static let communityService = "app.perch.community"

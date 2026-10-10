@@ -89,6 +89,16 @@
         }
       }
     },
+    "%lld of 6 digits entered": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "6 haneden %lld tanesi girildi"
+          }
+        }
+      }
+    },
     "%lld%@": {
       "shouldTranslate": false
     },
@@ -98,6 +108,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "1. Perch'ü aç, Giriş yap'ı, ardından \"Şifreni mi unuttun?\"u seç.\n2. Kullanıcı adını, bu kodu ve yeni bir şifre gir.\n3. Diğer cihazlarının oturumu kapanır. Ayarlar'dan bunun yerini alacak yeni bir kod oluşturabilirsin."
+          }
+        }
+      }
+    },
+    "A 6-digit PIN in front of Perch, so someone picking up your phone can't open your reading. It hides the app; it doesn't encrypt what's on the phone. Widgets and notifications still show headlines.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Telefonunu eline alan birinin okuduklarını açamaması için Perch'ün önünde 6 haneli bir PIN. Uygulamayı gizler; telefondaki verileri şifrelemez. Widget'lar ve bildirimler başlıkları göstermeye devam eder."
           }
         }
       }
@@ -298,6 +318,36 @@
         }
       }
     },
+    "After 1 minute": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 dakika sonra"
+          }
+        }
+      }
+    },
+    "After 15 minutes": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "15 dakika sonra"
+          }
+        }
+      }
+    },
+    "After 5 minutes": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "5 dakika sonra"
+          }
+        }
+      }
+    },
     "All Feeds": {
       "localizations": {
         "tr": {
@@ -374,6 +424,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Bu koda sahip herkes zincirin senkronladıklarını okuyup değiştirebilir. Yalnızca kendi cihazlarınıza gösterin."
+          }
+        }
+      }
+    },
+    "App lock": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uygulama kilidi"
           }
         }
       }
@@ -528,6 +588,16 @@
         }
       }
     },
+    "Change PIN…": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PIN'i değiştir…"
+          }
+        }
+      }
+    },
     "Change email": {
       "localizations": {
         "tr": {
@@ -554,6 +624,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Şifreyi değiştir…"
+          }
+        }
+      }
+    },
+    "Choose a 6-digit PIN": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "6 haneli bir PIN seç"
           }
         }
       }
@@ -1128,12 +1208,42 @@
         }
       }
     },
+    "Enter PIN": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PIN gir"
+          }
+        }
+      }
+    },
+    "Enter it again": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tekrar gir"
+          }
+        }
+      }
+    },
     "Enter the code from the email.": {
       "localizations": {
         "tr": {
           "stringUnit": {
             "state": "translated",
             "value": "E-postadaki kodu gir."
+          }
+        }
+      }
+    },
+    "Enter your PIN": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PIN'ini gir"
           }
         }
       }
@@ -1318,6 +1428,16 @@
         }
       }
     },
+    "How long Perch can be in the background before it asks again.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Perch tekrar sormadan önce ne kadar süre arka planda kalabilir."
+          }
+        }
+      }
+    },
     "How see-through and blurred the panels are. Off gives solid panels and bars. iOS's own Reduce Transparency setting also makes them solid.": {
       "localizations": {
         "tr": {
@@ -1354,6 +1474,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Şifreni unutursan hesabına dönmenin tek yolu bu kod. Sunucu yalnızca karıştırılmış bir kopyasını saklar; bu yüzden kimse onu sana tekrar söyleyemez. Gizli bir yerde sakla: bir parola yöneticisinde ya da yazdırıp kaldırarak. Bu koda ve kullanıcı adına sahip olan herkes hesabın için yeni bir şifre belirleyebilir."
+          }
+        }
+      }
+    },
+    "Immediately": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hemen"
           }
         }
       }
@@ -1624,6 +1754,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Makaleler yükleniyor"
+          }
+        }
+      }
+    },
+    "Lock": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kilitle"
           }
         }
       }
@@ -2070,6 +2210,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Siteyi aç"
+          }
+        }
+      }
+    },
+    "PIN lock": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PIN kilidi"
           }
         }
       }
@@ -3046,6 +3196,16 @@
         }
       }
     },
+    "That PIN isn't right.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PIN yanlış."
+          }
+        }
+      }
+    },
     "That code isn't complete or has a typo. It has 28 letters and digits.": {
       "localizations": {
         "tr": {
@@ -3112,6 +3272,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Zincirin başlatıldığı yerde gösterilen 28 karakterlik kod. Buradaki feed'lerinizle zincirinkiler birleştirilir."
+          }
+        }
+      }
+    },
+    "The PINs didn't match. Try again.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PIN'ler eşleşmedi. Tekrar dene."
           }
         }
       }
@@ -3360,6 +3530,16 @@
         }
       }
     },
+    "Too many tries. Wait a moment.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Çok fazla deneme. Biraz bekle."
+          }
+        }
+      }
+    },
     "Transparency": {
       "localizations": {
         "tr": {
@@ -3370,12 +3550,52 @@
         }
       }
     },
+    "Turn off PIN lock": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PIN kilidini kapat"
+          }
+        }
+      }
+    },
     "Uncategorized": {
       "localizations": {
         "tr": {
           "stringUnit": {
             "state": "translated",
             "value": "Kategorisiz"
+          }
+        }
+      }
+    },
+    "Unlock Perch": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Perch'ün kilidini aç"
+          }
+        }
+      }
+    },
+    "Unlock with Face ID": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Face ID ile aç"
+          }
+        }
+      }
+    },
+    "Unlock with Touch ID": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Touch ID ile aç"
           }
         }
       }
