@@ -3,7 +3,15 @@ import Foundation
 // The Perch Server API's types, mirroring packages/core/src/api.ts and
 // types.ts. Times are epoch milliseconds on the wire.
 
-public enum ServerMode: String, Codable, Sendable { case personal, e2e }
+/// `personal` keeps libraries; `hub` holds Perch accounts and shared notes
+/// only. A mode this version doesn't know reads as `unknown`.
+public enum ServerMode: String, Codable, Sendable {
+  case personal, hub, e2e, unknown
+
+  public init(from decoder: Decoder) throws {
+    self = ServerMode(rawValue: try decoder.singleValueContainer().decode(String.self)) ?? .unknown
+  }
+}
 public enum SignupPolicy: String, Codable, Sendable {
   case open, invite, email, closed
 

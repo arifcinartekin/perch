@@ -888,6 +888,16 @@
         }
       }
     },
+    "Delete Perch account…": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Perch hesabını sil…"
+          }
+        }
+      }
+    },
     "Delete account": {
       "localizations": {
         "tr": {
@@ -1618,6 +1628,16 @@
         }
       }
     },
+    "Manage on the web": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Web'de yönet"
+          }
+        }
+      }
+    },
     "Mark all %lld articles in %@ as read?": {
       "localizations": {
         "en": {
@@ -1750,6 +1770,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Yeni şifre"
+          }
+        }
+      }
+    },
+    "New recovery code…": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yeni kurtarma kodu…"
           }
         }
       }
@@ -2049,6 +2079,16 @@
     },
     "Perch %@": {
       "shouldTranslate": false
+    },
+    "Perch account": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Perch hesabı"
+          }
+        }
+      }
     },
     "Perch couldn't read that image.": {
       "localizations": {
@@ -2630,6 +2670,36 @@
         }
       }
     },
+    "Sign in or create…": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Giriş yap ya da oluştur…"
+          }
+        }
+      }
+    },
+    "Sign in to a Perch account in Settings to share notes.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not paylaşmak için Ayarlar'dan bir Perch hesabına giriş yap."
+          }
+        }
+      }
+    },
+    "Sign in to the Perch account this note was shared from.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu notun paylaşıldığı Perch hesabına giriş yap."
+          }
+        }
+      }
+    },
     "Sign out": {
       "localizations": {
         "tr": {
@@ -3070,6 +3140,16 @@
         }
       }
     },
+    "This removes your Perch account on %@ and every note you shared from it. Your library isn't affected. It can't be undone.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu işlem %@ üzerindeki Perch hesabını ve ondan paylaştığın tüm notları siler. Kitaplığın etkilenmez. Geri alınamaz."
+          }
+        }
+      }
+    },
     "This removes your account on %@ with your feeds, read state, settings, notes and shared pages. It can't be undone.": {
       "localizations": {
         "tr": {
@@ -3106,6 +3186,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Bu sunucu e-posta göndermiyor, bu yüzden adres kullanılmıyor."
+          }
+        }
+      }
+    },
+    "This server holds Perch accounts, not libraries. Sync with a chain, and sign in to it under Perch account to share notes.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu sunucu kitaplık değil, Perch hesapları tutar. Senkron için zincir kullan; not paylaşmak için Perch hesabı bölümünden giriş yap."
+          }
+        }
+      }
+    },
+    "This server runs in a mode this version of Perch can't use yet.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu sunucu, Perch'ün bu sürümünün henüz kullanamadığı bir modda çalışıyor."
           }
         }
       }
@@ -3380,6 +3480,16 @@
         }
       }
     },
+    "Where your account is": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hesabın nerede"
+          }
+        }
+      }
+    },
     "Without a recovery code, a forgotten password means a lost account.": {
       "localizations": {
         "tr": {
@@ -3406,6 +3516,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Perch Server'ın"
+          }
+        }
+      }
+    },
+    "Your Perch account": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Perch hesabın"
           }
         }
       }
@@ -3450,6 +3570,26 @@
         }
       }
     },
+    "Your name for sharing notes as public pages. It doesn't sync your library, and you don't need it to read.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notları herkese açık sayfa olarak paylaştığın adın. Kitaplığını senkronlamaz; okumak için de gerekmez."
+          }
+        }
+      }
+    },
+    "Your name for sharing notes as public pages. It doesn't sync your library; the sync chain does that.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notları herkese açık sayfa olarak paylaştığın adın. Kitaplığını senkronlamaz; bunu senkron zinciri yapar."
+          }
+        }
+      }
+    },
     "Your note · Edit": {
       "localizations": {
         "tr": {
@@ -3476,6 +3616,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Senin"
+          }
+        }
+      }
+    },
+    "app.perch.ws, or a Perch Server of your own.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "app.perch.ws ya da kendi Perch sunucun."
           }
         }
       }

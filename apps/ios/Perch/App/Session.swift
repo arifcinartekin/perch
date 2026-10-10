@@ -29,18 +29,109 @@ final class Session {
   /// Sync without an account, for the library on this phone.
   let chain = ChainLink()
 
+  // The Perch account: a name on a hub (app.perch.ws by default) for sharing
+  // notes. Separate from where the library lives and how it syncs.
+  private(set) var communityServer: URL?
+  private(set) var communityUsername: String?
+  private(set) var communityUser: PublicUser?
+  private(set) var communityClient: APIClient?
+
   /// The app's session, for background refresh to use the same library
   /// objects as the screens.
   static weak var current: Session?
 
   nonisolated private static let serverKey = "perch.server"
   nonisolated private static let usernameKey = "perch.username"
+  nonisolated private static let communityServerKey = "perch.community.server"
+  nonisolated private static let communityUsernameKey = "perch.community.username"
 
   init() {
     server = UserDefaults.standard.url(forKey: Self.serverKey)
     username = UserDefaults.standard.string(forKey: Self.usernameKey)
     Self.current = self
+    communityServer = UserDefaults.standard.url(forKey: Self.communityServerKey)
+    communityUsername = UserDefaults.standard.string(forKey: Self.communityUsernameKey)
+    if let communityServer, communityUsername != nil,
+      let token = Keychain.communityToken(for: communityServer)
+    {
+      communityClient = APIClient(baseURL: communityServer, token: token)
+    }
     Task { await restore() }
+    Task { await refreshCommunity() }
+  }
+
+  /// Which account a settings screen acts on: the library's server, or the Perch account.
+  enum Account { case library, community }
+
+  func client(_ account: Account) -> APIClient? {
+    account == .library ? client : communityClient
+  }
+
+  func accountUser(_ account: Account) -> PublicUser? {
+    account == .library ? user : communityUser
+  }
+
+  private func accountUsername(_ account: Account) -> String? {
+    account == .library ? user?.username ?? username : communityUser?.username ?? communityUsername
+  }
+
+  // MARK: Perch account
+
+  private func refreshCommunity() async {
+    guard let communityClient else { return }
+    do {
+      communityUser = try await communityClient.me()
+    } catch let error as APIError where error.isUnauthorized {
+      forgetCommunity()
+    } catch {}
+  }
+
+  func communitySignIn(server: URL, username: String, password: String) async throws {
+    let res = try await APIClient(baseURL: server).login(
+      username: username, password: password, deviceName: Self.deviceName)
+    adoptCommunity(server: server, res)
+  }
+
+  func communityRecover(server: URL, username: String, recoveryCode: String, password: String)
+    async throws
+  {
+    let res = try await APIClient(baseURL: server).recover(
+      username: username, recoveryCode: recoveryCode, password: password,
+      deviceName: Self.deviceName)
+    adoptCommunity(server: server, res)
+  }
+
+  func communityResetPassword(server: URL, email: String, code: String, password: String)
+    async throws
+  {
+    let res = try await APIClient(baseURL: server).resetPassword(
+      email: email, code: code, password: password, deviceName: Self.deviceName)
+    adoptCommunity(server: server, res)
+  }
+
+  func adoptCommunity(server: URL, _ res: AuthResponse) {
+    Keychain.setCommunityToken(res.token, for: server)
+    UserDefaults.standard.set(server, forKey: Self.communityServerKey)
+    UserDefaults.standard.set(res.user.username, forKey: Self.communityUsernameKey)
+    communityServer = server
+    communityUsername = res.user.username
+    communityUser = res.user
+    communityClient = APIClient(baseURL: server, token: res.token)
+  }
+
+  func communitySignOut() async {
+    try? await communityClient?.logout()
+    forgetCommunity()
+  }
+
+  private func forgetCommunity() {
+    if let communityServer { Keychain.setCommunityToken(nil, for: communityServer) }
+    UserDefaults.standard.removeObject(forKey: Self.communityServerKey)
+    UserDefaults.standard.removeObject(forKey: Self.communityUsernameKey)
+    communityServer = nil
+    communityUsername = nil
+    communityUser = nil
+    communityClient = nil
   }
 
   /// Picks up the saved session. Offline, you stay signed in and read what's
@@ -93,13 +184,15 @@ final class Session {
     await adopt(server: server, res)
   }
 
-  /// Makes a new recovery code for the signed-in account and returns it to show once.
-  func newRecoveryCode(password: String) async throws -> String {
-    guard let client, let username = user?.username ?? username else {
+  /// Makes a new recovery code for the account and returns it to show once.
+  func newRecoveryCode(password: String, for account: Account = .library) async throws -> String {
+    guard let client = client(account), let username = accountUsername(account) else {
       throw CancellationError()
     }
     let code = RecoveryCode.new()
-    user = try await client.setRecoveryCode(username: username, password: password, code: code)
+    let updated = try await client.setRecoveryCode(
+      username: username, password: password, code: code)
+    if account == .library { user = updated } else { communityUser = updated }
     return code
   }
 
@@ -138,7 +231,13 @@ final class Session {
   }
 
   /// Deletes the account on the server, then leaves it as signing out does.
-  func deleteAccount(password: String) async throws {
+  func deleteAccount(password: String, for account: Account = .library) async throws {
+    if account == .community {
+      guard let communityClient, let name = accountUsername(.community) else { return }
+      try await communityClient.deleteAccount(username: name, password: password)
+      forgetCommunity()
+      return
+    }
     guard let client, let username = user?.username ?? username else { return }
     try await client.deleteAccount(username: username, password: password)
     if let server {

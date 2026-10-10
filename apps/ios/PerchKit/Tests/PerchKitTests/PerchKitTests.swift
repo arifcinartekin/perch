@@ -70,6 +70,17 @@ import Testing
     #expect(try info("something-new").signup == .closed)
   }
 
+  @Test func readsHubAndUnknownServerModes() throws {
+    func mode(_ m: String) throws -> ServerMode {
+      let json =
+        #"{"software":"perch-server","version":"0.1.0","mode":"\#(m)","signup":"open","community":false,"needsSetup":false}"#
+      return try JSONDecoder().decode(ServerInfo.self, from: Data(json.utf8)).mode
+    }
+    #expect(try mode("hub") == .hub)
+    #expect(try mode("personal") == .personal)
+    #expect(try mode("something-new") == .unknown)
+  }
+
   @Test func decodesANoteFromTheServer() throws {
     let json =
       #"{"id":"f1:a1","feedId":"f1","articleId":"a1","title":"T","body":"Hi","createdAt":1,"updatedAt":2,"sharedUrl":"https://app.perch.ws/shared/x"}"#

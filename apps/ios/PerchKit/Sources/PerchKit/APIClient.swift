@@ -231,10 +231,24 @@ public final class APIClient: Sendable {
   }
 
   /// Publishes a saved note as a public page; returns its address.
-  public func shareNote(_ id: String) async throws -> String {
+  /// Publishes a note as a public page. With `note` the page is made from it
+  /// (a Perch account on a hub); without, from the copy a personal server
+  /// already has.
+  public func shareNote(_ id: String, note: Note? = nil) async throws -> String {
     struct Res: Decodable { var url: String }
-    let res: Res = try await send(
-      "shares/\(id.pathSafe)", method: "PUT", body: [String: String]())
+    struct Body: Encodable {
+      var title: String
+      var url, feedTitle: String?
+      var body: String
+    }
+    let res: Res =
+      if let note {
+        try await send(
+          "shares/\(id.pathSafe)", method: "PUT",
+          body: Body(title: note.title, url: note.url, feedTitle: note.feedTitle, body: note.body))
+      } else {
+        try await send("shares/\(id.pathSafe)", method: "PUT", body: [String: String]())
+      }
     return res.url
   }
 

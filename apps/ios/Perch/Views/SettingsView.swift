@@ -21,6 +21,9 @@ struct SettingsView: View {
   @State private var serverInfo: ServerInfo?
   @State private var makingRecoveryCode = false
   @State private var confirmingEmailRemoval = false
+  @State private var connectingCommunity = false
+  @State private var communityRecovery = false
+  @State private var deletingCommunity = false
   @State private var importing = false
   @State private var exported: ExportedFile?
   @State private var exporting = false
@@ -124,6 +127,10 @@ struct SettingsView: View {
           account
         }
 
+        if reader.isLocal {
+          perchAccount
+        }
+
         Section {
           Button("Export subscriptions", systemImage: "square.and.arrow.up") { export() }
             .disabled(exporting)
@@ -208,6 +215,11 @@ struct SettingsView: View {
         serverInfo = try? await APIClient(baseURL: server).serverInfo()
       }
       .sheet(isPresented: $makingRecoveryCode) { RecoveryCodeSettingsView() }
+      .sheet(isPresented: $connectingCommunity) {
+        NavigationStack { ConnectView(purpose: .community) }
+      }
+      .sheet(isPresented: $communityRecovery) { RecoveryCodeSettingsView(account: .community) }
+      .sheet(isPresented: $deletingCommunity) { DeleteAccountView(account: .community) }
       .sheet(isPresented: $connecting) {
         NavigationStack { ConnectView(localFeeds: reader.library.feeds.count) }
       }
@@ -235,6 +247,51 @@ struct SettingsView: View {
           "Articles saved on this iPhone for offline reading are removed, and Perch goes back to the library on this iPhone."
         )
       }
+    }
+  }
+
+  /// The Perch account: a name for sharing notes, separate from sync.
+  private var perchAccount: some View {
+    Section {
+      if let name = session.communityUser?.username ?? session.communityUsername {
+        LabeledContent {
+          Text(verbatim: session.communityServer?.host() ?? "")
+        } label: {
+          Label {
+            Text(verbatim: "@\(name)")
+          } icon: {
+            Image(systemName: "person.crop.circle")
+          }
+        }
+        .surfaceRow()
+        Button("New recovery code…", systemImage: "lifepreserver") { communityRecovery = true }
+          .surfaceRow()
+        if let server = session.communityServer {
+          Link(destination: server) {
+            Label("Manage on the web", systemImage: "safari")
+          }
+          .surfaceRow()
+        }
+        Button("Sign out", systemImage: "rectangle.portrait.and.arrow.right", role: .destructive) {
+          Task { await session.communitySignOut() }
+        }
+        .surfaceRow()
+        Button("Delete Perch account…", systemImage: "trash", role: .destructive) {
+          deletingCommunity = true
+        }
+        .surfaceRow()
+      } else {
+        Button("Sign in or create…", systemImage: "person.crop.circle.badge.plus") {
+          connectingCommunity = true
+        }
+        .surfaceRow()
+      }
+    } header: {
+      Text("Perch account")
+    } footer: {
+      Text(
+        "Your name for sharing notes as public pages. It doesn't sync your library; the sync chain does that."
+      )
     }
   }
 
@@ -476,6 +533,7 @@ struct ChangePasswordView: View {
 /// and shows it once.
 struct RecoveryCodeSettingsView: View {
   @Environment(Session.self) private var session
+  var account: Session.Account = .library
   @Environment(\.dismiss) private var dismiss
   @State private var password = ""
   @State private var code: String?
@@ -488,8 +546,8 @@ struct RecoveryCodeSettingsView: View {
         if let code {
           Section {
             RecoveryCodeView(
-              code: code, username: session.user?.username ?? session.username ?? "",
-              host: session.server?.host() ?? "", doneTitle: "Done"
+              code: code, username: session.accountUser(account)?.username ?? "",
+              host: session.client(account)?.baseURL.host() ?? "", doneTitle: "Done"
             ) {
               dismiss()
             }
@@ -498,7 +556,7 @@ struct RecoveryCodeSettingsView: View {
           Section {
             SecureField("Password", text: $password).textContentType(.password)
           } footer: {
-            if session.user?.hasRecovery == true {
+            if session.accountUser(account)?.hasRecovery == true {
               Text("Making a new recovery code replaces the old one, which stops working.")
             } else {
               Text("Without a recovery code, a forgotten password means a lost account.")
@@ -537,7 +595,7 @@ struct RecoveryCodeSettingsView: View {
     Task {
       defer { busy = false }
       do {
-        code = try await session.newRecoveryCode(password: password)
+        code = try await session.newRecoveryCode(password: password, for: account)
       } catch {
         self.error = error.localizedDescription
       }
@@ -549,6 +607,7 @@ struct RecoveryCodeSettingsView: View {
 /// phone comes back, as after signing out.
 struct DeleteAccountView: View {
   @Environment(Session.self) private var session
+  var account: Session.Account = .library
   @Environment(\.dismiss) private var dismiss
   @State private var password = ""
   @State private var busy = false
@@ -560,9 +619,15 @@ struct DeleteAccountView: View {
         Section {
           SecureField("Password", text: $password).textContentType(.password)
         } footer: {
-          Text(
-            "This removes your account on \(session.server?.host() ?? "this server") with your feeds, read state, settings, notes and shared pages. It can't be undone."
-          )
+          if account == .community {
+            Text(
+              "This removes your Perch account on \(session.communityServer?.host() ?? "this server") and every note you shared from it. Your library isn't affected. It can't be undone."
+            )
+          } else {
+            Text(
+              "This removes your account on \(session.server?.host() ?? "this server") with your feeds, read state, settings, notes and shared pages. It can't be undone."
+            )
+          }
         }
         if let error {
           Section {
@@ -595,7 +660,7 @@ struct DeleteAccountView: View {
     Task {
       defer { busy = false }
       do {
-        try await session.deleteAccount(password: password)
+        try await session.deleteAccount(password: password, for: account)
         dismiss()
       } catch {
         self.error = error.localizedDescription

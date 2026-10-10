@@ -11,9 +11,12 @@ struct ConnectView: View {
   @Environment(\.dismiss) private var dismiss
   /// How many feeds the phone's library has; they're added to the account.
   var localFeeds = 0
+  /// `.library`: the library moves to the server and syncs there.
+  /// `.community`: the Perch account, for sharing; the library stays put.
+  var purpose: Session.Account = .library
 
-  @State private var address =
-    UserDefaults.standard.url(forKey: "perch.server")?.absoluteString ?? ""
+  @State private var address = ""
+  @State private var addressLoaded = false
   @State private var server: (url: URL, info: ServerInfo)?
   @State private var creating = false
   @State private var username = ""
@@ -58,7 +61,7 @@ struct ConnectView: View {
         .animation(.snappy, value: server?.url)
         .animation(.snappy, value: error)
 
-        if server == nil {
+        if server == nil && purpose == .library {
           features
             .transition(.opacity)
         }
@@ -78,6 +81,14 @@ struct ConnectView: View {
         Button("Cancel", systemImage: "xmark") { dismiss() }
       }
     }
+    .onAppear {
+      guard !addressLoaded else { return }
+      addressLoaded = true
+      address =
+        purpose == .community
+        ? session.communityServer?.host() ?? "app.perch.ws"
+        : UserDefaults.standard.url(forKey: "perch.server")?.absoluteString ?? ""
+    }
   }
 
   private var header: some View {
@@ -90,15 +101,27 @@ struct ConnectView: View {
             .frame(width: 160, height: 160)
             .blur(radius: 60)
         }
-      Text("Sync with a Perch Server")
-        .font(.title2.weight(.semibold))
+      if purpose == .community {
+        Text("Your Perch account")
+          .font(.title2.weight(.semibold))
+          .multilineTextAlignment(.center)
+        Text(
+          "Your name for sharing notes as public pages. It doesn't sync your library, and you don't need it to read."
+        )
+        .font(.subheadline)
         .multilineTextAlignment(.center)
-      Text(
-        "Perch works on its own. With a server you or a friend runs, your feeds and what you've read follow you to the browser extension and the web."
-      )
-      .font(.subheadline)
-      .multilineTextAlignment(.center)
-      .foregroundStyle(theme.muted)
+        .foregroundStyle(theme.muted)
+      } else {
+        Text("Sync with a Perch Server")
+          .font(.title2.weight(.semibold))
+          .multilineTextAlignment(.center)
+        Text(
+          "Perch works on its own. With a server you or a friend runs, your feeds and what you've read follow you to the browser extension and the web."
+        )
+        .font(.subheadline)
+        .multilineTextAlignment(.center)
+        .foregroundStyle(theme.muted)
+      }
     }
   }
 
@@ -140,7 +163,7 @@ struct ConnectView: View {
 
   private var serverForm: some View {
     VStack(alignment: .leading, spacing: 14) {
-      Text("Your Perch Server")
+      Text(purpose == .community ? "Where your account is" : "Your Perch Server")
         .font(.headline)
       TextField("perch.example.com", text: $address)
         .textContentType(.URL)
@@ -152,14 +175,18 @@ struct ConnectView: View {
         .onSubmit(connect)
         .fieldStyle()
       Group {
-        #if targetEnvironment(simulator)
-          Text(
-            "The address of the Perch Server you or a friend runs. On the simulator, the Mac's own server is \(Self.localServer)."
-          )
-        #else
-          Text("The address of the Perch Server you or a friend runs.")
-        #endif
-        if localFeeds > 0 {
+        if purpose == .community {
+          Text("app.perch.ws, or a Perch Server of your own.")
+        } else {
+          #if targetEnvironment(simulator)
+            Text(
+              "The address of the Perch Server you or a friend runs. On the simulator, the Mac's own server is \(Self.localServer)."
+            )
+          #else
+            Text("The address of the Perch Server you or a friend runs.")
+          #endif
+        }
+        if localFeeds > 0 && purpose == .library {
           Text("The \(localFeeds) feeds on this iPhone are added to the account.")
         }
       }
@@ -182,12 +209,18 @@ struct ConnectView: View {
           status: 0, code: "not-perch",
           message: String(localized: "That server isn't a Perch Server."))
       }
-      guard info.mode == .personal else {
+      if purpose == .library && info.mode == .hub {
         throw APIError(
-          status: 0, code: "e2e",
+          status: 0, code: "hub",
           message: String(
             localized:
-              "This server uses end-to-end encryption, which the iPhone app doesn't support yet."))
+              "This server holds Perch accounts, not libraries. Sync with a chain, and sign in to it under Perch account to share notes."
+          ))
+      }
+      guard info.mode == .personal || info.mode == .hub else {
+        throw APIError(
+          status: 0, code: "unsupported",
+          message: String(localized: "This server runs in a mode this version of Perch can't use yet."))
       }
       server = (url, info)
       creating = info.needsSetup
@@ -208,7 +241,12 @@ struct ConnectView: View {
           code: created.code, username: created.res.user.username,
           host: url.host() ?? url.absoluteString
         ) {
-          Task { await session.finishSignUp(server: url, created.res) }
+          if purpose == .community {
+            session.adoptCommunity(server: url, created.res)
+            dismiss()
+          } else {
+            Task { await session.finishSignUp(server: url, created.res) }
+          }
         }
       }
     } else {
@@ -437,7 +475,18 @@ struct ConnectView: View {
       return
     }
     run {
-      if recovering {
+      if purpose == .community && !creating {
+        if recovering {
+          try await session.communityRecover(
+            server: url, username: username, recoveryCode: recoveryInput, password: password)
+        } else if resetting, let codeSentTo {
+          try await session.communityResetPassword(
+            server: url, email: codeSentTo, code: emailCode, password: password)
+        } else {
+          try await session.communitySignIn(server: url, username: username, password: password)
+        }
+        dismiss()
+      } else if recovering {
         try await session.recover(
           server: url, username: username, recoveryCode: recoveryInput, password: password)
       } else if resetting, let codeSentTo {
@@ -451,6 +500,9 @@ struct ConnectView: View {
           recoveryCode: recoveryCode)
         if let recoveryCode {
           created = (res, recoveryCode)
+        } else if purpose == .community {
+          session.adoptCommunity(server: url, res)
+          dismiss()
         } else {
           await session.finishSignUp(server: url, res)
         }

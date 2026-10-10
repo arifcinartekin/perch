@@ -71,13 +71,18 @@ final class Reader {
   private var lastDownload = Date.distantPast
   private var chainTask: Task<Void, Never>?
 
+  /// The Perch account, for sharing notes from the library on this phone.
+  private let community: @MainActor () -> APIClient?
+
   init(
     backend: any ReaderBackend, store: OfflineStore, chain: ChainLink? = nil,
+    community: @escaping @MainActor () -> APIClient? = { nil },
     onUnauthorized: @escaping @MainActor () -> Void
   ) {
     self.backend = backend
     self.store = store
     self.chain = chain
+    self.community = community
     self.onUnauthorized = onUnauthorized
   }
 
@@ -190,6 +195,8 @@ final class Reader {
   }
 
   /// Saves the note; an empty one is deleted.
+  // A shared note's page follows it: edits are published again, deleting the
+  // note takes the page down.
   func saveNote(_ source: NoteSource, body: String) async throws {
     if body.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
       try await deleteNote(source.id)
@@ -198,34 +205,70 @@ final class Reader {
     let note = try await backend.saveNote(source, body: body)
     notes = [note] + notes.filter { $0.id != note.id }
     chainSoon()
+    if let url = note.sharedUrl, let account = pageAccount(url) {
+      Task { _ = try? await account.shareNote(note.id, note: note) }
+    }
   }
 
   func deleteNote(_ id: String) async throws {
-    guard notes.contains(where: { $0.id == id }) else { return }
+    guard let note = notes.first(where: { $0.id == id }) else { return }
+    if let url = note.sharedUrl, let account = pageAccount(url) {
+      try? await account.unshareNote(id)
+    }
     try await backend.deleteNote(id)
     notes.removeAll { $0.id == id }
     chainSoon()
   }
 
-  /// Why notes can't be shared from here, or nil when they can.
+  /// Why notes can't be shared from here, or nil when they can. The library
+  /// on this phone shares through the Perch account; a library on a Perch
+  /// Server through that server.
   var sharingUnavailable: String? {
-    if server != nil { return nil }
-    return chain?.isOn == true
-      ? String(localized: "Sharing needs a Perch Server account. Sync chains stay private.")
-      : String(localized: "Connect to a Perch Server in Settings to share notes.")
+    if server != nil || community() != nil { return nil }
+    return String(localized: "Sign in to a Perch account in Settings to share notes.")
   }
 
   /// Publishes the note; returns the page's address.
   func shareNote(_ id: String) async throws -> String {
-    guard let server else { throw APIError(status: 0, code: "no-server", message: sharingUnavailable ?? "") }
-    let url = try await server.shareNote(id)
+    if let server {
+      let url = try await server.shareNote(id)
+      await loadNotes()
+      return url
+    }
+    guard let community = community(), let local = backend as? LocalBackend,
+      let note = notes.first(where: { $0.id == id })
+    else {
+      throw APIError(status: 0, code: "no-account", message: sharingUnavailable ?? "")
+    }
+    let url = try await community.shareNote(id, note: note)
+    await local.setSharedUrl(id, url)
     await loadNotes()
+    chainSoon()
     return url
   }
 
   func unshareNote(_ id: String) async throws {
-    try await server?.unshareNote(id)
+    if let server {
+      try await server.unshareNote(id)
+    } else if let note = notes.first(where: { $0.id == id }), let url = note.sharedUrl {
+      guard let account = pageAccount(url) else {
+        throw APIError(
+          status: 0, code: "no-account",
+          message: String(localized: "Sign in to the Perch account this note was shared from."))
+      }
+      try await account.unshareNote(id)
+      await (backend as? LocalBackend)?.setSharedUrl(id, nil)
+      chainSoon()
+    }
     await loadNotes()
+  }
+
+  /// The Perch account a page of the phone's library lives on, if signed in to it.
+  private func pageAccount(_ sharedUrl: String) -> APIClient? {
+    guard server == nil, let community = community(),
+      URL(string: sharedUrl)?.host() == community.baseURL.host()
+    else { return nil }
+    return community
   }
 
   func reloadCounts() async {

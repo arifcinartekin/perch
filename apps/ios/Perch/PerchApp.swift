@@ -65,6 +65,7 @@ private struct LibraryRoot: View {
     _reader = State(
       initialValue: Reader(
         backend: backend, store: store, chain: backend is LocalBackend ? session.chain : nil,
+        community: { [weak session] in session?.communityClient },
         onUnauthorized: { [weak session] in session?.sessionExpired() }))
   }
 

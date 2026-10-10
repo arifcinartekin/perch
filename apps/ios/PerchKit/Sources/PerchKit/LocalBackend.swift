@@ -124,6 +124,11 @@ public actor LocalBackend: ReaderBackend {
     await update { s in s.notes?[id] = nil }
   }
 
+  /// Records (or clears) a note's public link; it syncs with the rest of the note.
+  public func setSharedUrl(_ id: String, _ url: String?) async {
+    await update { s in s.notes?[id]?.sharedUrl = url }
+  }
+
   // MARK: Articles
 
   public func articles(_ q: APIClient.ArticleQuery, before: String?, limit: Int) async throws
