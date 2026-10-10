@@ -67,8 +67,8 @@
             — <strong>not end-to-end encrypted</strong>. Details below.
           </li>
           <li>
-            We don't store email addresses, keep access logs or store IP addresses. We don't sell or
-            share anything.
+            We don't ask for an email address, keep access logs or store IP addresses. We don't sell
+            or share anything.
           </li>
           <li>
             Perch is open source. Everything here can be checked in
@@ -171,10 +171,10 @@
             <td>To sign in, and to sign your shared notes (as @username).</td>
           </tr>
           <tr>
-            <td>A keyed hash of your email address — not the address</td>
+            <td>A hash of your recovery code</td>
             <td>
-              To find your account when you type your address to reset your password, and to stop
-              one address from having two accounts. We can't read or list addresses from it.
+              To let you set a new password if you forget yours. The code is made on your device and
+              shown to you once; we keep only a hash of it.
             </td>
           </tr>
           <tr>
@@ -228,20 +228,20 @@
         contact address once the report is dealt with.
       </p>
 
-      <h2>Email</h2>
+      <h2>No email</h2>
       <p>
-        <strong>We don't store your email address.</strong> When you type it, the server uses it to
-        send the one email you asked for, and keeps only a slow, keyed hash of it (scrypt, with a
-        key that isn't in the database). With that hash it can recognise the address when you type
-        it again, but it can't turn it back into the address. That also means we can't write to you
-        unless you ask: there are no newsletters, announcements or reminders.
+        app.perch.ws doesn't ask for an email address and never sends email. A forgotten password is
+        replaced with your recovery code. We have no way to write to you, so there are no
+        newsletters, announcements or reminders.
       </p>
       <p>
-        We send email only for a sign-up or password-reset code, a code to confirm a new address, or
-        a notice that an address already has an account. Codes are stored only as a keyed hash and
-        expire after 10 minutes. Mail is delivered by Resend from mail.perch.ws; like any email
-        provider, Resend sees the address and the message it delivers. Servers run by other people
-        never use our email service.
+        Instead of an email check or a CAPTCHA, signing up asks your device for a few seconds of
+        computation (a “proof of work”). It sends nothing about you; it just makes creating accounts
+        in bulk expensive.
+      </p>
+      <p>
+        Perch Servers run by other people can be set up to send email for sign-up and password
+        reset. That's their choice and their responsibility.
       </p>
 
       <h2>If someone took our server</h2>
@@ -254,12 +254,11 @@
           <strong>Sync chains:</strong> only encrypted data. Without your chain code it can't be
           read.
         </li>
+        <li><strong>Email addresses:</strong> none — we never ask for them.</li>
         <li>
-          <strong>Email addresses:</strong> none — only keyed hashes. Someone who already knows an
-          address and also has the key could check whether it has an account; nobody can get a list
-          of addresses.
+          <strong>Passwords and recovery codes:</strong> none — only hashes (of a key derived from
+          the password, and of the code).
         </li>
-        <li><strong>Passwords:</strong> none — only a hash of a key derived from them.</li>
         <li>
           <strong>Accounts on app.perch.ws:</strong> usernames, and the library of each account
           (subscriptions, read and starred flags, settings and notes)
@@ -292,8 +291,8 @@
         </li>
       </ul>
       <p>
-        The server's own output contains start-up messages and error messages (for example “sending
-        email failed”); these don't include IP addresses or what you read.
+        The server's own output contains start-up messages and error messages; these don't include
+        IP addresses or what you read.
       </p>
 
       <h2>Cookies and local storage</h2>
@@ -310,10 +309,6 @@
           <strong>OVHcloud</strong> hosts our server (app.perch.ws and sync.perch.ws). It is
           currently in <strong>Canada</strong>; we plan to move it to the EU. Your account data and
           encrypted chain records are stored there.
-        </li>
-        <li>
-          <strong>Resend</strong> (USA) delivers our emails, so it processes your email address and
-          the message.
         </li>
         <li>
           <strong>Cloudflare</strong> provides DNS for perch.ws and hosts this site. Traffic to
@@ -333,7 +328,7 @@
       <h2>How long we keep things</h2>
       <ul>
         <li>Account data: until you delete it or the account.</li>
-        <li>Email codes: 10 minutes. Sessions: 180 days after last use.</li>
+        <li>Sessions: 180 days after last use.</li>
         <li>Chains: as described above (60 / 90 / 180 days).</li>
         <li>
           Backups: the server keeps daily database backups for 14 days. Something you delete is gone
@@ -371,8 +366,7 @@
       <h2>Changes</h2>
       <p>
         If we change what we collect, we'll update this page first and announce it here and in the
-        apps — we can't email you, since we don't keep your address. Every version of this page is
-        in the
+        apps — we have no email address to write to you. Every version of this page is in the
         <a href="https://github.com/arifcinartekin/perch/commits/main/site/privacy.html"
           >project's history</a
         >.
@@ -400,7 +394,7 @@
             <strong>uçtan uca şifreli değildir</strong>; ayrıntılar aşağıda.
           </li>
           <li>
-            E-posta adresi saklamayız, erişim kaydı tutmayız, IP adresi saklamayız. Hiçbir şeyi
+            E-posta adresi istemeyiz, erişim kaydı tutmayız, IP adresi saklamayız. Hiçbir şeyi
             satmayız, paylaşmayız.
           </li>
           <li>
@@ -507,10 +501,10 @@
             <td>Giriş için ve paylaştığın notlarda imza olarak (@kullanıcıadı).</td>
           </tr>
           <tr>
-            <td>E-posta adresinin anahtarlı özeti (adresin kendisi değil)</td>
+            <td>Kurtarma kodunun özeti</td>
             <td>
-              Şifreni sıfırlamak için adresini yazdığında hesabını bulmak ve bir adresin iki hesabı
-              olmasını önlemek için. Bu özetten adresleri okuyamaz ya da listeleyemeyiz.
+              Şifreni unutursan yenisini belirleyebilmen için. Kod cihazında üretilir ve sana bir
+              kez gösterilir; biz yalnızca özetini saklarız.
             </td>
           </tr>
           <tr>
@@ -567,20 +561,20 @@
         kullanırız; iletişim adresini şikayet sonuçlandığında sileriz.
       </p>
 
-      <h2>E-posta</h2>
+      <h2>E-posta yok</h2>
       <p>
-        <strong>E-posta adresini saklamıyoruz.</strong> Adresini yazdığında sunucu onu yalnızca
-        istediğin e-postayı göndermek için kullanır ve geriye adresin yavaş ve anahtarlı bir özetini
-        bırakır (scrypt; anahtar veritabanında durmaz). Bu özetle adresi tekrar yazdığında
-        tanıyabilir, ama özetten adresin kendisine dönemez. Bu yüzden sen istemedikçe sana yazamayız
-        da: bülten, duyuru ya da hatırlatma yok.
+        app.perch.ws e-posta adresi istemez ve hiç e-posta göndermez. Unutulan bir şifre, kurtarma
+        kodunla yenilenir. Sana yazmamızın hiçbir yolu olmadığı için bülten, duyuru ya da hatırlatma
+        da yoktur.
       </p>
       <p>
-        Yalnızca kayıt ya da şifre sıfırlama kodu, yeni bir adresi doğrulama kodu ya da bir adresin
-        zaten bir hesabı olduğunu bildiren bir mesaj göndeririz. Kodlar yalnızca anahtarlı bir özet
-        olarak saklanır ve 10 dakikada geçersiz olur. E-postalar mail.perch.ws'ten Resend
-        aracılığıyla gönderilir; her e-posta sağlayıcısı gibi Resend de ilettiği adresi ve mesajı
-        görür. Başkalarının işlettiği sunucular bizim e-posta hizmetimizi kullanmaz.
+        Kayıt sırasında e-posta doğrulaması ya da CAPTCHA yerine cihazın birkaç saniyelik bir hesap
+        yapar (“işlem kanıtı”). Bu senin hakkında hiçbir şey göndermez; yalnızca toplu hesap açmayı
+        pahalı hale getirir.
+      </p>
+      <p>
+        Başkalarının işlettiği Perch sunucuları, kayıt ve şifre sıfırlama için e-posta gönderecek
+        şekilde ayarlanabilir. Bu onların tercihi ve sorumluluğudur.
       </p>
 
       <h2>Sunucumuz ele geçirilirse</h2>
@@ -592,12 +586,11 @@
         <li>
           <strong>Senkron zincirleri:</strong> yalnızca şifreli veri. Zincir kodun olmadan okunamaz.
         </li>
+        <li><strong>E-posta adresleri:</strong> yok, hiç istemeyiz.</li>
         <li>
-          <strong>E-posta adresleri:</strong> yok, yalnızca anahtarlı özetler var. Bir adresi zaten
-          bilen ve anahtara da sahip olan biri o adresin hesabı olup olmadığını kontrol edebilir;
-          kimse adreslerin listesini çıkaramaz.
+          <strong>Şifreler ve kurtarma kodları:</strong> yok, yalnızca özetleri var (şifreden
+          türetilen anahtarın ve kodun).
         </li>
-        <li><strong>Şifreler:</strong> yok, yalnızca onlardan türetilen anahtarın özeti var.</li>
         <li>
           <strong>app.perch.ws hesapları:</strong> kullanıcı adları ve her hesabın kitaplığı
           (abonelikler, okundu ve yıldız işaretleri, ayarlar ve notlar)
@@ -630,8 +623,8 @@
         </li>
       </ul>
       <p>
-        Sunucunun kendi çıktısında açılış mesajları ve hata mesajları (örneğin “e-posta
-        gönderilemedi”) bulunur. Bunlarda IP adresi ya da ne okuduğun yer almaz.
+        Sunucunun kendi çıktısında açılış mesajları ve hata mesajları bulunur. Bunlarda IP adresi ya
+        da ne okuduğun yer almaz.
       </p>
 
       <h2>Çerezler ve yerel depolama</h2>
@@ -648,10 +641,6 @@
           <strong>OVHcloud</strong> sunucumuzu barındırır (app.perch.ws ve sync.perch.ws). Sunucu şu
           an <strong>Kanada</strong>'da; AB'ye taşımayı planlıyoruz. Hesap verilerin ve şifreli
           zincir kayıtların orada saklanır.
-        </li>
-        <li>
-          <strong>Resend</strong> (ABD) e-postalarımızı iletir; bu yüzden e-posta adresini ve mesajı
-          işler.
         </li>
         <li>
           <strong>Cloudflare</strong>, perch.ws için DNS hizmeti verir ve bu siteyi barındırır.
@@ -672,7 +661,7 @@
       <h2>Ne kadar süre saklıyoruz</h2>
       <ul>
         <li>Hesap verileri: sen silene ya da hesabını silene kadar.</li>
-        <li>E-posta kodları: 10 dakika. Oturumlar: son kullanımdan 180 gün sonrasına kadar.</li>
+        <li>Oturumlar: son kullanımdan 180 gün sonrasına kadar.</li>
         <li>Zincirler: yukarıda anlatıldığı gibi (60 / 90 / 180 gün).</li>
         <li>
           Yedekler: sunucu, veritabanının günlük yedeklerini 14 gün saklar. Sildiğin bir şey 14 gün
@@ -711,7 +700,7 @@
       <h2>Değişiklikler</h2>
       <p>
         Topladığımız veriler değişirse önce bu sayfayı güncelleriz ve bunu burada ve uygulamalarda
-        duyururuz; adresini saklamadığımız için sana e-posta gönderemeyiz. Bu sayfanın her sürümü
+        duyururuz; sana yazabileceğimiz bir e-posta adresi yok. Bu sayfanın her sürümü
         <a href="https://github.com/arifcinartekin/perch/commits/main/site/privacy.html"
           >projenin geçmişinde</a
         >

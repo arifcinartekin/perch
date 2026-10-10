@@ -20,6 +20,7 @@
 		49CB1B63982C5321FC47CE2A /* NotificationUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AD33D28974BE522ACB04697 /* NotificationUITests.swift */; };
 		49E7093A28E89B11086975D7 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 53F5CA3D96CAEDA6AACDFF56 /* Localizable.xcstrings */; };
 		4FA21E71EC99A47ADAFCA162 /* WidgetSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C002131DCED71D23198C29F /* WidgetSnapshot.swift */; };
+		56880F4CEC3AB4715CDA8CAC /* RecoveryCodeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B33E132281CEFE3D5A1B0680 /* RecoveryCodeView.swift */; };
 		60DC4360D085209EB712A956 /* BackgroundRefresh.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16DB99A3BC6609013D614C6A /* BackgroundRefresh.swift */; };
 		6E140EB56A427E4A8FA10D64 /* ReaderUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 919DE3B89AF84FDDA3735FDC /* ReaderUITests.swift */; };
 		6F527C13A9E9966F5C687A1D /* NoteViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2C6F632894A32B83E38C56E /* NoteViews.swift */; };
@@ -119,6 +120,7 @@
 		9DEC51BF47974BCC5F748D16 /* PerchUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = PerchUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A8FEB8A1AEBD4A3546F97BED /* PerchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerchApp.swift; sourceTree = "<group>"; };
 		A9820D50B5167D72FD592FFE /* FeedEditSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedEditSheet.swift; sourceTree = "<group>"; };
+		B33E132281CEFE3D5A1B0680 /* RecoveryCodeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecoveryCodeView.swift; sourceTree = "<group>"; };
 		CE8C30FB9465701CCD476FE5 /* ArticleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArticleView.swift; sourceTree = "<group>"; };
 		D2C6F632894A32B83E38C56E /* NoteViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteViews.swift; sourceTree = "<group>"; };
 		D41D4D3B908363F711572982 /* Perch.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Perch.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -198,6 +200,7 @@
 				6A04F0519598EE4BAAF1557C /* MainTabView.swift */,
 				D2C6F632894A32B83E38C56E /* NoteViews.swift */,
 				16D59EB0C384D24D03E73507 /* OfflineSettingsView.swift */,
+				B33E132281CEFE3D5A1B0680 /* RecoveryCodeView.swift */,
 				1B00D3F911F440538B501763 /* SettingsView.swift */,
 			);
 			path = Views;
@@ -450,6 +453,7 @@
 				6FB486DF2AA9F2C06344CEDB /* PerchApp.swift in Sources */,
 				9E62F76BCEC0A952AA8F3736 /* PerchLogoDrawing.swift in Sources */,
 				467A098C9959101B6914679F /* Reader.swift in Sources */,
+				56880F4CEC3AB4715CDA8CAC /* RecoveryCodeView.swift in Sources */,
 				241FF41B2764A040F6F901C6 /* Session.swift in Sources */,
 				ACAD3E4D8FB017B803231DD3 /* SettingsView.swift in Sources */,
 				4FA21E71EC99A47ADAFCA162 /* WidgetSnapshot.swift in Sources */,

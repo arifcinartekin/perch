@@ -32,6 +32,10 @@ public struct ServerInfo: Codable, Sendable, Equatable {
   public var email: Bool?
   /// The operator's own privacy policy and terms, when they've published them.
   public var legal: Legal?
+  /// Signing up needs a proof of work this many bits hard.
+  public var pow: Int?
+  /// Accounts can set a recovery code and reset the password with it.
+  public var recovery: Bool?
 
   public struct Legal: Codable, Sendable, Equatable {
     public var privacy: String?
@@ -72,6 +76,8 @@ public struct PublicUser: Codable, Sendable, Equatable {
   /// A confirmed address is on the account. The server keeps only a keyed
   /// hash of it, so it can't say which.
   public var hasEmail: Bool?
+  /// A recovery code is set.
+  public var hasRecovery: Bool?
 }
 
 public struct AuthResponse: Codable, Sendable {

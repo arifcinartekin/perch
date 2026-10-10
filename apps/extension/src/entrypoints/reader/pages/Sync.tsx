@@ -7,7 +7,7 @@ import {
   parseChainLink,
 } from '@perch/core/chain';
 import { relativeTime } from '@perch/core/time';
-import { Button, Dialog, Row, Section, Spinner, useToast } from '@perch/reader';
+import { Button, Dialog, RecoveryCode, Row, Section, Spinner, useToast } from '@perch/reader';
 import { sendMessage } from '@/lib/messaging';
 import { requestHostPermission } from '@/lib/permissions/host';
 import { createChain, deleteChain, joinChain } from '@/lib/sync/chain';
@@ -15,6 +15,7 @@ import {
   ServerError,
   deleteAccount,
   getServerInfo,
+  recoverAccount,
   normalizeServerUrl,
   signIn,
   requestEmailCode,
@@ -537,7 +538,8 @@ function SignInForm({
   onCancel: () => void;
 }) {
   const toast = useToast();
-  const [mode, setMode] = useState<'in' | 'up' | 'reset'>('in');
+  // 'reset' sets a new password with an emailed code, 'recover' with the recovery code.
+  const [mode, setMode] = useState<'in' | 'up' | 'reset' | 'recover'>('in');
   const [server, setServer] = useState(initial?.server ?? '');
   const [username, setUsername] = useState(initial?.username ?? '');
   const [password, setPassword] = useState('');
@@ -549,6 +551,10 @@ function SignInForm({
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
   const [canReset, setCanReset] = useState(false);
+  const [hasEmail, setHasEmail] = useState(false);
+  const [recoveryInput, setRecoveryInput] = useState('');
+  // A new account waits here while its recovery code is shown.
+  const [created, setCreated] = useState<{ account: ServerAccount; code: string } | null>(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(notice ?? null);
 
@@ -571,6 +577,7 @@ function SignInForm({
     if (emailStep !== 'address' && ((mode !== 'reset' && !username.trim()) || !password)) {
       return setErr(mode === 'reset' ? 'Enter a new password.' : 'Enter a username and password.');
     }
+    if (mode === 'recover' && !recoveryInput.trim()) return setErr('Enter your recovery code.');
 
     // Ask for the server's origin first, while we still have the click.
     if (!(await requestHostPermission(url))) {
@@ -582,7 +589,8 @@ function SignInForm({
       if (info.mode !== 'personal') {
         return setErr('This server runs in a mode this version of Perch can’t use yet.');
       }
-      setCanReset(Boolean(info.email));
+      setCanReset(Boolean(info.email || info.recovery));
+      setHasEmail(Boolean(info.email));
       const byEmail = mode === 'reset' || (mode === 'up' && info.signup === 'email');
       if (byEmail && emailStep !== 'code') {
         if (!email.trim()) {
@@ -596,22 +604,27 @@ function SignInForm({
         return;
       }
       const confirmed = byEmail ? { email: email.trim(), emailCode: code.trim() } : {};
+      if (mode === 'up') {
+        const made = await signUp(url, username.trim(), password, info, {
+          invite: invite.trim() || undefined,
+          ...confirmed,
+        });
+        if (made.recoveryCode)
+          return setCreated({ account: made.account, code: made.recoveryCode });
+        await saveAccount(made.account);
+        return toast(`Account created on ${new URL(url).host}`, 'success');
+      }
       const account =
         mode === 'in'
           ? await signIn(url, username.trim(), password)
-          : mode === 'reset'
-            ? await resetPassword(url, email.trim(), code.trim(), password)
-            : await signUp(url, username.trim(), password, {
-                invite: invite.trim() || undefined,
-                ...confirmed,
-              });
+          : mode === 'recover'
+            ? await recoverAccount(url, username.trim(), recoveryInput.trim(), password)
+            : await resetPassword(url, email.trim(), code.trim(), password);
       await saveAccount(account);
       toast(
         mode === 'in'
           ? `Signed in to ${new URL(url).host}`
-          : mode === 'reset'
-            ? `New password set on ${new URL(url).host}`
-            : `Account created on ${new URL(url).host}`,
+          : `New password set on ${new URL(url).host}`,
         'success',
       );
     } catch (error) {
@@ -624,13 +637,30 @@ function SignInForm({
     }
   };
 
+  if (created) {
+    const host = new URL(created.account.server).host;
+    return (
+      <div className="flex flex-col gap-3">
+        <div className="text-[13px] font-medium">Save your recovery code</div>
+        <RecoveryCode
+          code={created.code}
+          host={host}
+          onDone={async () => {
+            await saveAccount(created.account);
+            toast(`Account created on ${host}`, 'success');
+          }}
+        />
+      </div>
+    );
+  }
+
   return (
     <form onSubmit={submit} className="flex flex-col gap-3">
       <div className="flex items-center justify-between">
         <div className="text-[13px] font-medium">
           {mode === 'in'
             ? 'Sign in to your Perch Server'
-            : mode === 'reset'
+            : mode === 'reset' || mode === 'recover'
               ? 'Reset your password'
               : 'Create an account'}
         </div>
@@ -697,13 +727,24 @@ function SignInForm({
           <input
             className={inputClass}
             type="password"
-            placeholder={mode === 'reset' ? 'New password' : 'Password'}
+            placeholder={mode === 'reset' || mode === 'recover' ? 'New password' : 'Password'}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             autoComplete={mode === 'in' ? 'current-password' : 'new-password'}
             autoFocus={Boolean(initial)}
           />
         </div>
+      )}
+      {mode === 'recover' && (
+        <input
+          className={inputClass}
+          placeholder="Recovery code"
+          value={recoveryInput}
+          onChange={(e) => setRecoveryInput(e.target.value)}
+          autoComplete="off"
+          spellCheck={false}
+          autoCapitalize="characters"
+        />
       )}
       {mode === 'up' && needsInvite && (
         <input
@@ -719,9 +760,27 @@ function SignInForm({
         <button
           type="button"
           className="self-start text-[11.5px] font-medium text-[var(--accent-text)] hover:underline"
-          onClick={() => switchMode('reset')}
+          onClick={() => switchMode(hasEmail ? 'reset' : 'recover')}
         >
           Forgot your password?
+        </button>
+      )}
+      {mode === 'reset' && (
+        <button
+          type="button"
+          className="self-start text-[11.5px] font-medium text-[var(--accent-text)] hover:underline"
+          onClick={() => switchMode('recover')}
+        >
+          Use your recovery code instead
+        </button>
+      )}
+      {mode === 'recover' && hasEmail && (
+        <button
+          type="button"
+          className="self-start text-[11.5px] font-medium text-[var(--accent-text)] hover:underline"
+          onClick={() => switchMode('reset')}
+        >
+          Get a code by email instead
         </button>
       )}
       <p className="text-[11.5px] leading-relaxed text-[var(--text-faint)]">
@@ -734,7 +793,7 @@ function SignInForm({
             ? 'Send code'
             : mode === 'in'
               ? 'Sign in'
-              : mode === 'reset'
+              : mode === 'reset' || mode === 'recover'
                 ? 'Set new password'
                 : 'Create account'}
         </Button>

@@ -40,6 +40,7 @@ open http://localhost:5173 — Vite proxies `/api` to the server.
 | `PORT` / `HOST`             | `8080` / `0.0.0.0` | Where to listen.                                                                                                                                             |
 | `PERCH_PUBLIC_URL`          |                    | The address clients use, e.g. `https://reader.example.com`. Marks cookies `Secure`.                                                                          |
 | `PERCH_SIGNUP`              | `invite`           | `open`, `invite` (admin creates codes), `email` (anyone, after confirming an address with an emailed code) or `closed`. The first account is always allowed. |
+| `PERCH_SIGNUP_POW`          | `0`                | Proof of work for signing up, in bits (0–28). About 20 takes a second or two on a phone and makes bulk sign-ups costly. The first account needs none.        |
 | `PERCH_EMAIL`               | `off`              | `resend` to send email codes (signup, password reset, adding an address); `log` prints them instead (development).                                           |
 | `PERCH_EMAIL_FROM`          |                    | Sender, e.g. `Perch <noreply@mail.example.com>`. The domain must be verified with your provider.                                                             |
 | `RESEND_API_KEY`            |                    | Your own [Resend](https://resend.com) API key. Each server sends with its own account.                                                                       |
@@ -101,6 +102,12 @@ All endpoints live under `/api/v1` and speak JSON. The request and response type
 | `GET /server`                                                        | Mode, version, sign-up policy              |
 | `POST /auth/prelogin` · `/auth/register` · `/auth/login` · `/logout` | Accounts and sessions                      |
 | `GET /auth/me` · `POST /auth/password`                               | Current user, change password              |
+| `GET /auth/challenge`                                                | Proof of work to sign up, when asked for   |
+| `POST /auth/recover` · `/auth/recovery`                              | Reset with the recovery code, replace it   |
+| `POST /auth/email/code` · `/auth/reset` · `/auth/email`              | Email codes, reset, add an address         |
+| `POST /auth/delete`                                                  | Delete the account and its data            |
+| `GET/PUT/DELETE /notes/:id` · `PUT/DELETE /shares/:id`               | Notes, and sharing one as a page           |
+| `GET /admin/reports` · `POST /admin/reports/:id`                     | Reports on shared notes (admin)            |
 | `GET /devices` · `DELETE /devices/:id`                               | Signed-in devices                          |
 | `GET/POST /admin/invites` · `DELETE /admin/invites/:code`            | Invite codes (admin)                       |
 | `GET /reader/library`                                                | Subscriptions and categories               |

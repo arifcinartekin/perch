@@ -69,6 +69,7 @@ export function lookupSession(
         role: users.role,
         createdAt: users.createdAt,
         emailId: users.emailId,
+        recoveryHash: users.recoveryHash,
       },
     })
     .from(sessions)

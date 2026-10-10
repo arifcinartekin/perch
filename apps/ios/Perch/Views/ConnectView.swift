@@ -21,6 +21,11 @@ struct ConnectView: View {
   @State private var invite = ""
   /// Setting a new password with an emailed code.
   @State private var resetting = false
+  /// Setting a new password with the recovery code.
+  @State private var recovering = false
+  @State private var recoveryInput = ""
+  /// A new account, held back while its recovery code is shown.
+  @State private var created: (res: AuthResponse, code: String)?
   @State private var email = ""
   @State private var code = ""
   /// Where the code went; nil until one is sent.
@@ -29,7 +34,7 @@ struct ConnectView: View {
   @State private var error: String?
 
   @FocusState private var focus: Field?
-  private enum Field { case address, email, code, username, password, invite }
+  private enum Field { case address, email, code, username, recovery, password, invite }
 
   var body: some View {
     ScrollView {
@@ -196,6 +201,20 @@ struct ConnectView: View {
 
   @ViewBuilder
   private func accountForm(_ url: URL, _ info: ServerInfo) -> some View {
+    if let created {
+      VStack(alignment: .leading, spacing: 14) {
+        Text("Save your recovery code").font(.headline)
+        RecoveryCodeView(code: created.code, host: url.host() ?? url.absoluteString) {
+          Task { await session.finishSignUp(server: url, created.res) }
+        }
+      }
+    } else {
+      signInForm(url, info)
+    }
+  }
+
+  @ViewBuilder
+  private func signInForm(_ url: URL, _ info: ServerInfo) -> some View {
     VStack(alignment: .leading, spacing: 14) {
       HStack {
         VStack(alignment: .leading, spacing: 2) {
@@ -236,14 +255,28 @@ struct ConnectView: View {
         .font(.footnote.weight(.medium))
         .frame(maxWidth: .infinity)
       }
-      if !creating && !resetting && info.email == true {
-        Button("Forgot your password?") { switchTo(creating: false, resetting: true) }
+      if !creating && !resetting && !recovering && (info.email == true || info.recovery == true) {
+        Button("Forgot your password?") {
+          switchTo(resetting: info.email == true, recovering: info.email != true)
+        }
+        .font(.footnote.weight(.medium))
+        .frame(maxWidth: .infinity)
+      }
+      if resetting && info.recovery == true {
+        Button("Use your recovery code instead") { switchTo(recovering: true) }
           .font(.footnote.weight(.medium))
           .frame(maxWidth: .infinity)
       }
-      if !info.needsSetup && (info.signup != .closed || resetting) {
-        Button(creating || resetting ? "I already have an account" : "Create an account") {
-          switchTo(creating: !(creating || resetting), resetting: false)
+      if recovering && info.email == true {
+        Button("Get a code by email instead") { switchTo(resetting: true) }
+          .font(.footnote.weight(.medium))
+          .frame(maxWidth: .infinity)
+      }
+      if !info.needsSetup && (info.signup != .closed || resetting || recovering) {
+        Button(
+          creating || resetting || recovering ? "I already have an account" : "Create an account"
+        ) {
+          switchTo(creating: !(creating || resetting || recovering))
         }
         .font(.footnote.weight(.medium))
         .frame(maxWidth: .infinity)
@@ -253,7 +286,7 @@ struct ConnectView: View {
 
   private func title(_ info: ServerInfo) -> LocalizedStringKey {
     if info.needsSetup { return "Set up your server" }
-    if resetting { return "Reset your password" }
+    if resetting || recovering { return "Reset your password" }
     return creating ? "Create an account" : "Sign in"
   }
 
@@ -292,6 +325,11 @@ struct ConnectView: View {
         .focused($focus, equals: .code)
         .fieldStyle()
     }
+    if recovering {
+      Text("Enter your username, the recovery code you saved when you made the account, and a new password.")
+        .font(.footnote)
+        .foregroundStyle(theme.muted)
+    }
     if !resetting {
       TextField("Username", text: $username)
         .textContentType(.username)
@@ -299,11 +337,20 @@ struct ConnectView: View {
         .autocorrectionDisabled()
         .focused($focus, equals: .username)
         .submitLabel(.next)
+        .onSubmit { focus = recovering ? .recovery : .password }
+        .fieldStyle()
+    }
+    if recovering {
+      TextField("Recovery code", text: $recoveryInput)
+        .textInputAutocapitalization(.characters)
+        .autocorrectionDisabled()
+        .focused($focus, equals: .recovery)
+        .submitLabel(.next)
         .onSubmit { focus = .password }
         .fieldStyle()
     }
-    SecureField(resetting ? "New password" : "Password", text: $password)
-      .textContentType(creating || resetting ? .newPassword : .password)
+    SecureField(resetting || recovering ? "New password" : "Password", text: $password)
+      .textContentType(creating || resetting || recovering ? .newPassword : .password)
       .focused($focus, equals: .password)
       .submitLabel(creating && needsInvite(info) ? .next : .go)
       .onSubmit {
@@ -320,7 +367,9 @@ struct ConnectView: View {
         .fieldStyle()
     }
 
-    primaryButton(resetting ? "Set new password" : creating ? "Create account" : "Sign in") {
+    primaryButton(
+      resetting || recovering ? "Set new password" : creating ? "Create account" : "Sign in"
+    ) {
       submit(url, info)
     }
     .disabled((!resetting && username.isEmpty) || password.isEmpty)
@@ -335,9 +384,10 @@ struct ConnectView: View {
     resetting || (creating && info.signup == .email)
   }
 
-  private func switchTo(creating: Bool, resetting: Bool) {
+  private func switchTo(creating: Bool = false, resetting: Bool = false, recovering: Bool = false) {
     self.creating = creating
     self.resetting = resetting
+    self.recovering = recovering
     codeSentTo = nil
     code = ""
     error = nil
@@ -357,7 +407,7 @@ struct ConnectView: View {
 
   private func submit(_ url: URL, _ info: ServerInfo) {
     guard resetting || !username.isEmpty, !password.isEmpty else { return }
-    if (creating || resetting) && password.count < 8 {
+    if (creating || resetting || recovering) && password.count < 8 {
       error = String(localized: "Use at least 8 characters for your password.")
       return
     }
@@ -366,14 +416,28 @@ struct ConnectView: View {
       error = String(localized: "Enter the code from the email.")
       return
     }
+    if recovering && RecoveryCode.normalize(recoveryInput) == nil {
+      error = String(localized: "That doesn't look like a recovery code.")
+      return
+    }
     run {
-      if resetting, let codeSentTo {
+      if recovering {
+        try await session.recover(
+          server: url, username: username, recoveryCode: recoveryInput, password: password)
+      } else if resetting, let codeSentTo {
         try await session.resetPassword(
           server: url, email: codeSentTo, code: emailCode, password: password)
       } else if creating {
-        try await session.register(
-          server: url, username: username, password: password, invite: invite,
-          email: codeSentTo, emailCode: codeSentTo == nil ? nil : emailCode)
+        let recoveryCode = info.recovery == true ? RecoveryCode.new() : nil
+        let res = try await session.register(
+          server: url, info: info, username: username, password: password, invite: invite,
+          email: codeSentTo, emailCode: codeSentTo == nil ? nil : emailCode,
+          recoveryCode: recoveryCode)
+        if let recoveryCode {
+          created = (res, recoveryCode)
+        } else {
+          await session.finishSignUp(server: url, res)
+        }
       } else {
         try await session.signIn(server: url, username: username, password: password)
       }

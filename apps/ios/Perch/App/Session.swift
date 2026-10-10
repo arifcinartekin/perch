@@ -68,14 +68,39 @@ final class Session {
     await adopt(server: server, res)
   }
 
+  /// Creates the account but doesn't switch to it yet, so its recovery code
+  /// can be shown first; `finishSignUp` does that.
   func register(
-    server: URL, username: String, password: String, invite: String?,
-    email: String? = nil, emailCode: String? = nil
-  ) async throws {
-    let res = try await APIClient(baseURL: server).register(
+    server: URL, info: ServerInfo, username: String, password: String, invite: String?,
+    email: String? = nil, emailCode: String? = nil, recoveryCode: String?
+  ) async throws -> AuthResponse {
+    try await APIClient(baseURL: server).register(
       username: username, password: password, invite: invite, email: email,
-      emailCode: emailCode, deviceName: Self.deviceName)
+      emailCode: emailCode, powBits: info.needsSetup ? nil : info.pow,
+      recoveryCode: recoveryCode, deviceName: Self.deviceName)
+  }
+
+  func finishSignUp(server: URL, _ res: AuthResponse) async {
     await adopt(server: server, res)
+  }
+
+  func recover(server: URL, username: String, recoveryCode: String, password: String)
+    async throws
+  {
+    let res = try await APIClient(baseURL: server).recover(
+      username: username, recoveryCode: recoveryCode, password: password,
+      deviceName: Self.deviceName)
+    await adopt(server: server, res)
+  }
+
+  /// Makes a new recovery code for the signed-in account and returns it to show once.
+  func newRecoveryCode(password: String) async throws -> String {
+    guard let client, let username = user?.username ?? username else {
+      throw CancellationError()
+    }
+    let code = RecoveryCode.new()
+    user = try await client.setRecoveryCode(username: username, password: password, code: code)
+    return code
   }
 
   /// Email a code for adding or changing the account's address.

@@ -25,6 +25,10 @@ export interface ServerInfo {
   email?: boolean;
   /** The operator's privacy policy and terms, when they've published them. */
   legal?: { privacy?: string; terms?: string };
+  /** Signing up needs a proof of work this many bits hard (see pow.ts); absent when not. */
+  pow?: number;
+  /** Accounts can set a recovery code and reset the password with it. */
+  recovery?: boolean;
 }
 
 export interface ApiError {
@@ -54,7 +58,38 @@ export interface RegisterRequest {
   /** Required when signup is `email`, together with `emailCode`. */
   email?: string;
   emailCode?: string;
+  /** Required when the server asks for proof of work (`ServerInfo.pow`). */
+  pow?: PowSolution;
+  /** A code from newRecoveryCode() (recovery.ts) to reset the password with later. */
+  recoveryCode?: string;
   deviceName?: string;
+}
+
+/** GET /auth/challenge */
+export interface PowChallenge {
+  challenge: string;
+  bits: number;
+}
+
+export interface PowSolution {
+  challenge: string;
+  nonce: string;
+}
+
+/** POST /auth/recover — set a new password with the recovery code. Signs in. */
+export interface RecoverRequest {
+  username: string;
+  recoveryCode: string;
+  authKey: string;
+  salt: string;
+  kdf: KdfParams;
+  deviceName?: string;
+}
+
+/** POST /auth/recovery — replace the signed-in account's recovery code. */
+export interface SetRecoveryRequest {
+  authKey: string;
+  recoveryCode: string;
 }
 
 /** What an emailed code is for. */
@@ -104,6 +139,8 @@ export interface PublicUser {
    * server keeps only a keyed hash of it, so it can't say which address.
    */
   hasEmail?: boolean;
+  /** A recovery code is set. */
+  hasRecovery?: boolean;
 }
 
 export interface AuthResponse {

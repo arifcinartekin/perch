@@ -2,12 +2,15 @@ import { useState } from 'react';
 import type {
   AuthResponse,
   EmailPurpose,
+  PowChallenge,
   PreloginResponse,
   PublicUser,
   ServerInfo,
 } from '@perch/core/api';
 import { DEFAULT_KDF, deriveKeys, newSalt } from '@perch/core/auth';
-import { Button, PerchLogo } from '@perch/reader';
+import { proveSignup } from '@perch/core/pow';
+import { newRecoveryCode } from '@perch/core/recovery';
+import { Button, PerchLogo, RecoveryCode } from '@perch/reader';
 import { ServerError, api } from './api';
 
 const inputClass =
@@ -25,7 +28,10 @@ export function Auth({
   onSignedIn: (u: PublicUser) => void;
 }) {
   const canSignUp = info.needsSetup || info.signup !== 'closed';
-  const [mode, setMode] = useState<'in' | 'up' | 'reset'>(info.needsSetup ? 'up' : 'in');
+  // 'reset' sets a new password with an emailed code, 'recover' with the recovery code.
+  const [mode, setMode] = useState<'in' | 'up' | 'reset' | 'recover'>(
+    info.needsSetup ? 'up' : 'in',
+  );
   // Email signup and password reset start by mailing a code; `sentTo` is set once it's sent.
   const [email, setEmail] = useState('');
   const [sentTo, setSentTo] = useState<string | null>(null);
@@ -34,7 +40,10 @@ export function Auth({
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [invite, setInvite] = useState('');
-  const [busy, setBusy] = useState(false);
+  const [recoveryInput, setRecoveryInput] = useState('');
+  // A new account's recovery code, shown once before going in.
+  const [created, setCreated] = useState<{ user: PublicUser; code: string } | null>(null);
+  const [busy, setBusy] = useState<false | 'work' | true>(false);
   const [error, setError] = useState<string | null>(null);
   const needsInvite = mode === 'up' && !info.needsSetup && info.signup === 'invite';
   const purpose: EmailPurpose | null =
@@ -74,6 +83,7 @@ export function Auth({
         mode === 'reset' ? 'Enter a new password.' : 'Enter a username and password.',
       );
     }
+    if (mode === 'recover' && !recoveryInput.trim()) return setError('Enter your recovery code.');
     if (isNew && password.length < 8) return setError('Use at least 8 characters.');
     if (isNew && password !== confirm) return setError('The passwords don’t match.');
     setBusy(true);
@@ -84,6 +94,19 @@ export function Auth({
         const pre = await api<PreloginResponse>('/auth/prelogin', { body: { username } });
         const { authKey } = await deriveKeys(password, pre.salt, pre.kdf);
         res = await api<AuthResponse>('/auth/login', { body: { username, authKey, deviceName } });
+      } else if (mode === 'recover') {
+        const salt = newSalt();
+        const { authKey } = await deriveKeys(password, salt, DEFAULT_KDF);
+        res = await api<AuthResponse>('/auth/recover', {
+          body: {
+            username,
+            recoveryCode: recoveryInput,
+            authKey,
+            salt,
+            kdf: DEFAULT_KDF,
+            deviceName,
+          },
+        });
       } else if (mode === 'reset') {
         const salt = newSalt();
         const { authKey } = await deriveKeys(password, salt, DEFAULT_KDF);
@@ -92,7 +115,14 @@ export function Auth({
         });
       } else {
         const salt = newSalt();
-        const { authKey } = await deriveKeys(password, salt, DEFAULT_KDF);
+        const recoveryCode = info.recovery ? newRecoveryCode() : undefined;
+        setBusy('work');
+        const [{ authKey }, pow] = await Promise.all([
+          deriveKeys(password, salt, DEFAULT_KDF),
+          info.needsSetup
+            ? undefined
+            : proveSignup(info.pow, () => api<PowChallenge>('/auth/challenge')),
+        ]);
         res = await api<AuthResponse>('/auth/register', {
           body: {
             username,
@@ -101,9 +131,12 @@ export function Auth({
             kdf: DEFAULT_KDF,
             deviceName,
             invite: invite || undefined,
+            pow,
+            recoveryCode,
             ...(purpose && { email: sentTo, emailCode: code }),
           },
         });
+        if (recoveryCode) return setCreated({ user: res.user, code: recoveryCode });
       }
       onSignedIn(res.user);
     } catch (err) {
@@ -112,6 +145,21 @@ export function Auth({
       setBusy(false);
     }
   };
+
+  if (created) {
+    return (
+      <div className="flex min-h-screen items-center justify-center p-6 text-[var(--text)]">
+        <div className="glass w-full max-w-[380px] rounded-[22px] p-7">
+          <h2 className="mb-3 text-[15px] font-semibold">Save your recovery code</h2>
+          <RecoveryCode
+            code={created.code}
+            host={location.host}
+            onDone={() => onSignedIn(created.user)}
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center p-6 text-[var(--text)]">
@@ -128,7 +176,7 @@ export function Auth({
             ? 'Set up your server'
             : mode === 'in'
               ? 'Sign in'
-              : mode === 'reset'
+              : mode === 'reset' || mode === 'recover'
                 ? 'Reset your password'
                 : 'Create an account'}
         </h2>
@@ -175,6 +223,12 @@ export function Auth({
                 />
               </>
             )}
+            {mode === 'recover' && (
+              <p className="text-[12.5px] leading-relaxed text-[var(--text-muted)]">
+                Enter your username, the recovery code you saved when you made the account, and a
+                new password.
+              </p>
+            )}
             {mode !== 'reset' && (
               <input
                 className={inputClass}
@@ -187,10 +241,21 @@ export function Auth({
                 onChange={(e) => setUsername(e.target.value)}
               />
             )}
+            {mode === 'recover' && (
+              <input
+                className={inputClass}
+                placeholder="Recovery code"
+                autoCapitalize="characters"
+                autoComplete="off"
+                spellCheck={false}
+                value={recoveryInput}
+                onChange={(e) => setRecoveryInput(e.target.value)}
+              />
+            )}
             <input
               className={inputClass}
               type="password"
-              placeholder={mode === 'reset' ? 'New password' : 'Password'}
+              placeholder={mode === 'reset' || mode === 'recover' ? 'New password' : 'Password'}
               autoComplete={mode === 'in' ? 'current-password' : 'new-password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -219,27 +284,46 @@ export function Auth({
 
         {error && <p className="mt-3 text-[12.5px] text-[#ef4444]">{error}</p>}
 
-        <Button variant="primary" type="submit" loading={busy} className="mt-5 w-full">
+        <Button variant="primary" type="submit" loading={!!busy} className="mt-5 w-full">
           {askingEmail
             ? 'Send code'
             : mode === 'in'
               ? 'Sign in'
-              : mode === 'reset'
+              : mode === 'reset' || mode === 'recover'
                 ? 'Set new password'
                 : 'Create account'}
         </Button>
+        {busy === 'work' && (
+          <p className="mt-2 text-center text-[11.5px] text-[var(--text-faint)]">
+            Your browser is doing a moment of work to show it isn’t a bot…
+          </p>
+        )}
 
         {sentTo && (
           <button type="button" onClick={() => switchMode(mode)} className={linkClass}>
             Use a different address or send a new code
           </button>
         )}
-        {mode === 'in' && info.email && (
-          <button type="button" onClick={() => switchMode('reset')} className={linkClass}>
+        {mode === 'in' && (info.email || info.recovery) && (
+          <button
+            type="button"
+            onClick={() => switchMode(info.email ? 'reset' : 'recover')}
+            className={linkClass}
+          >
             Forgot your password?
           </button>
         )}
-        {!info.needsSetup && (canSignUp || mode === 'reset') && (
+        {mode === 'reset' && info.recovery && (
+          <button type="button" onClick={() => switchMode('recover')} className={linkClass}>
+            Use your recovery code instead
+          </button>
+        )}
+        {mode === 'recover' && info.email && (
+          <button type="button" onClick={() => switchMode('reset')} className={linkClass}>
+            Get a code by email instead
+          </button>
+        )}
+        {!info.needsSetup && (canSignUp || mode === 'reset' || mode === 'recover') && (
           <button
             type="button"
             onClick={() => switchMode(mode === 'in' ? 'up' : 'in')}

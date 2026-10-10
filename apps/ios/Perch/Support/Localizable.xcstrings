@@ -638,6 +638,16 @@
         }
       }
     },
+    "Copy": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kopyala"
+          }
+        }
+      }
+    },
     "Copy code": {
       "localizations": {
         "tr": {
@@ -1078,6 +1088,16 @@
         }
       }
     },
+    "Enter your username, the recovery code you saved when you made the account, and a new password.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kullanıcı adını, hesabı açarken kaydettiğin kurtarma kodunu ve yeni bir şifre gir."
+          }
+        }
+      }
+    },
     "Error": {
       "localizations": {
         "tr": {
@@ -1198,6 +1218,16 @@
         }
       }
     },
+    "Get a code by email instead": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bunun yerine e-postayla kod al"
+          }
+        }
+      }
+    },
     "Glass": {
       "localizations": {
         "tr": {
@@ -1234,6 +1264,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Zaten hesabım var"
+          }
+        }
+      }
+    },
+    "I've saved my recovery code": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kurtarma kodumu kaydettim"
           }
         }
       }
@@ -1488,12 +1528,32 @@
         }
       }
     },
+    "Make code": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kod oluştur"
+          }
+        }
+      }
+    },
     "Makes a page anyone with the link can read, and copies the link.": {
       "localizations": {
         "tr": {
           "stringUnit": {
             "state": "translated",
             "value": "Linki olan herkesin okuyabileceği bir sayfa oluşturur ve linki kopyalar."
+          }
+        }
+      }
+    },
+    "Making a new recovery code replaces the old one, which stops working.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yeni bir kurtarma kodu oluşturmak eskisinin yerini alır; eski kod artık çalışmaz."
           }
         }
       }
@@ -1690,6 +1750,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Burada okunmamış makale yok."
+          }
+        }
+      }
+    },
+    "None": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yok"
           }
         }
       }
@@ -2060,6 +2130,16 @@
         }
       }
     },
+    "Recovery code": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kurtarma kodu"
+          }
+        }
+      }
+    },
     "Refresh": {
       "localizations": {
         "tr": {
@@ -2260,6 +2340,26 @@
         }
       }
     },
+    "Save your recovery code": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kurtarma kodunu kaydet"
+          }
+        }
+      }
+    },
+    "Save…": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kaydet…"
+          }
+        }
+      }
+    },
     "Search": {
       "localizations": {
         "tr": {
@@ -2306,6 +2406,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Serif"
+          }
+        }
+      }
+    },
+    "Set": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ayarlı"
           }
         }
       }
@@ -2676,6 +2786,16 @@
         }
       }
     },
+    "That doesn't look like a recovery code.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu bir kurtarma koduna benzemiyor."
+          }
+        }
+      }
+    },
     "That doesn't look like a server address.": {
       "localizations": {
         "tr": {
@@ -2826,6 +2946,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Bu iPhone zaten bir senkron zincirinde. Önce Ayarlar → Senkron zinciri'nden ayrılın."
+          }
+        }
+      }
+    },
+    "This is your recovery code. If you forget your password, it's the only way back into your account. Keep it somewhere safe, like a password manager. It won't be shown again.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu senin kurtarma kodun. Şifreni unutursan hesabına dönmenin tek yolu bu. Parola yöneticisi gibi güvenli bir yerde sakla. Bir daha gösterilmeyecek."
           }
         }
       }
@@ -3030,6 +3160,16 @@
         }
       }
     },
+    "Use your recovery code instead": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bunun yerine kurtarma kodunu kullan"
+          }
+        }
+      }
+    },
     "Used": {
       "localizations": {
         "tr": {
@@ -3106,6 +3246,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Perch'e hoş geldin"
+          }
+        }
+      }
+    },
+    "Without a recovery code, a forgotten password means a lost account.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kurtarma kodu olmadan, unutulan bir şifre kaybedilmiş bir hesap demektir."
           }
         }
       }

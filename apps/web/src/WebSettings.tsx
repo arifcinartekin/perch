@@ -10,7 +10,8 @@ import type {
 import { API_PREFIX } from '@perch/core/api';
 import { deriveKeys } from '@perch/core/auth';
 import { relativeTime } from '@perch/core/time';
-import { Button, Row, Section, Spinner, pickTextFile, useToast } from '@perch/reader';
+import { newRecoveryCode } from '@perch/core/recovery';
+import { Button, RecoveryCode, Row, Section, Spinner, pickTextFile, useToast } from '@perch/reader';
 import { ServerError, api } from './api';
 
 // Settings that only exist on the web: the account on this server, signed-in
@@ -22,6 +23,7 @@ export function WebSettings({ user, onSignOut }: { user: PublicUser; onSignOut: 
     <>
       <AccountSection user={user} onSignOut={onSignOut} />
       <EmailSection user={user} />
+      <RecoverySection user={user} />
       <DevicesSection />
       {user.role === 'admin' && <InvitesSection />}
       <OpmlSection />
@@ -317,6 +319,101 @@ function OpmlSection() {
           Import OPML
         </Button>
       </Row>
+    </Section>
+  );
+}
+
+/** Make a new recovery code (the old one stops working), after the password. */
+function RecoverySection({ user }: { user: PublicUser }) {
+  const toast = useToast();
+  const [available, setAvailable] = useState(false);
+  const [has, setHas] = useState(!!user.hasRecovery);
+  const [open, setOpen] = useState(false);
+  const [password, setPassword] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [shown, setShown] = useState<string | null>(null);
+  useEffect(() => {
+    void api<ServerInfo>('/server').then(
+      (i) => setAvailable(!!i.recovery),
+      () => {},
+    );
+  }, []);
+  if (!available) return null;
+
+  const create = async () => {
+    setBusy(true);
+    try {
+      const pre = await api<PreloginResponse>('/auth/prelogin', {
+        body: { username: user.username },
+      });
+      const { authKey } = await deriveKeys(password, pre.salt, pre.kdf);
+      const recoveryCode = newRecoveryCode();
+      await api('/auth/recovery', { body: { authKey, recoveryCode } });
+      setHas(true);
+      setOpen(false);
+      setPassword('');
+      setShown(recoveryCode);
+    } catch (err) {
+      toast(err instanceof ServerError ? err.message : 'Something went wrong. Try again.', 'error');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Section title="Recovery code">
+      {shown ? (
+        <div className="px-1 pb-2">
+          <RecoveryCode
+            code={shown}
+            host={location.host}
+            doneLabel="Done"
+            onDone={() => setShown(null)}
+          />
+        </div>
+      ) : (
+        <>
+          <Row
+            label={has ? 'A recovery code is set' : 'No recovery code'}
+            hint={
+              has
+                ? 'If you forget your password, the code lets you set a new one. Making a new code replaces the old one.'
+                : 'Without one, a forgotten password means a lost account. Make one and keep it somewhere safe.'
+            }
+          >
+            {!open && (
+              <Button size="sm" variant="default" onClick={() => setOpen(true)}>
+                {has ? 'New code…' : 'Make one…'}
+              </Button>
+            )}
+          </Row>
+          {open && (
+            <form
+              className="flex flex-wrap items-center gap-2 px-1 pb-2"
+              onSubmit={(e) => {
+                e.preventDefault();
+                void create();
+              }}
+            >
+              <input
+                type="password"
+                autoComplete="current-password"
+                required
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className={`${fieldClass} max-w-[240px]`}
+              />
+              <Button size="sm" variant="primary" type="submit" loading={busy} disabled={!password}>
+                Make code
+              </Button>
+              <Button size="sm" variant="ghost" type="button" onClick={() => setOpen(false)}>
+                Cancel
+              </Button>
+            </form>
+          )}
+        </>
+      )}
     </Section>
   );
 }

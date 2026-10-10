@@ -6,9 +6,11 @@ import type {
   Device,
   EmailPurpose,
   Invite,
+  PowChallenge,
   PreloginResponse,
   PublicUser,
 } from '@perch/core/api';
+import { normalizeRecoveryCode } from '@perch/core/recovery';
 import { normalizeUsername, usernameProblem } from '@perch/core/username';
 import { invites, sessions, users } from '../db/schema';
 import {
@@ -23,6 +25,7 @@ import {
 } from '../http';
 import { DUMMY_AUTH_HASH, hashAuthKey, hmac, randomToken, verifyAuthKey } from '../lib/crypto';
 import { RateLimiter } from '../lib/ratelimit';
+import { PowGate } from './pow';
 import {
   checkCode,
   codeEmail,
@@ -69,15 +72,29 @@ function kdfFrom(body: Record<string, unknown>) {
   return { salt, kdf: { algorithm, memory, iterations, parallelism } };
 }
 
-/** The account as its owner sees it. The address itself isn't kept, only whether there is one. */
-const publicUser = (u: Omit<PublicUser, 'hasEmail'> & { emailId?: string | null }): PublicUser => ({
+/** The account as its owner sees it. Addresses and codes are kept only as hashes, so it says whether there is one. */
+const publicUser = (
+  u: Omit<PublicUser, 'hasEmail' | 'hasRecovery'> & {
+    emailId?: string | null;
+    recoveryHash?: string | null;
+  },
+): PublicUser => ({
   id: u.id,
   username: u.username,
   displayName: u.displayName,
   role: u.role,
   createdAt: u.createdAt,
   ...(u.emailId && { hasEmail: true }),
+  ...(u.recoveryHash && { hasRecovery: true }),
 });
+
+/** A recovery code from the body, hashed for storing; undefined when absent. */
+async function recoveryHashFrom(body: Record<string, unknown>): Promise<string | undefined> {
+  if (body.recoveryCode == null) return undefined;
+  const code = normalizeRecoveryCode(str(body, 'recoveryCode', { max: 64 }));
+  if (!code) throw badRequest('"recoveryCode" is not a recovery code');
+  return hashAuthKey(code);
+}
 
 const PURPOSES: EmailPurpose[] = ['signup', 'reset', 'change'];
 
@@ -95,6 +112,9 @@ export function authRoutes(ctx: AppContext) {
   const codeIpLimit = new RateLimiter(10, 60 * 60 * 1000);
   const codeEmailLimit = new RateLimiter(3, 15 * 60 * 1000);
   const resetLimit = new RateLimiter(10, 60 * 60 * 1000);
+  const recoverIpLimit = new RateLimiter(10, 60 * 60 * 1000);
+  const recoverUserLimit = new RateLimiter(5, 60 * 60 * 1000);
+  const pow = config.signupPow > 0 ? new PowGate(ctx.secret, config.signupPow) : null;
 
   const throttle = (limiter: RateLimiter, key: string) => {
     const wait = limiter.retryAfter(key);
@@ -135,11 +155,19 @@ export function authRoutes(ctx: AppContext) {
     return c.json(response);
   });
 
+  app.get('/challenge', (c) => {
+    if (!pow) throw notFound('This server asks for no proof of work');
+    return c.json<PowChallenge>(pow.issue());
+  });
+
   app.post('/register', async (c) => {
     const ip = clientIp(c, config);
     throttle(registerLimit, ip);
 
     const body = await jsonBody(c);
+    // Checked first: it's what makes the rest of the work worth doing. The
+    // first account (the person setting the server up) doesn't need one.
+    if (pow && db.select({ n: count() }).from(users).get()!.n > 0) pow.check(body.pow);
     const username = normalizeUsername(str(body, 'username', { max: 64 }));
     const problem = usernameProblem(username);
     if (problem) throw new HttpError(400, `username-${problem}`, USERNAME_MESSAGES[problem]);
@@ -163,6 +191,7 @@ export function authRoutes(ctx: AppContext) {
       str(body, 'displayName', { max: 64, optional: true }).trim() || str(body, 'username').trim();
 
     const authHash = await hashAuthKey(authKey);
+    const recoveryHash = await recoveryHashFrom(body);
     const id = crypto.randomUUID();
 
     // Check the policy and claim the invite in the same transaction as the
@@ -194,6 +223,7 @@ export function authRoutes(ctx: AppContext) {
           kdfParams: kdf,
           role: isFirst ? 'admin' : 'user',
           emailId: email,
+          recoveryHash,
           createdAt: Date.now(),
         })
         .returning()
@@ -310,6 +340,62 @@ export function authRoutes(ctx: AppContext) {
       consumeCode(tx, ctx.secret, email, 'change', code);
       return tx.update(users).set({ emailId: email }).where(eq(users.id, me.id)).returning().get()!;
     });
+    return c.json({ user: publicUser(user) });
+  });
+
+  // Without email, the recovery code is how a forgotten password is replaced.
+  // Wrong guesses are limited per address and per account; the code has 100
+  // bits, so they're only there to keep the server's work down.
+  app.post('/recover', async (c) => {
+    const ip = clientIp(c, config);
+    const body = await jsonBody(c);
+    const username = normalizeUsername(str(body, 'username', { max: 64 }));
+    throttle(recoverIpLimit, ip);
+    throttle(recoverUserLimit, username);
+    recoverIpLimit.hit(ip);
+    const code = normalizeRecoveryCode(str(body, 'recoveryCode', { max: 64 })) ?? '';
+    const authKey = authKeyFrom(body);
+    const { salt, kdf } = kdfFrom(body);
+
+    const user = db.select().from(users).where(eq(users.username, username)).get();
+    const ok = await verifyAuthKey(code, user?.recoveryHash ?? DUMMY_AUTH_HASH);
+    if (!user || !user.recoveryHash || !ok) {
+      recoverUserLimit.hit(username);
+      throw new HttpError(401, 'recovery-invalid', 'That username and recovery code don’t match');
+    }
+    const updated = db
+      .update(users)
+      .set({ authHash: await hashAuthKey(authKey), kdfSalt: salt, kdfParams: kdf })
+      .where(eq(users.id, user.id))
+      .returning()
+      .get()!;
+    // Whoever knew the old password is signed out everywhere.
+    revokeAllSessions(db, user.id);
+    recoverUserLimit.reset(username);
+    userLimit.reset(username);
+    return issue(c, updated, str(body, 'deviceName', { max: 80, optional: true }));
+  });
+
+  app.post('/recovery', auth, async (c) => {
+    const body = await jsonBody(c);
+    const authKey = authKeyFrom(body);
+    const recoveryHash = await recoveryHashFrom(body);
+    if (!recoveryHash) throw badRequest('"recoveryCode" is required');
+    const me = c.get('user');
+    const row = db
+      .select({ authHash: users.authHash })
+      .from(users)
+      .where(eq(users.id, me.id))
+      .get();
+    if (!row || !(await verifyAuthKey(authKey, row.authHash))) {
+      throw new HttpError(401, 'invalid-credentials', 'Password is wrong');
+    }
+    const user = db
+      .update(users)
+      .set({ recoveryHash })
+      .where(eq(users.id, me.id))
+      .returning()
+      .get()!;
     return c.json({ user: publicUser(user) });
   });
 

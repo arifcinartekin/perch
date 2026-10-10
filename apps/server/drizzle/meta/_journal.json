@@ -43,6 +43,13 @@
       "when": 1791634481605,
       "tag": "0005_shares",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1791660521448,
+      "tag": "0006_recovery",
+      "breakpoints": true
     }
   ]
 }

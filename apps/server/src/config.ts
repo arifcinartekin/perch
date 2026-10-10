@@ -33,6 +33,8 @@ export interface Config {
   termsUrl?: string;
   /** Keys the hashes kept instead of email addresses. Kept out of the database. */
   emailKey?: string;
+  /** Proof-of-work difficulty for signing up, in bits; 0 for none. */
+  signupPow: number;
 }
 
 export type EmailConfig =
@@ -101,6 +103,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     privacyUrl: httpUrl('PERCH_PRIVACY_URL', env.PERCH_PRIVACY_URL),
     termsUrl: httpUrl('PERCH_TERMS_URL', env.PERCH_TERMS_URL),
     emailKey: emailKey(env.PERCH_EMAIL_KEY),
+    signupPow: int(env.PERCH_SIGNUP_POW, 0, 0, 28),
   };
 }
 

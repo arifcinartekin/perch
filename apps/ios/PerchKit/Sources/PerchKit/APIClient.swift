@@ -74,27 +74,79 @@ public final class APIClient: Sendable {
   }
 
   /// `email` and `emailCode` are needed when the server's signup is `.email`.
+  /// `powBits` (from `ServerInfo.pow`) makes it do the proof of work first;
+  /// `recoveryCode` is stored (hashed) to reset the password with later.
   public func register(
     username: String, password: String, invite: String?, email: String? = nil,
-    emailCode: String? = nil, deviceName: String
+    emailCode: String? = nil, powBits: Int? = nil, recoveryCode: String? = nil,
+    deviceName: String
   ) async throws -> AuthResponse {
+    struct Pow: Codable { var challenge, nonce: String }
+    struct Challenge: Decodable {
+      var challenge: String
+      var bits: Int
+    }
     struct Body: Encodable {
       var username, authKey, salt: String
       var kdf: KdfParams
       var invite: String?
       var email, emailCode: String?
+      var pow: Pow?
+      var recoveryCode: String?
+      var deviceName: String
+    }
+    let salt = KeyDerivation.newSalt()
+    let kdf = KdfParams.default
+    async let keys = KeyDerivation.derive(password: password, salt: salt, params: kdf)
+    var pow: Pow?
+    if let powBits, powBits > 0 {
+      let c: Challenge = try await get("auth/challenge")
+      pow = Pow(
+        challenge: c.challenge,
+        nonce: try await ProofOfWork.solve(challenge: c.challenge, bits: c.bits))
+    }
+    let code = invite?.trimmingCharacters(in: .whitespaces)
+    return try await send(
+      "auth/register",
+      body: Body(
+        username: username, authKey: try await keys.authKey, salt: salt, kdf: kdf,
+        invite: code?.isEmpty == false ? code : nil, email: email, emailCode: emailCode,
+        pow: pow, recoveryCode: recoveryCode, deviceName: deviceName))
+  }
+
+  /// Set a new password with the recovery code. Every other device is signed out.
+  public func recover(username: String, recoveryCode: String, password: String, deviceName: String)
+    async throws -> AuthResponse
+  {
+    struct Body: Encodable {
+      var username, recoveryCode, authKey, salt: String
+      var kdf: KdfParams
       var deviceName: String
     }
     let salt = KeyDerivation.newSalt()
     let kdf = KdfParams.default
     let keys = try await KeyDerivation.derive(password: password, salt: salt, params: kdf)
-    let code = invite?.trimmingCharacters(in: .whitespaces)
     return try await send(
-      "auth/register",
+      "auth/recover",
       body: Body(
-        username: username, authKey: keys.authKey, salt: salt, kdf: kdf,
-        invite: code?.isEmpty == false ? code : nil, email: email, emailCode: emailCode,
-        deviceName: deviceName))
+        username: username, recoveryCode: recoveryCode, authKey: keys.authKey, salt: salt,
+        kdf: kdf, deviceName: deviceName))
+  }
+
+  /// Replace the signed-in account's recovery code, once the password confirms it.
+  public func setRecoveryCode(username: String, password: String, code: String) async throws
+    -> PublicUser
+  {
+    struct Prelogin: Decodable {
+      var salt: String
+      var kdf: KdfParams
+    }
+    struct Res: Decodable { var user: PublicUser }
+    let pre: Prelogin = try await send("auth/prelogin", body: ["username": username])
+    let keys = try await KeyDerivation.derive(password: password, salt: pre.salt, params: pre.kdf)
+    let res: Res = try await send(
+      "auth/recovery", body: ["authKey": keys.authKey, "recoveryCode": code])
+    return res.user
   }
 
   /// Email a 6-digit code. The server answers the same whether or not the

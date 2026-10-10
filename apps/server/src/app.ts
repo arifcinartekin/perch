@@ -106,6 +106,8 @@ export function createApp(ctx: AppContext) {
       chain: ctx.config.chain,
       needsSetup: users_ === 0,
       email: ctx.mailer != null,
+      recovery: true,
+      ...(ctx.config.signupPow > 0 && { pow: ctx.config.signupPow }),
       ...((ctx.config.privacyUrl || ctx.config.termsUrl) && {
         legal: { privacy: ctx.config.privacyUrl, terms: ctx.config.termsUrl },
       }),

@@ -13,6 +13,7 @@ services:
     environment:
       PERCH_PUBLIC_URL: https://${PERCH_DOMAIN:?set PERCH_DOMAIN in .env}
       PERCH_SIGNUP: ${PERCH_SIGNUP:-invite}
+      PERCH_SIGNUP_POW: ${PERCH_SIGNUP_POW:-0} # proof-of-work bits for signing up; 0 = none
       PERCH_FETCH_INTERVAL_MIN: ${PERCH_FETCH_INTERVAL_MIN:-30}
       PERCH_TRUST_PROXY: 'true' # Caddy sets X-Forwarded-For
       PERCH_CHAIN: ${PERCH_CHAIN:-false} # relay sync chains (see PERCH_SYNC_DOMAIN)

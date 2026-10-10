@@ -44,6 +44,8 @@ export const users = sqliteTable('users', {
    * list or read anyone's address. Accounts without an address have none.
    */
   emailId: text('email').unique(),
+  /** scrypt of the normalised recovery code, like authHash. */
+  recoveryHash: text('recovery_hash'),
   createdAt: integer('created_at').notNull().default(now),
 });
 

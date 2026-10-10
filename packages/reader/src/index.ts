@@ -9,6 +9,7 @@ export { Dialog } from './components/Dialog';
 export { Favicon } from './components/Favicon';
 export { IconButton } from './components/IconButton';
 export { PerchLogo, PerchMark } from './components/PerchMark';
+export { RecoveryCode } from './components/RecoveryCode';
 export { Spinner } from './components/Spinner';
 export * from './components/icons';
 export { Row, Section, Segmented, Toggle } from './pages/settings-ui';

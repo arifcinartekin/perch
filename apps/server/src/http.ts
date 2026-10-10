@@ -32,6 +32,7 @@ export interface SessionUser {
   role: 'admin' | 'user';
   createdAt: number;
   emailId: string | null;
+  recoveryHash: string | null;
 }
 
 export type Env = {

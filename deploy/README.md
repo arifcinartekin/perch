@@ -31,24 +31,39 @@ what the address is.
 Then open `https://app.perch.ws` straight away and create the first account; it becomes the
 admin. Sign-up is by invite after that (`PERCH_SIGNUP` in `/opt/perch/deploy/.env`).
 
-To let anyone sign up with an email address instead, verify a sending domain with
-[Resend](https://resend.com) (for app.perch.ws: `mail.perch.ws`), then add to `.env` and run
-`update.sh`:
+### Open sign-up without email
+
+To let anyone sign up, with a proof of work instead of a CAPTCHA or an email check (this is how
+app.perch.ws runs), add to `.env` and run `update.sh`:
+
+```sh
+PERCH_SIGNUP=open
+PERCH_SIGNUP_POW=20   # bits; about a second or two on a phone
+```
+
+Every account gets a recovery code at sign-up for resetting a forgotten password; the server keeps
+only its hash.
+
+### Sign-up and password reset by email (optional)
+
+To confirm addresses by email instead, verify a sending domain with
+[Resend](https://resend.com) using your own account, then add to `.env` and run `update.sh`:
 
 ```sh
 PERCH_SIGNUP=email
 PERCH_EMAIL=resend
-PERCH_EMAIL_FROM=Perch <noreply@mail.perch.ws>
+PERCH_EMAIL_FROM=Perch <noreply@mail.example.com>
 RESEND_API_KEY=re_...
 PERCH_EMAIL_KEY=...   # openssl rand -base64 48
 ```
 
 Perch never stores email addresses, only a hash keyed with `PERCH_EMAIL_KEY`, so a leaked
 database or backup holds no addresses. Keep the key out of backups, and never change it: with a
-new key nobody could reset their password by email.
+new key nobody could reset their password by email. The Resend key only ever lives in that file.
+Email also turns on password reset by email (recovery codes keep working) and lets accounts add
+an address under Settings.
 
-The key only ever lives in that file. It also turns on password reset by email and lets
-existing accounts add an address under Settings.
+### Policies
 
 The sign-up form, shared notes and the apps link to the privacy policy and terms when they're
 set. They are the operator's own: for app.perch.ws that's perch.ws, and anyone else running this

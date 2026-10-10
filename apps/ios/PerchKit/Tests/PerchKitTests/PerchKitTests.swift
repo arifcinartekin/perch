@@ -91,6 +91,26 @@ import Testing
   }
 }
 
+@Suite struct SignupTests {
+  // The same search as solvePow() in packages/core/src/pow.ts finds the same nonce.
+  @Test func solvesTheProofOfWorkLikeTheWebClient() async throws {
+    #expect(try await ProofOfWork.solve(challenge: "perch-test-challenge", bits: 14) == "1g5")
+    #expect(ProofOfWork.leadingZeroBits([0, 0, 0x80]) == 16)
+    #expect(ProofOfWork.leadingZeroBits([0x0F]) == 4)
+  }
+
+  @Test func makesAndReadsRecoveryCodes() {
+    let code = RecoveryCode.new()
+    #expect(code.count == 24)
+    #expect(code.split(separator: "-").count == 5)
+    let raw = code.replacingOccurrences(of: "-", with: "")
+    #expect(RecoveryCode.normalize(code.lowercased()) == raw)
+    #expect(RecoveryCode.normalize("OOOO-IIII-LLLL-0000-1111") == "00001111111100001111")
+    #expect(RecoveryCode.normalize("UUUU-UUUU-UUUU-UUUU-UUUU") == nil)
+    #expect(RecoveryCode.normalize("short") == nil)
+  }
+}
+
 @Suite struct EventStreamTests {
   @Test func parsesPerchEventsWithOrWithoutBlankLines() {
     var parser = EventStreamParser()

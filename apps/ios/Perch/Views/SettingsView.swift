@@ -16,8 +16,10 @@ struct SettingsView: View {
   @State private var changingPassword = false
   @State private var changingEmail = false
   @State private var deletingAccount = false
-  /// The signed-in server's own policy links; whoever runs it is responsible for it.
-  @State private var serverLegal: ServerInfo.Legal?
+  /// The signed-in server's /server answer: its own policy links (whoever
+  /// runs it is responsible for it) and whether it takes recovery codes.
+  @State private var serverInfo: ServerInfo?
+  @State private var makingRecoveryCode = false
   @State private var importing = false
   @State private var exported: ExportedFile?
   @State private var exporting = false
@@ -137,18 +139,18 @@ struct SettingsView: View {
 
         if let host = session.server?.host() {
           Section {
-            if let url = serverLegal?.privacy.flatMap(URL.init(string:)) {
+            if let url = serverInfo?.legal?.privacy.flatMap(URL.init(string:)) {
               Link(destination: url) { Label("Privacy policy", systemImage: "hand.raised") }
                 .surfaceRow()
             }
-            if let url = serverLegal?.terms.flatMap(URL.init(string:)) {
+            if let url = serverInfo?.legal?.terms.flatMap(URL.init(string:)) {
               Link(destination: url) { Label("Terms of use", systemImage: "doc.text") }
                 .surfaceRow()
             }
           } header: {
             Text(verbatim: host)
           } footer: {
-            if serverLegal == nil {
+            if serverInfo?.legal == nil {
               Text(
                 "\(host) is run by its operator, who is responsible for your data there. It hasn't published a privacy policy."
               )
@@ -200,10 +202,11 @@ struct SettingsView: View {
       .sheet(isPresented: $changingEmail) { EmailView() }
       .sheet(isPresented: $deletingAccount) { DeleteAccountView() }
       .task(id: session.server) {
-        serverLegal = nil
+        serverInfo = nil
         guard let server = session.server else { return }
-        serverLegal = try? await APIClient(baseURL: server).serverInfo().legal
+        serverInfo = try? await APIClient(baseURL: server).serverInfo()
       }
+      .sheet(isPresented: $makingRecoveryCode) { RecoveryCodeSettingsView() }
       .sheet(isPresented: $connecting) {
         NavigationStack { ConnectView(localFeeds: reader.library.feeds.count) }
       }
@@ -246,6 +249,16 @@ struct SettingsView: View {
       .surfaceRow()
       Button("Change password…", systemImage: "key") { changingPassword = true }
         .surfaceRow()
+      if serverInfo?.recovery == true {
+        Button { makingRecoveryCode = true } label: {
+          LabeledContent {
+            Text(session.user?.hasRecovery == true ? String(localized: "Set") : String(localized: "None"))
+          } label: {
+            Label("Recovery code", systemImage: "lifepreserver")
+          }
+        }
+        .surfaceRow()
+      }
       NavigationLink(value: Page.devices) {
         Label("Devices", systemImage: "iphone.gen3")
       }
@@ -426,6 +439,76 @@ struct ChangePasswordView: View {
       do {
         try await reader.server?.changePassword(username: username, current: current, new: new)
         dismiss()
+      } catch {
+        self.error = error.localizedDescription
+      }
+    }
+  }
+}
+
+/// Makes a new recovery code (the old one stops working) after the password,
+/// and shows it once.
+struct RecoveryCodeSettingsView: View {
+  @Environment(Session.self) private var session
+  @Environment(\.dismiss) private var dismiss
+  @State private var password = ""
+  @State private var code: String?
+  @State private var busy = false
+  @State private var error: String?
+
+  var body: some View {
+    NavigationStack {
+      Form {
+        if let code {
+          Section {
+            RecoveryCodeView(code: code, host: session.server?.host() ?? "", doneTitle: "Done") {
+              dismiss()
+            }
+          }
+        } else {
+          Section {
+            SecureField("Password", text: $password).textContentType(.password)
+          } footer: {
+            if session.user?.hasRecovery == true {
+              Text("Making a new recovery code replaces the old one, which stops working.")
+            } else {
+              Text("Without a recovery code, a forgotten password means a lost account.")
+            }
+          }
+          if let error {
+            Section {
+              Label(error, systemImage: "exclamationmark.triangle.fill").foregroundStyle(.red)
+            }
+          }
+        }
+      }
+      .navigationTitle("Recovery code")
+      .navigationBarTitleDisplayMode(.inline)
+      .toolbar {
+        if code == nil {
+          ToolbarItem(placement: .cancellationAction) {
+            Button("Cancel", systemImage: "xmark") { dismiss() }
+          }
+          ToolbarItem(placement: .confirmationAction) {
+            if busy {
+              ProgressView()
+            } else {
+              Button("Make code", action: make).disabled(password.isEmpty)
+            }
+          }
+        }
+      }
+      .interactiveDismissDisabled(code != nil)
+    }
+  }
+
+  private func make() {
+    busy = true
+    error = nil
+    Task {
+      defer { busy = false }
+      do {
+        code = try await session.newRecoveryCode(password: password)
       } catch {
         self.error = error.localizedDescription
       }

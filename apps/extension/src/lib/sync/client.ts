@@ -3,11 +3,14 @@ import type {
   ApiError,
   AuthResponse,
   EmailPurpose,
+  PowChallenge,
   PreloginResponse,
   ServerInfo,
   ShareResponse,
 } from '@perch/core/api';
 import { DEFAULT_KDF, deriveKeys, newSalt } from '@perch/core/auth';
+import { proveSignup } from '@perch/core/pow';
+import { newRecoveryCode } from '@perch/core/recovery';
 import type { SyncChangesResponse, SyncPushResponse, SyncRecord } from '@perch/core/sync';
 import type { ServerAccount } from './state';
 
@@ -93,14 +96,26 @@ export async function signIn(
   return { server, username: res.user.username, token: res.token, node: randomNode() };
 }
 
+/**
+ * Creates an account. When the server takes recovery codes, one is made here
+ * and returned to show the person once; any proof of work it asks for is done
+ * here too.
+ */
 export async function signUp(
   server: string,
   username: string,
   password: string,
+  info: Pick<ServerInfo, 'pow' | 'recovery' | 'needsSetup'>,
   extra: { invite?: string; email?: string; emailCode?: string } = {},
-): Promise<ServerAccount> {
+): Promise<{ account: ServerAccount; recoveryCode?: string }> {
   const salt = newSalt();
-  const { authKey } = await deriveKeys(password, salt, DEFAULT_KDF);
+  const recoveryCode = info.recovery ? newRecoveryCode() : undefined;
+  const [{ authKey }, pow] = await Promise.all([
+    deriveKeys(password, salt, DEFAULT_KDF),
+    info.needsSetup
+      ? undefined
+      : proveSignup(info.pow, () => call<PowChallenge>(server, '/auth/challenge')),
+  ]);
   const res = await call<AuthResponse>(server, '/auth/register', {
     body: {
       username,
@@ -108,9 +123,29 @@ export async function signUp(
       salt,
       kdf: DEFAULT_KDF,
       deviceName: deviceName(),
+      pow,
+      recoveryCode,
       ...(extra.invite && { invite: extra.invite }),
       ...(extra.email && { email: extra.email, emailCode: extra.emailCode }),
     },
+  });
+  return {
+    account: { server, username: res.user.username, token: res.token, node: randomNode() },
+    recoveryCode,
+  };
+}
+
+/** Set a new password with the recovery code; signs in as the account. */
+export async function recoverAccount(
+  server: string,
+  username: string,
+  recoveryCode: string,
+  password: string,
+): Promise<ServerAccount> {
+  const salt = newSalt();
+  const { authKey } = await deriveKeys(password, salt, DEFAULT_KDF);
+  const res = await call<AuthResponse>(server, '/auth/recover', {
+    body: { username, recoveryCode, authKey, salt, kdf: DEFAULT_KDF, deviceName: deviceName() },
   });
   return { server, username: res.user.username, token: res.token, node: randomNode() };
 }
