@@ -244,7 +244,13 @@ struct SettingsView: View {
       // while they did can still be removed.
       if serverInfo?.email == true || session.user?.hasEmail == true {
         Button {
-          if serverInfo?.email == true { changingEmail = true } else { confirmingEmailRemoval = true }
+          // Only a server known not to send mail gets the remove-only question;
+          // otherwise the full sheet, which can change or remove the address.
+          if let info = serverInfo, info.email != true {
+            confirmingEmailRemoval = true
+          } else {
+            changingEmail = true
+          }
         } label: {
           LabeledContent {
             Text(
