@@ -213,3 +213,45 @@ export interface OpmlImportResponse {
 
 /** Settings that follow the account. The PIN and wallpaper stay on each device. */
 export type SyncedSettings = Omit<Settings, 'pinSalt' | 'pinHash' | 'wallpaper'>;
+
+// ---------------------------------------------------------------------------
+// Notes and sharing
+// ---------------------------------------------------------------------------
+
+/** GET /notes */
+export interface NotesResponse {
+  notes: import('./notes').Note[];
+}
+
+/** PUT /notes/:id (id = feedId:articleId). The server keeps the times and the share link. */
+export interface SaveNoteRequest {
+  title: string;
+  url?: string;
+  feedTitle?: string;
+  body: string;
+}
+
+/** PUT /shares/:noteId publishes the note; DELETE takes it down. */
+export interface ShareResponse {
+  url: string;
+  slug: string;
+}
+
+export type ReportReason = 'illegal' | 'harassment' | 'spam' | 'other';
+
+/** GET /admin/reports */
+export interface ReportItem {
+  id: string;
+  reason: ReportReason;
+  details: string;
+  contact?: string;
+  createdAt: number;
+  share: {
+    slug: string;
+    url: string;
+    title: string;
+    body: string;
+    author: string;
+    hidden: boolean;
+  };
+}

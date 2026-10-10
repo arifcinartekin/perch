@@ -16,9 +16,17 @@ import {
   type SyncPushResponse,
   type SyncRecord,
 } from '@perch/core/sync';
+import { noteProblem } from '@perch/core/notes';
 import { isHttpUrl } from '@perch/core/url';
 import type { DB } from '../db';
-import { articleStates, categories, subscriptions, syncRecords, userSettings } from '../db/schema';
+import {
+  articleStates,
+  categories,
+  shares,
+  subscriptions,
+  syncRecords,
+  userSettings,
+} from '../db/schema';
 import { ensureFeed } from '../feeds/resolve';
 import { Notifier } from '../lib/notifier';
 
@@ -201,6 +209,13 @@ export function validate(r: SyncRecord): string | null {
     case 'state':
       if (!parseStateRecordId(r.id)) return 'bad state id';
       return typeof d.read === 'boolean' && typeof d.starred === 'boolean' ? null : 'bad state';
+    case 'note': {
+      const ids = parseStateRecordId(r.id);
+      if (!ids) return 'bad note id';
+      const problem = noteProblem(d as Partial<RecordDataMap['note']>);
+      if (problem) return `bad note (${problem})`;
+      return d.feedId === ids.feedId && d.articleId === ids.articleId ? null : 'note id mismatch';
+    }
     default:
       return 'unknown type';
   }
@@ -294,6 +309,26 @@ function apply(tx: Tx, userId: string, r: SyncRecord, newFeeds: string[]) {
           target: [articleStates.userId, articleStates.feedId, articleStates.articleId],
           set: row,
         })
+        .run();
+      return;
+    }
+    case 'note': {
+      // A shared note's public copy follows it: edits show, deleting unshares.
+      const where = and(eq(shares.userId, userId), eq(shares.noteId, r.id));
+      if (r.deleted) {
+        tx.delete(shares).where(where).run();
+        return;
+      }
+      const d = r.data as RecordDataMap['note'];
+      tx.update(shares)
+        .set({
+          title: d.title,
+          url: d.url ?? null,
+          feedTitle: d.feedTitle ?? null,
+          body: d.body,
+          updatedAt: Date.now(),
+        })
+        .where(where)
         .run();
       return;
     }

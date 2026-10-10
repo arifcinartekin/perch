@@ -204,8 +204,8 @@ export interface ChainCreateResponse {
   cursor: number;
 }
 
-/** Blobs above this are refused (a setting is at most 8 KiB as JSON). */
-export const CHAIN_BLOB_MAX = 16 * 1024;
+/** Blobs above this are refused (a note is at most NOTE_MAX characters; a setting 8 KiB as JSON). */
+export const CHAIN_BLOB_MAX = 64 * 1024;
 
 export async function chainSlot(keys: ChainKeys, type: RecordType, id: string): Promise<string> {
   const mac = await crypto.subtle.sign(
@@ -249,7 +249,7 @@ export async function sealRecord(
   };
 }
 
-const RECORD_TYPES: readonly string[] = ['feed', 'category', 'setting', 'state'];
+const RECORD_TYPES: readonly string[] = ['feed', 'category', 'setting', 'state', 'note'];
 
 /**
  * The record inside a blob, or null when it doesn't decrypt or doesn't belong

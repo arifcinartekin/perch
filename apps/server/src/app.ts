@@ -16,6 +16,7 @@ import { readerRoutes } from './reader/routes';
 import { SyncService } from './sync/service';
 import { syncRoutes } from './sync/routes';
 import { chainRoutes } from './chain/routes';
+import { noteRoutes, reportRoutes, shareRoutes, sharedPages } from './notes/routes';
 
 export const VERSION = '0.1.0';
 
@@ -78,8 +79,12 @@ export function createApp(ctx: AppContext) {
   api.route('/reader', readerRoutes(ctx));
   api.route('/sync', syncRoutes(ctx));
   api.route('/chain', chainRoutes(ctx));
+  api.route('/notes', noteRoutes(ctx));
+  api.route('/shares', shareRoutes(ctx));
+  api.route('/admin/reports', reportRoutes(ctx));
 
   app.route(API_PREFIX, api);
+  app.route('/shared', sharedPages(ctx));
   app.get('/healthz', (c) => c.text('ok'));
   return app;
 }

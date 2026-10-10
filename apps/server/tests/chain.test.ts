@@ -1,4 +1,5 @@
 import {
+  CHAIN_BLOB_MAX,
   deriveChainKeys,
   newChainSecret,
   openRecord,
@@ -125,7 +126,7 @@ describe('chain relay', () => {
       { ...good, key: 'feed:abc' },
       { ...good, hlc: 'yesterday' },
       { ...good, blob: 'tiny' },
-      { ...good, blob: 'A'.repeat(20_000) },
+      { ...good, blob: 'A'.repeat(CHAIN_BLOB_MAX + 1) },
       null as unknown as ChainRecord,
       good,
     ]);

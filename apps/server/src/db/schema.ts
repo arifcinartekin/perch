@@ -236,7 +236,7 @@ export const syncRecords = sqliteTable(
       .references(() => users.id, { onDelete: 'cascade' }),
     /** "<type>:<id>" */
     key: text('key').notNull(),
-    type: text('type', { enum: ['feed', 'category', 'setting', 'state'] }).notNull(),
+    type: text('type', { enum: ['feed', 'category', 'setting', 'state', 'note'] }).notNull(),
     recordId: text('record_id').notNull(),
     data: text('data', { mode: 'json' }),
     hlc: text('hlc').notNull(),
@@ -282,4 +282,47 @@ export const chainRecords = sqliteTable(
     primaryKey({ columns: [t.chainId, t.key] }),
     uniqueIndex('chain_records_version').on(t.chainId, t.version),
   ],
+);
+
+// ---------------------------------------------------------------------------
+// Shared notes: a public copy of a note, kept in step with it
+// ---------------------------------------------------------------------------
+
+export const shares = sqliteTable(
+  'shares',
+  {
+    /** The public page is /shared/<slug>. Random, unguessable. */
+    slug: text('slug').primaryKey(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    /** The note's id: feedId:articleId. */
+    noteId: text('note_id').notNull(),
+    title: text('title').notNull(),
+    url: text('url'),
+    feedTitle: text('feed_title'),
+    body: text('body').notNull(),
+    createdAt: integer('created_at').notNull().default(now),
+    updatedAt: integer('updated_at').notNull().default(now),
+    /** Set when an admin hides it after a report; the page then says it was removed. */
+    hiddenAt: integer('hidden_at'),
+  },
+  (t) => [uniqueIndex('shares_note').on(t.userId, t.noteId)],
+);
+
+export const reports = sqliteTable(
+  'reports',
+  {
+    id: text('id').primaryKey(),
+    slug: text('slug')
+      .notNull()
+      .references(() => shares.slug, { onDelete: 'cascade' }),
+    reason: text('reason', { enum: ['illegal', 'harassment', 'spam', 'other'] }).notNull(),
+    details: text('details').notNull().default(''),
+    /** Optional, so the reporter can be told the outcome. */
+    contact: text('contact'),
+    createdAt: integer('created_at').notNull().default(now),
+    resolvedAt: integer('resolved_at'),
+  },
+  (t) => [index('reports_open').on(t.resolvedAt)],
 );

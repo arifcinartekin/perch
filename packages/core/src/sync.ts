@@ -1,3 +1,4 @@
+import type { NoteRecordData } from './notes';
 import type { Settings } from './types';
 
 // Sync protocol shared by every client and the server. Everything that syncs is
@@ -7,7 +8,7 @@ import type { Settings } from './types';
 // the server, in personal mode) fetches feeds itself, and ids are derived from
 // URLs and guids, so the same article has the same id everywhere.
 
-export type RecordType = 'feed' | 'category' | 'setting' | 'state';
+export type RecordType = 'feed' | 'category' | 'setting' | 'state' | 'note';
 
 /** A subscription. id = feedIdFor(url). */
 export interface FeedRecordData {
@@ -42,6 +43,8 @@ export interface RecordDataMap {
   category: CategoryRecordData;
   setting: SettingRecordData;
   state: StateRecordData;
+  /** A note on an article. id = stateRecordId(feedId, articleId). */
+  note: NoteRecordData;
 }
 
 export interface SyncRecord<T extends RecordType = RecordType> {

@@ -36,6 +36,13 @@
       "when": 1791631257692,
       "tag": "0004_email",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1791634481605,
+      "tag": "0005_shares",
+      "breakpoints": true
     }
   ]
 }
