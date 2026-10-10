@@ -102,7 +102,7 @@ async function device(node: string) {
   (globalThis as any).__deviceStore = store;
   globalThis.indexedDB = idb;
   vi.resetModules();
-  const [engine, state, feeds, categories, settings, articles, db] = await Promise.all([
+  const [engine, state, feeds, categories, settings, articles, db, notes] = await Promise.all([
     import('@/lib/sync/engine'),
     import('@/lib/sync/state'),
     import('@/lib/storage/feeds'),
@@ -110,6 +110,7 @@ async function device(node: string) {
     import('@/lib/storage/settings'),
     import('@/lib/storage/articles'),
     import('@/lib/storage/db'),
+    import('@/lib/storage/notes'),
   ]);
   await db.getDB(); // bind this module instance to this device's IndexedDB
 
@@ -138,6 +139,7 @@ async function device(node: string) {
     categories: bind(categories),
     settings: bind(settings),
     articles: bind(articles),
+    notes: bind(notes),
     signIn: () => {
       activate();
       return state.saveAccount({ server: 'https://perch.test', username: 'me', token: 't', node });
@@ -196,6 +198,36 @@ describe('extension sync engine', () => {
     // The phone-only feed went up and reaches the laptop.
     await laptop.sync();
     expect((await laptop.feeds.getFeeds()).map((f) => f.url)).toContain('https://only.phone/rss');
+  });
+
+  it('syncs notes: new, edited and deleted', async () => {
+    const laptop = await device('laptop');
+    await laptop.signIn();
+    const source = { feedId: FEED_ID, articleId: 'a', title: 'Item a', feedTitle: 'Blog' };
+    const note = await laptop.notes.putNote(source, 'First *thought*');
+    await laptop.sync();
+    expect(server.records.get(recordKey('note', note.id))?.data).toMatchObject({
+      body: 'First *thought*',
+      title: 'Item a',
+    });
+
+    const phone = await device('phone');
+    await phone.signIn();
+    await phone.sync();
+    expect((await phone.notes.listNotes()).map((n) => n.body)).toEqual(['First *thought*']);
+
+    // An edit on the phone reaches the laptop, keeping when it was written.
+    await phone.notes.putNote(source, 'Second thought');
+    await phone.sync();
+    await laptop.sync();
+    const [edited] = await laptop.notes.listNotes();
+    expect(edited).toMatchObject({ body: 'Second thought', createdAt: note.createdAt });
+
+    // Deleting on the laptop removes it from the phone.
+    await laptop.notes.deleteNote(note.id);
+    await laptop.sync();
+    await phone.sync();
+    expect(await phone.notes.listNotes()).toEqual([]);
   });
 
   it('syncs read and starred, including for articles not fetched yet', async () => {

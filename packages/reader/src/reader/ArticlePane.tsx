@@ -1,13 +1,22 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Button } from '../components/Button';
 import { IconButton } from '../components/IconButton';
 import { Spinner } from '../components/Spinner';
-import { IconArrowLeft, IconExternal, IconRefresh, IconStar, IconCheck } from '../components/icons';
+import {
+  IconArrowLeft,
+  IconExternal,
+  IconRefresh,
+  IconStar,
+  IconCheck,
+  IconNote,
+} from '../components/icons';
 import { sanitizeHtml } from '../lib/sanitize';
 import { fullTimestamp } from '@perch/core/time';
 import { displayTitle } from '@perch/core/feeds';
 import { bareHost } from '@perch/core/url';
 import { useFullText } from '../hooks/useFullText';
+import { useNotes } from '../hooks/useNotes';
+import { NotePanel } from './NotePanel';
 import type { Article, Feed } from '@perch/core/types';
 
 interface Props {
@@ -28,6 +37,17 @@ export function ArticlePane({
   onToggleRead,
 }: Props) {
   const { state, grant, reload } = useFullText(article);
+  const { noteFor } = useNotes();
+  const hasNote = !!noteFor(article.feedId, article.id);
+  const [editingNote, setEditingNote] = useState(false);
+  useEffect(() => setEditingNote(false), [article.id]);
+  const noteSource = {
+    feedId: article.feedId,
+    articleId: article.id,
+    title: article.title,
+    ...(article.url && { url: article.url }),
+    ...(feed && { feedTitle: displayTitle(feed) }),
+  };
 
   const fontFamily = readingFont === 'serif' ? 'var(--font-serif)' : 'var(--font-sans)';
 
@@ -60,6 +80,13 @@ export function ArticlePane({
             <IconRefresh size={15} />
           </IconButton>
         )}
+        <IconButton
+          label={hasNote ? 'Edit note' : 'Add a note'}
+          active={hasNote || editingNote}
+          onClick={() => setEditingNote(true)}
+        >
+          <IconNote size={16} />
+        </IconButton>
         <IconButton
           label={article.read ? 'Mark unread' : 'Mark read'}
           active={article.read === 0}
@@ -118,6 +145,13 @@ export function ArticlePane({
           </p>
 
           <div className="my-5 h-px bg-[var(--border)]" />
+
+          <NotePanel
+            key={article.id}
+            source={noteSource}
+            editing={editingNote}
+            onEditingChange={setEditingNote}
+          />
 
           <StatusBar
             state={state}

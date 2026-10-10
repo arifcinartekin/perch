@@ -2,6 +2,8 @@ import { useEffect, type ReactNode } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { BackendProvider, type ReaderBackend } from './backend';
 import { LibraryProvider, useLibrary } from './hooks/useLibrary';
+import { NotesProvider } from './hooks/useNotes';
+import { NotesView } from './reader/NotesView';
 import { useSettings } from './hooks/useSettings';
 import { useApplyTheme } from './hooks/useTheme';
 import { useWallpaperUrl } from './hooks/useWallpaper';
@@ -34,34 +36,37 @@ function Shell({ settingsExtra }: { settingsExtra?: ReactNode }) {
 
   return (
     <LibraryProvider>
-      <ToastProvider>
-        {wallpaperUrl && settings.wallpaper && (
-          <Wallpaper
-            url={wallpaperUrl}
-            dim={settings.wallpaper.dim}
-            blur={settings.wallpaper.blur}
-          />
-        )}
-        {/* Floating glass panels over the backdrop (or the background image). */}
-        <div className="relative flex h-screen w-screen flex-col gap-2.5 overflow-hidden p-2.5 text-[var(--text)]">
-          <TopBar />
-          <div className="flex min-h-0 flex-1 gap-2.5">
-            <Sidebar />
-            <main className="reader-surface flex min-w-0 flex-1 overflow-hidden rounded-[18px]">
-              <Gate>
-                <Routes>
-                  <Route path="/" element={<AllStream />} />
-                  <Route path="/starred" element={<StarredStream />} />
-                  <Route path="/feed/:feedId" element={<FeedStream />} />
-                  <Route path="/category/:categoryId" element={<CategoryStream />} />
-                  <Route path="/settings" element={<Settings extra={settingsExtra} />} />
-                  <Route path="*" element={<Navigate to="/" replace />} />
-                </Routes>
-              </Gate>
-            </main>
+      <NotesProvider>
+        <ToastProvider>
+          {wallpaperUrl && settings.wallpaper && (
+            <Wallpaper
+              url={wallpaperUrl}
+              dim={settings.wallpaper.dim}
+              blur={settings.wallpaper.blur}
+            />
+          )}
+          {/* Floating glass panels over the backdrop (or the background image). */}
+          <div className="relative flex h-screen w-screen flex-col gap-2.5 overflow-hidden p-2.5 text-[var(--text)]">
+            <TopBar />
+            <div className="flex min-h-0 flex-1 gap-2.5">
+              <Sidebar />
+              <main className="reader-surface flex min-w-0 flex-1 overflow-hidden rounded-[18px]">
+                <Gate>
+                  <Routes>
+                    <Route path="/" element={<AllStream />} />
+                    <Route path="/starred" element={<StarredStream />} />
+                    <Route path="/notes" element={<NotesView />} />
+                    <Route path="/feed/:feedId" element={<FeedStream />} />
+                    <Route path="/category/:categoryId" element={<CategoryStream />} />
+                    <Route path="/settings" element={<Settings extra={settingsExtra} />} />
+                    <Route path="*" element={<Navigate to="/" replace />} />
+                  </Routes>
+                </Gate>
+              </main>
+            </div>
           </div>
-        </div>
-      </ToastProvider>
+        </ToastProvider>
+      </NotesProvider>
     </LibraryProvider>
   );
 }

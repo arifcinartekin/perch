@@ -6,6 +6,7 @@ import {
   IconChevronDown,
   IconChevronRight,
   IconInbox,
+  IconNote,
   IconPencil,
   IconPlus,
   IconStar,
@@ -29,6 +30,7 @@ export function Sidebar() {
       <nav className="flex flex-col gap-0.5 px-2 pb-1 pt-2">
         <SidebarLink to="/" icon={<IconInbox size={16} />} label="All Feeds" count={totalUnread} />
         <SidebarLink to="/starred" icon={<IconStar size={16} />} label="Starred" />
+        <SidebarLink to="/notes" icon={<IconNote size={16} />} label="Notes" />
       </nav>
 
       <div className="mt-1 flex-1 overflow-y-auto px-2 pb-3">

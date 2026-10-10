@@ -153,3 +153,18 @@ export const IconBook = (p: IconProps) => (
     <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z" />
   </Svg>
 );
+
+export const IconNote = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M5 4h10l4 4v12H5z" />
+    <path d="M15 4v4h4" />
+    <path d="M8.5 12.5h7M8.5 16h5" />
+  </Svg>
+);
+
+export const IconLink = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M10 14a4.5 4.5 0 0 0 6.4 0l3-3a4.5 4.5 0 0 0-6.4-6.4l-1 1" />
+    <path d="M14 10a4.5 4.5 0 0 0-6.4 0l-3 3a4.5 4.5 0 0 0 6.4 6.4l1-1" />
+  </Svg>
+);

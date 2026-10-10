@@ -347,3 +347,11 @@ body {
   border-radius: 6px;
   font-size: 0.9em;
 }
+
+/* A note is short and personal: tighter than an article. */
+.prose-note > :first-child {
+  margin-top: 0;
+}
+.prose-note > :last-child {
+  margin-bottom: 0;
+}

@@ -15,6 +15,7 @@ import { getCategories, saveCategories } from '../storage/categories';
 import { getDB } from '../storage/db';
 import { PENDING_STATES_KEY, deleteArticlesForFeed } from '../storage/articles';
 import { getFeeds, saveFeeds } from '../storage/feeds';
+import { getNoteMap, saveNoteMap } from '../storage/notes';
 import { getSettings, saveSettings } from '../storage/settings';
 import { hasHostPermission } from '../permissions/host';
 import { chainApi } from './chain';
@@ -121,6 +122,7 @@ async function pull(account: SyncAccount, hlc: Hlc, since: number, result: SyncR
 export async function applyRemote(records: StoredRecord[]): Promise<string[]> {
   let feeds = await getFeeds();
   let categories = await getCategories();
+  let notes = await getNoteMap();
   const settings = await getSettings();
   const shadow = await getShadow();
   const outbox = await getOutbox();
@@ -131,6 +133,7 @@ export async function applyRemote(records: StoredRecord[]): Promise<string[]> {
   const states = new Map<string, StateRecordData>();
   let feedsChanged = false;
   let categoriesChanged = false;
+  let notesChanged = false;
 
   /** True when the user changed this record here since the last sync. */
   const editedHere = (key: string, localCanon: string | undefined) =>
@@ -207,6 +210,22 @@ export async function applyRemote(records: StoredRecord[]): Promise<string[]> {
         break;
       }
 
+      case 'note': {
+        const local = notes[r.id];
+        if (editedHere(key, local && canonical('note', local))) break;
+        notesChanged = true;
+        if (r.deleted) {
+          const { [r.id]: _gone, ...rest } = notes;
+          notes = rest;
+          delete shadow[key];
+          break;
+        }
+        const d = r.data as RecordDataMap['note'];
+        notes = { ...notes, [r.id]: d };
+        shadow[key] = canonical('note', d);
+        break;
+      }
+
       case 'state': {
         // A pending local change to the same article wins on push.
         if (r.id in outbox || r.deleted) break;
@@ -222,6 +241,7 @@ export async function applyRemote(records: StoredRecord[]): Promise<string[]> {
   }
   if (feedsChanged) await saveFeeds(feeds);
   if (categoriesChanged) await saveCategories(categories);
+  if (notesChanged) await saveNoteMap(notes);
   if (Object.keys(settingsPatch).length) {
     const saved = await saveSettings(settingsPatch);
     // Normalising may adjust a value; record what we actually hold.
@@ -276,7 +296,7 @@ async function push(account: SyncAccount, hlc: Hlc): Promise<number> {
   const outbox = await getOutbox();
   const outgoing: { record: SyncRecord; canon?: string }[] = [];
 
-  const diff = <T extends 'feed' | 'category' | 'setting'>(
+  const diff = <T extends 'feed' | 'category' | 'setting' | 'note'>(
     type: T,
     local: Map<string, RecordDataMap[T]>,
   ) => {
@@ -299,6 +319,7 @@ async function push(account: SyncAccount, hlc: Hlc): Promise<number> {
   diff('category', new Map((await getCategories()).map((c) => [c.id, categoryToRecord(c)])));
   const settings = await getSettings();
   diff('setting', new Map(SYNCED_SETTING_KEYS.map((k) => [k, { value: settings[k] }])));
+  diff('note', new Map(Object.entries(await getNoteMap())));
   for (const [id, data] of Object.entries(outbox)) {
     outgoing.push({ record: { type: 'state', id, data, hlc: hlc.now() } });
   }

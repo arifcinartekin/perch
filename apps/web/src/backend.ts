@@ -3,7 +3,11 @@ import type {
   ArticlesResponse,
   CountsResponse,
   LibraryResponse,
+  NotesResponse,
+  ShareResponse,
 } from '@perch/core/api';
+import type { Note } from '@perch/core/notes';
+import { stateRecordId } from '@perch/core/sync';
 import { isSyncedSettingKey } from '@perch/core/sync';
 import {
   DEFAULT_SETTINGS,
@@ -52,6 +56,7 @@ export function createServerBackend(): ReaderBackend & { close(): void } {
       // on every read-mark would throw away the scroll position.
       if (lastCursor !== null && cursor !== lastCursor) {
         libraryChanged();
+        each((h) => h.notes?.());
         void loadSettings().then((s) => each((h) => h.settings?.(s)));
       }
       lastCursor = cursor;
@@ -203,6 +208,31 @@ export function createServerBackend(): ReaderBackend & { close(): void } {
         }
       },
       requestAccess: async () => true,
+    },
+
+    notes: {
+      list: async () => (await api<NotesResponse>('/notes')).notes,
+      save: async (source, body) => {
+        const id = stateRecordId(source.feedId, source.articleId);
+        const { note } = await api<{ note: Note }>(`/notes/${encodeURIComponent(id)}`, {
+          method: 'PUT',
+          body: { title: source.title, url: source.url, feedTitle: source.feedTitle, body },
+        });
+        return note;
+      },
+      remove: async (id) => {
+        await api(`/notes/${encodeURIComponent(id)}`, { method: 'DELETE' });
+      },
+    },
+
+    sharing: {
+      unavailable: async () => null,
+      share: async (id) =>
+        (await api<ShareResponse>(`/shares/${encodeURIComponent(id)}`, { method: 'PUT', body: {} }))
+          .url,
+      unshare: async (id) => {
+        await api(`/shares/${encodeURIComponent(id)}`, { method: 'DELETE' });
+      },
     },
 
     watch(handlers) {

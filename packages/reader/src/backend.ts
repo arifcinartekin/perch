@@ -1,4 +1,5 @@
 import { createContext, createElement, useContext, type ReactNode } from 'react';
+import type { Note } from '@perch/core/notes';
 import type { Article, Category, Feed, FullText, Settings } from '@perch/core/types';
 
 // Everything the reader UI needs from where the data lives. The extension
@@ -54,6 +55,15 @@ export interface FeedPatch {
   url?: string;
 }
 
+/** The article a note is about; the note keeps a copy of these. */
+export interface NoteSource {
+  feedId: string;
+  articleId: string;
+  title: string;
+  url?: string;
+  feedTitle?: string;
+}
+
 export interface ReaderBackend {
   // Library ------------------------------------------------------------------
   loadLibrary(): Promise<{ feeds: Feed[]; categories: Category[] }>;
@@ -90,12 +100,30 @@ export interface ReaderBackend {
     requestAccess(article: Article): Promise<boolean>;
   };
 
+  // Notes --------------------------------------------------------------------
+  notes: {
+    /** Newest first. */
+    list(): Promise<Note[]>;
+    /** Create or update the note on an article. */
+    save(source: NoteSource, body: string): Promise<Note>;
+    remove(noteId: string): Promise<void>;
+  };
+  /** Publishing a note as a public page on the Perch Server signed in to. */
+  sharing: {
+    /** Why notes can't be shared from here (e.g. no account), or null when they can. */
+    unavailable(): Promise<string | null>;
+    /** Returns the page's address. The note must be saved first. */
+    share(noteId: string): Promise<string>;
+    unshare(noteId: string): Promise<void>;
+  };
+
   // Change notifications ------------------------------------------------------
   /** Subscribe to changes made elsewhere (another tab, device, the background). */
   watch(handlers: {
     library?: () => void;
     articles?: () => void;
     settings?: (settings: Settings) => void;
+    notes?: () => void;
   }): () => void;
 
   // Optional, host-specific -----------------------------------------------

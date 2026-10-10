@@ -18,9 +18,11 @@ import {
   watchFeeds,
 } from './storage/feeds';
 import { watchLocal } from './storage/local';
+import { deleteNote, listNotes, putNote, watchNotes } from './storage/notes';
 import { getSettings, saveSettings, watchSettings } from './storage/settings';
 import { clearWallpaper, loadWallpaper, saveWallpaper } from './storage/wallpaper';
-import { SYNC_KEYS } from './sync/state';
+import { shareNote, unshareNote } from './sync/client';
+import { SYNC_KEYS, getAccount, getStatus, isChain } from './sync/state';
 
 // The reader's data layer in the extension: browser storage, IndexedDB, and
 // the background worker for fetching. Site access is asked for per origin,
@@ -116,8 +118,43 @@ export const localBackend: ReaderBackend = {
       article.url ? requestHostPermission(article.url) : Promise.resolve(false),
   },
 
-  watch({ library, articles, settings }) {
+  notes: {
+    list: listNotes,
+    save: putNote,
+    remove: deleteNote,
+  },
+
+  // Sharing publishes a note on the Perch Server this browser syncs with; it
+  // needs the note there first, so each step syncs.
+  sharing: {
+    async unavailable() {
+      const account = await getAccount();
+      if (!account) return 'Sign in to a Perch Server under Settings → Sync to share notes.';
+      if (isChain(account))
+        return 'Sharing needs a Perch Server account. Sync chains stay private.';
+      if ((await getStatus()).signedOut) return 'Sign in again under Settings → Sync to share.';
+      return null;
+    },
+    async share(noteId) {
+      const account = await getAccount();
+      if (!account || isChain(account))
+        throw new Error('Sign in to a Perch Server to share notes.');
+      await sendMessage('sync:now');
+      const url = await shareNote(account, noteId);
+      await sendMessage('sync:now');
+      return url;
+    },
+    async unshare(noteId) {
+      const account = await getAccount();
+      if (!account || isChain(account)) return;
+      await unshareNote(account, noteId);
+      await sendMessage('sync:now');
+    },
+  },
+
+  watch({ library, articles, settings, notes }) {
     const stops: (() => void)[] = [];
+    if (notes) stops.push(watchNotes(notes));
     if (library) stops.push(watchFeeds(library), watchCategories(library));
     if (articles) {
       // A background refresh finished, or a sync round applied read state.

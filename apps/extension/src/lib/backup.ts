@@ -1,6 +1,7 @@
 import { buildOpml, parseOpml } from '@perch/core/opml';
 import { addCategory, getCategories, saveCategories } from './storage/categories';
 import { addFeed, getFeeds, saveFeeds } from './storage/feeds';
+import { getNoteMap, saveNoteMap, type NoteMap } from './storage/notes';
 import { getSettings, saveSettings } from './storage/settings';
 import { hasHostPermission } from './permissions/host';
 import { UNCATEGORIZED_ID, type Category, type Feed, type Settings } from '@perch/core/types';
@@ -10,7 +11,7 @@ export { buildOpml, parseOpml, type ParsedOpml } from '@perch/core/opml';
 // Import / export of the feed list. Everything is local, so a user can take a
 // backup and move between machines. Two formats:
 //   - OPML 2.0  — the portable standard, works with any other reader.
-//   - Perch JSON — a full backup of feeds + categories + settings (never the PIN).
+//   - Perch JSON — a full backup of feeds + categories + settings + notes (never the PIN).
 
 // ---------------------------------------------------------------------------
 // Perch JSON backup
@@ -23,12 +24,15 @@ export interface PerchBackup {
   settings: Omit<Settings, 'pinSalt' | 'pinHash' | 'wallpaper'>;
   categories: Category[];
   feeds: Feed[];
+  /** Absent in backups made before notes existed. */
+  notes?: NoteMap;
 }
 
 export function buildBackup(
   settings: Settings,
   feeds: Feed[],
   categories: Category[],
+  notes: NoteMap = {},
 ): PerchBackup {
   // The PIN never leaves the device; the wallpaper image lives in IndexedDB and
   // isn't part of the backup, so its settings would only point at nothing.
@@ -41,6 +45,7 @@ export function buildBackup(
     categories,
     // Drop volatile per-fetch fields from the backup.
     feeds: feeds.map(({ etag: _e, lastModified: _m, lastError: _err, ...f }) => f),
+    notes,
   };
 }
 
@@ -147,6 +152,15 @@ export async function importBackup(
   }
   const feedsAdded = (await getFeeds()).length - before;
 
+  // Notes: a backup's note replaces the one here only when it is newer.
+  if (data.notes && typeof data.notes === 'object') {
+    const current = mode === 'replace' ? {} : await getNoteMap();
+    for (const [id, note] of Object.entries(data.notes)) {
+      if (!current[id] || current[id].updatedAt < note.updatedAt) current[id] = note;
+    }
+    await saveNoteMap(current);
+  }
+
   // Restore non-destructive settings (never the PIN).
   await saveSettings({ ...data.settings });
 
@@ -159,7 +173,7 @@ export async function exportOpmlString(): Promise<string> {
 
 export async function exportBackupString(): Promise<string> {
   return JSON.stringify(
-    buildBackup(await getSettings(), await getFeeds(), await getCategories()),
+    buildBackup(await getSettings(), await getFeeds(), await getCategories(), await getNoteMap()),
     null,
     2,
   );

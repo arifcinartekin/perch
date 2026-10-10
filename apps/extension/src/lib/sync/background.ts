@@ -37,7 +37,7 @@ export async function scheduleSyncAlarm(): Promise<void> {
 }
 
 export function startSyncTriggers(): void {
-  for (const key of [KEYS.feeds, KEYS.categories, KEYS.settings, SYNC_KEYS.outbox]) {
+  for (const key of [KEYS.feeds, KEYS.categories, KEYS.settings, KEYS.notes, SYNC_KEYS.outbox]) {
     watchLocal(key, async () => {
       if (await getAccount()) soon();
     });

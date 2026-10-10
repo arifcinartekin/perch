@@ -5,6 +5,7 @@ import type {
   EmailPurpose,
   PreloginResponse,
   ServerInfo,
+  ShareResponse,
 } from '@perch/core/api';
 import { DEFAULT_KDF, deriveKeys, newSalt } from '@perch/core/auth';
 import type { SyncChangesResponse, SyncPushResponse, SyncRecord } from '@perch/core/sync';
@@ -142,6 +143,23 @@ export async function resetPassword(
 
 export async function signOutRemote(account: ServerAccount): Promise<void> {
   await call(account.server, '/auth/logout', { token: account.token, body: {} }).catch(() => {});
+}
+
+/** Publish a note (already synced to the server) as a public page. */
+export async function shareNote(account: ServerAccount, noteId: string): Promise<string> {
+  const res = await call<ShareResponse>(account.server, `/shares/${encodeURIComponent(noteId)}`, {
+    method: 'PUT',
+    token: account.token,
+    body: {},
+  });
+  return res.url;
+}
+
+export async function unshareNote(account: ServerAccount, noteId: string): Promise<void> {
+  await call(account.server, `/shares/${encodeURIComponent(noteId)}`, {
+    method: 'DELETE',
+    token: account.token,
+  });
 }
 
 export function syncApi(account: ServerAccount) {

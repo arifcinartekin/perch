@@ -8,6 +8,7 @@ export const KEYS = {
   settings: 'perch:settings',
   feeds: 'perch:feeds',
   categories: 'perch:categories',
+  notes: 'perch:notes',
   schemaVersion: 'perch:schemaVersion',
 } as const;
 
