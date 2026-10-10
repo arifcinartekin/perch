@@ -114,7 +114,10 @@ final class Reader {
 
   func feedIds(_ scope: Scope) -> Set<String>? {
     switch scope {
-    case .all, .starred: nil
+    // Articles of a feed no longer followed may linger on the phone; only
+    // starred ones should show.
+    case .all: Set(library.feeds.map(\.id))
+    case .starred: nil
     case .feed(let f): [f.id]
     case .category(let c): Set(library.feeds.filter { $0.categoryId == c.id }.map(\.id))
     }
@@ -202,7 +205,7 @@ final class Reader {
   /// Fetches feeds now (everything, or one scope): the server does it, or
   /// without one, the phone. Then reloads.
   func refresh(_ scope: Scope = .all) async {
-    let ids = feedIds(scope).map(Array.init)
+    let ids = scope == .all ? nil : feedIds(scope).map(Array.init)
     if isLocal {
       guard !refreshing else { return }
       refreshing = true

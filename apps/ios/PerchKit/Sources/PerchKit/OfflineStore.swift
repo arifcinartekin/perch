@@ -158,6 +158,15 @@ public actor OfflineStore {
     run("DELETE FROM fulltext WHERE id NOT IN (SELECT id FROM articles)")
   }
 
+  /// Articles of feeds that aren't in the library any more.
+  public func deleteArticles(notIn feedIds: Set<String>, keepStarred: Bool) {
+    let placeholders = Array(repeating: "?", count: feedIds.count).joined(separator: ",")
+    run(
+      "DELETE FROM articles WHERE feed_id NOT IN (\(placeholders))\(keepStarred ? " AND starred = 0" : "")",
+      feedIds.sorted().map(Value.text))
+    run("DELETE FROM fulltext WHERE id NOT IN (SELECT id FROM articles)")
+  }
+
   /// Drops articles published before `cutoff` (epoch ms), except starred ones.
   public func prune(before cutoff: Double) {
     run("DELETE FROM articles WHERE starred = 0 AND published_at < ?", .double(cutoff))
@@ -384,7 +393,10 @@ public actor OfflineStore {
   }
 
   @discardableResult
-  private func run(_ sql: String, _ args: Value...) -> Bool {
+  private func run(_ sql: String, _ args: Value...) -> Bool { run(sql, args) }
+
+  @discardableResult
+  private func run(_ sql: String, _ args: [Value]) -> Bool {
     guard let stmt = prepare(sql, args) else { return false }
     defer { sqlite3_finalize(stmt) }
     return sqlite3_step(stmt) == SQLITE_DONE

@@ -104,7 +104,9 @@ public actor LocalBackend: ReaderBackend {
     -> ArticlePage
   {
     let library = await load().library
-    var feedIds: Set<String>?
+    // Like the server: lists show the feeds you follow; starred articles stay
+    // after their feed is removed.
+    var feedIds: Set<String>? = q.starred ? nil : Set(library.feeds.map(\.id))
     if let feed = q.feed { feedIds = [feed] }
     if let category = q.category {
       feedIds = Set(library.feeds.filter { $0.categoryId == category }.map(\.id))
@@ -177,9 +179,12 @@ public actor LocalBackend: ReaderBackend {
     }
 
     let now = Date.now.timeIntervalSince1970 * 1000
+    // A feed removed while it was being fetched (here or by the sync chain)
+    // must not get its articles back.
+    let subscribed = Set(await load().library.feeds.map(\.id))
     var updated: [String: Feed] = [:]
     var newValidators: [String: Validators] = [:]
-    for (feed, result) in results {
+    for (feed, result) in results where subscribed.contains(feed.id) {
       var f = feed
       f.lastFetchedAt = now
       switch result {
@@ -197,6 +202,7 @@ public actor LocalBackend: ReaderBackend {
       updated[feed.id] = f
     }
     await store.prune(before: now - Self.keepDays * 86_400_000)
+    await store.deleteArticles(notIn: Set(await load().library.feeds.map(\.id)), keepStarred: true)
     await update { s in
       for i in s.library.feeds.indices {
         if let f = updated[s.library.feeds[i].id] { s.library.feeds[i] = f }

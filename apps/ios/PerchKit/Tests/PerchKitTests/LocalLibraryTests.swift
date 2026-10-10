@@ -306,6 +306,36 @@ final class StubProtocol: URLProtocol, @unchecked Sendable {
     #expect(starred.items.map(\.title) == ["One"])
   }
 
+  @Test func articlesOfFeedsNoLongerFollowedAreHiddenAndCleanedUp() async throws {
+    StubProtocol.responses = ["https://kept.example/feed": (200, rss([("k", "Kept")]), [:])]
+    let dir = FileManager.default.temporaryDirectory.appending(path: "perch-local-\(UUID())")
+    let store = try OfflineStore(url: dir.appending(path: "library.sqlite"))
+    let config = URLSessionConfiguration.ephemeral
+    config.protocolClasses = [StubProtocol.self]
+    let local = LocalBackend(store: store, configuration: config)
+    let kept = try await local.addFeed(url: "https://kept.example/feed", categoryId: nil).feed
+
+    // Left behind by a feed that is gone from the library, e.g. removed by the
+    // sync chain while it was being fetched.
+    func orphan(_ id: String, starred: Bool) throws -> Article {
+      let now = Date.now.timeIntervalSince1970 * 1000
+      let json =
+        #"{"id":"\#(id)","feedId":"gone","title":"\#(id)","publishedAt":\#(now),"read":0,"starred":\#(starred ? 1 : 0)}"#
+      return try JSONDecoder().decode(Article.self, from: Data(json.utf8))
+    }
+    await store.insertNew([try orphan("Orphan", starred: false), try orphan("Saved", starred: true)])
+
+    let unread = try await local.articles(.init(unreadOnly: true), before: nil, limit: 50)
+    #expect(unread.items.map(\.title) == ["Kept"])
+    let starred = try await local.articles(.init(starred: true), before: nil, limit: 50)
+    #expect(starred.items.map(\.title) == ["Saved"])
+
+    try await local.refresh(feeds: nil)
+    #expect(await store.article("gone:Orphan") == nil)
+    #expect(await store.article("gone:Saved") != nil)
+    #expect(try await local.counts().unread[kept.id] == 1)
+  }
+
   @Test func failuresAreNotedOnTheFeed() async throws {
     StubProtocol.responses = [
       "https://down.example/feed": (200, rss([("x", "X")]), [:])
