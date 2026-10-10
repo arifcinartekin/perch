@@ -104,20 +104,26 @@ describe('chain keys and records', () => {
     const keys = await deriveChainKeys(newChainSecret());
     const feed = {
       type: 'feed' as const,
-      id: 'f1',
+      id: 'feed-id-that-must-not-leak',
       hlc: '1700000000000-0001-a',
       data: { url: 'https://e.com/feed', categoryId: 'uncategorized', addedAt: 1 },
     };
     const sealed = await sealRecord(keys, feed);
-    expect(sealed.key).not.toContain('f1');
+    // A long id, so a random 22-character key can't contain it by chance.
+    expect(sealed.key).not.toContain('feed-id-that-must-not-leak');
     expect(await openRecord(keys, { ...sealed, version: 3 })).toEqual({ ...feed, version: 3 });
 
-    const gone = await sealRecord(keys, { type: 'feed', id: 'f1', hlc: feed.hlc, deleted: true });
+    const gone = await sealRecord(keys, {
+      type: 'feed',
+      id: 'feed-id-that-must-not-leak',
+      hlc: feed.hlc,
+      deleted: true,
+    });
     expect(gone.deleted).toBe(true);
     expect(gone.key).toBe(sealed.key);
     expect(await openRecord(keys, { ...gone, version: 4 })).toEqual({
       type: 'feed',
-      id: 'f1',
+      id: 'feed-id-that-must-not-leak',
       hlc: feed.hlc,
       version: 4,
       deleted: true,
