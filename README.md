@@ -1,42 +1,67 @@
 # Perch
 
-**A privacy-first RSS reader that lives in your browser — local by default, synced if you want.**
+**A calm, private feed reader — in your browser, on your iPhone and on the web. Local by
+default, synced if you want, and never watching what you read.**
 
-Perch is a cross-browser extension (Chrome, Edge, Brave, Firefox) for discovering and reading
-RSS, Atom, and JSON feeds. It needs no account, has no telemetry and no third-party backend.
-Every feed, every category, every read/unread flag, and every cached article stays in your
-browser's local storage. The only network requests Perch makes are to the feeds, articles, and
-favicons **you** have added — and, only if you turn on sync, to a
-[Perch Server](./apps/server/README.md) you choose.
+Perch reads RSS, Atom and JSON feeds. It has no telemetry, no ads and no trackers, and it needs no
+account: your subscriptions, categories, read and starred articles, notes and settings live on
+your device. It comes as:
 
-It has two surfaces:
+- **A browser extension** (Chrome, Edge, Brave, Firefox) with a toolbar popup that finds the
+  feeds on the page you're on, and a full-screen reader.
+- **An iPhone and iPad app** with widgets, which fetches feeds on the phone itself.
+- **A web reader** at [app.perch.ws](https://app.perch.ws) (or on any Perch Server), which keeps
+  its library in your browser too.
 
-- **A toolbar popup** for discovering feeds on the page you're looking at and adding/removing them.
-- **A full-screen reader** — a calm, FreshRSS/Feedly-style reading experience in ink, cream and ember, on frosted glass, with a
-  sidebar, collapsible categories, unread counts, and one-column article reading. Articles load
-  their full text automatically (via Mozilla Readability) with the feed's own content as a
-  fallback; there's no mode switch and no button to press. A search bar across the top
-  searches the open feed, category or everything (<kbd>/</kbd> or <kbd>⌘K</kbd> to focus).
+The reader is calm and uncluttered — ink, cream and ember on frosted glass, with a sidebar,
+collapsible categories, unread counts and one-column reading. Full articles load by themselves
+(Mozilla Readability), with the feed's own content as a fallback. Search covers the open feed,
+category or everything (<kbd>/</kbd> or <kbd>⌘K</kbd>). Under **Settings → Appearance** you pick
+the background, accent and button colours for the light and dark themes, and a background
+picture.
 
-Power users can make it their own under **Settings → Appearance**: pick the background, accent and
-button colours (separately for the light and dark theme — text contrast adjusts automatically),
-and set a background image for the full-screen reader with dim and blur controls.
+### Three separate things
 
-**Sync (optional).** Under **Settings → Sync**, either way, your subscriptions, categories, read
-and starred articles, and settings follow you across browsers and the iPhone app. The PIN and
-background image stay per device.
+Perch keeps these apart on purpose, so you can tell exactly what goes where.
 
-- **Sync chain — no account.** Start a chain on one device and enter its code (or scan its QR
-  code) on the others. Records are encrypted on your devices with keys derived from the code;
-  the relay that passes them on (`sync.perch.ws` by default, or any Perch Server with
-  `PERCH_CHAIN` on) sees neither your feeds nor what you read. Every device fetches the feeds
-  itself.
-- **Perch Server account.** Sign in to a server, such as one you run yourself; it fetches the
-  feeds for you and serves the web reader. Your password never leaves the device — Perch
-  derives a key from it with Argon2id and sends only that.
+1. **Your library is always on your device.** Feeds are fetched by the device itself (the web
+   reader asks its server to fetch them anonymously, because a web page isn't allowed to).
+   No favicons are loaded: they would tell each site that you follow it.
+2. **Sync is optional**, under Settings → Sync, one way per library:
+   - **Sync chain — no account.** Start a chain on one device, scan its QR code or type its code
+     on the others. Everything is encrypted on your devices with keys derived from the code; the
+     relay (`sync.perch.ws`, or any Perch Server with `PERCH_CHAIN` on) can order the records
+     but not read them, and doesn't even see feed addresses. The devices in a chain list each
+     other, sealed like everything else.
+   - **Your own Perch Server.** Self-hosters and organisations can run a server that keeps each
+     account's library and fetches its feeds ([apps/server](./apps/server/README.md)).
+3. **A Perch account is only a name for sharing.** On a hub such as app.perch.ws it's a
+   username, a password and a recovery code — no email. You need it only to **share a note** as a
+   public page; it doesn't sync anything. Passwords never leave the device: Perch derives a key
+   with Argon2id and sends only that.
 
-It also does the things a local-first tool should: **export / import** your subscriptions (OPML
-or a full JSON backup), and an optional **6-digit PIN** to keep a passer-by out of your reader.
+### Notes and sharing
+
+Write a markdown note on any article. Notes are private and sync with the rest of your library.
+**Share** one and Perch publishes a copy at a random address (`app.perch.ws/shared/…`) under
+your @username; editing the note updates the page, deleting it takes the page down. Every shared
+page has a report form; server admins handle reports from the account page.
+
+### Also
+
+- **Export / import** subscriptions as OPML, or the extension's full JSON backup.
+- **App lock:** a 6-digit PIN in the extension, and a PIN with Face ID or Touch ID on the iPhone.
+- **Recovery codes** instead of password-reset email, saved as a PDF; accounts can be deleted
+  from every app.
+
+### Privacy you can check
+
+The official services (app.perch.ws, sync.perch.ws, perch.ws) are run by one person, without
+commercial purpose, and keep as little as possible: no email addresses, no access logs, no IP
+addresses, no libraries. Server images are built and attested by this repository's CI, and the
+server reports the commit it runs — see [perch.ws/transparency](https://perch.ws/transparency),
+the [privacy policy](https://perch.ws/privacy) and the [terms](https://perch.ws/terms). Servers
+run by anyone else are their operators' responsibility.
 
 <!-- SCREENSHOT: docs/screenshots/reader.png — the full-screen reader, dark mode -->
 <!-- SCREENSHOT: docs/screenshots/popup.png — the toolbar popup showing a discovered feed -->
@@ -58,7 +83,12 @@ install warning never appears.
 | `alarms`                                                 | install                                                                     | Refresh your feeds on a schedule in the background.                                                                                   |
 | `*://*/*` (optional)                                     | only if you turn on **"Auto-discover feeds on every site"** in Settings     | Scan pages for feeds as you browse and show an orange dot on the toolbar icon. Toggling the setting off **immediately revokes** this. |
 | a single origin, e.g. `https://example.com/*` (optional) | when you add a feed, or open **Full text** for an article from a new domain | Fetch that one site's feed / article HTML. Access grows only for sites you actually use.                                              |
-| your Perch Server's origin (optional)                    | when you connect sync in Settings                                           | Talk to the sync server you chose. Signing out keeps your data on the device.                                                         |
+| your relay's or server's origin (optional)               | when you start or join a sync chain, or sign in                             | Talk to the relay or server you chose. Leaving or signing out keeps your data on the device.                                          |
+
+In Firefox the manifest also declares what is sent, and only once you turn it on
+(`data_collection_permissions`: nothing required; optionally your library for sync, your
+sign-in and username for accounts, and the notes you share). Firefox asks for it in the same
+prompt as the relay's or server's origin.
 
 The extension pages also allow `'wasm-unsafe-eval'` in their content security policy. That lets
 Perch run its own bundled Argon2id (WebAssembly) when you sign in to a sync server; it does not
@@ -116,8 +146,9 @@ Perch is an npm-workspaces monorepo. Everything that doesn't depend on a browser
 extension. The iPhone app is Swift: like the extension it works on its own, fetching feeds on
 the phone, or talks to a server. Its Swift ports of the protocol (key derivation included) and
 of the feed and article ids are tested against the TypeScript ones. The reading app itself lives in `packages/reader` and runs twice:
-in the extension over local storage, and on the web over the Perch Server API — one UI, two
-data layers behind the same `ReaderBackend` interface.
+in the extension over local storage, and on the web — either over the same local code run in
+the page (on a hub) or over a personal server's API. One UI, behind one `ReaderBackend`
+interface.
 
 ```
 packages/
@@ -131,6 +162,9 @@ packages/
 │  ├─ src/username.ts      username rules and look-alike folding.
 │  ├─ src/sync.ts          sync records, protocol types, hybrid logical clock.
 │  ├─ src/chain.ts         sync chains: the code, key derivation, sealed records.
+│  ├─ src/notes.ts         notes and safe markdown rendering.
+│  ├─ src/pow.ts           the sign-up proof of work.
+│  ├─ src/recovery.ts      recovery codes; recovery-pdf.ts writes the PDF.
 │  ├─ src/opml.ts          OPML import / export.
 │  ├─ src/search.ts        accent-insensitive article search.
 │  ├─ src/theme.ts         custom colour palettes.
@@ -145,7 +179,8 @@ apps/
 │  │  │                    toolbar badge, optional auto-discovery listener.
 │  │  ├─ popup/            React. Discover / add / remove feeds for the current site.
 │  │  ├─ reader/           @perch/reader over local storage, plus the PIN gate and the
-│  │  │                    extension-only settings (discovery, sync, backup, lock).
+│  │  │                    extension-only settings (discovery, sync, Perch account, backup,
+│  │  │                    lock).
 │  │  └─ options/          Thin redirect to reader.html#/settings.
 │  ├─ src/lib/
 │  │  ├─ discovery/        link-tag collector (scripting API) + orchestration.
@@ -160,25 +195,35 @@ apps/
 │  │  └─ backup.ts …       JSON backup, messaging, badge, PIN lock.
 │  └─ tests/              Vitest: storage (fake-indexeddb), backup, and a jsdom smoke test.
 ├─ ios/                    The iPhone and iPad app with widgets, local or synced (SwiftUI, iOS 26+). See apps/ios/README.md.
-│  ├─ Perch/               tabs and screens, session (Keychain), offline sync and image cache,
-│  │                       background refresh, live updates over Server-Sent Events.
+│  ├─ Perch/               tabs and screens, sessions (Keychain), sync chain, Perch account,
+│  │                       app lock, QR scanning, offline sync and image cache, background
+│  │                       refresh, live updates over Server-Sent Events.
 │  └─ PerchKit/            Swift package: API client and types, a port of core/theme.ts, the
 │                          offline store (SQLite), Argon2id + HKDF key derivation (reference C
 │                          Argon2); `swift test` on the Mac.
-├─ web/                    The web reader (Vite PWA): sign-in, @perch/reader over the server
-│                          API, account / devices / invites / OPML settings. Served by the server.
-└─ server/                 Perch Server: self-hostable, fetches feeds, serves every device.
-   ├─ src/auth/            accounts, sessions, devices, invites.
+├─ web/                    The web app (Vite PWA), served by the server. On a hub: the reader with
+│                          its library in the browser (the extension's lib/ code run with a small
+│                          stand-in for the WebExtension API, src/local/) and the Perch account
+│                          at /account. On a personal server: @perch/reader over the server API.
+└─ server/                 Perch Server: self-hostable. `personal` mode keeps libraries and
+   │                       fetches feeds; `hub` mode (app.perch.ws) holds Perch accounts and
+   │                       shared notes only.
+   ├─ src/auth/            accounts, sessions, devices, invites, recovery codes, the sign-up
+   │                       proof of work, optional email (codes; addresses kept only as hashes).
    ├─ src/feeds/           SSRF-safe fetcher, background worker, subscribe-from-any-URL.
    ├─ src/reader/          reader API: articles, search, read state, OPML, settings.
    ├─ src/fulltext/        Readability (linkedom) for the web reader, cached per article.
    ├─ src/sync/            sync records (last writer wins), change feed, Server-Sent Events.
    ├─ src/chain/           the relay for sync chains: sealed records it can order, not read.
+   ├─ src/notes/           notes, shared pages, reports.
+   ├─ src/proxy/           a hub's anonymous feed fetcher for the web reader.
    ├─ src/db/              Drizzle schema (SQLite); migrations in drizzle/.
    └─ tests/               Vitest against an in-memory database and a local feed server.
 ```
 
-Running your own server is covered in [apps/server/README.md](./apps/server/README.md).
+Running your own server is covered in [apps/server/README.md](./apps/server/README.md), and
+the official deployment in [deploy/README.md](./deploy/README.md). The landing page and the
+privacy policy, terms and transparency pages are in `site/`.
 
 ### Stack
 

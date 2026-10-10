@@ -1,11 +1,11 @@
 # Perch for iPhone
 
 A native SwiftUI feed reader. Like the extension it needs no account: it opens straight into an
-empty library, you add feeds, and the phone fetches them itself. Connect a
-[Perch Server](../server/README.md) under Settings → Sync and the library is the server's,
-kept in sync with the extension and the web reader. Or, without any account, put the phone's
-library in a sync chain with your other devices. iOS 26 or later, so the tab bar, toolbars
-and sheets are Liquid Glass.
+empty library, you add feeds, and the phone fetches them itself. Put the phone's library in a
+sync chain with your other devices (no account), or connect it to a
+[Perch Server](../server/README.md) of your own under Settings → Sync. A **Perch account**
+(app.perch.ws by default) is separate: it's only your name for sharing notes. iOS 26 or later,
+so the tab bar, toolbars and sheets are Liquid Glass.
 
 - **Without a server:** feeds, categories, read and starred articles and settings live on the
   phone. It finds a site's feed (from the page's `<link rel="alternate">`, or the usual
@@ -14,7 +14,8 @@ and sheets are Liquid Glass.
   text comes from the article's page. Feed and article ids are the ones `packages/core` gives,
   so connecting a server later adds the same feeds (read and starred state stay on the phone).
 - **Sync chain:** Settings → Sync → Sync chain starts a chain (on `sync.perch.ws`) or joins one
-  by its code; scanning a chain's QR code with the Camera opens the app ready to join. Feeds,
+  by scanning its QR code in the app (VisionKit) or typing its code; the chain's devices are
+  listed, and one can be forgotten. Feeds,
   categories, read and starred articles, theme and colours sync with the extension and other
   phones; each device still fetches the feeds itself. The code lives in the Keychain, and the
   relay only sees encrypted records (see `PerchKit/Chain.swift` and
@@ -47,8 +48,13 @@ and sheets are Liquid Glass.
 
   A background photo with dim and blur stays on this phone, like the extension's wallpaper.
 
-- **Account** (with a server): change password, devices (sign one out), invites for admins.
-  OPML import and export work either way.
+- **Notes:** a markdown note on any article, shared as a public page through the Perch account
+  (or through your own server when the library is there).
+- **Accounts:** sign-up with a proof of work and a recovery code (shown once, saved as a PDF);
+  reset a forgotten password with it; change password, devices, delete the account. OPML import
+  and export work either way.
+- **App lock:** a 6-digit PIN with Face ID or Touch ID, kept in the Keychain on this device;
+  the app switcher shows a cover while it's on.
 - **Widgets:** the unread count and the newest unread articles on the Home Screen (small,
   medium, large) and the Lock Screen. Tapping an article opens it.
 - **Notifications** (off until turned on in Settings): background refresh posts one when it

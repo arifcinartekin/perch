@@ -1,11 +1,16 @@
 # Perch Server
 
-A self-hostable server for Perch. In **personal mode** it fetches your feeds in the
-background, keeps your read and starred state, and serves it to every device you sign in on.
-One process, one SQLite file, no external services.
+A self-hostable server for Perch. One process, one SQLite file, no external services (email is
+optional, with your own provider). It runs in one of two modes:
 
-> Status: early. Accounts, feed fetching, the reader API, the web reader and sync with the
-> browser extension work and are tested. E2E mode (for the official server) comes next.
+- **`personal`** — it keeps each account's library, fetches the feeds in the background, keeps
+  read and starred state, and serves it to every device you sign in on, including the web reader
+  over its API. For yourself, a family, or an organisation.
+- **`hub`** — how app.perch.ws runs. It holds Perch accounts (names for sharing notes) and the
+  notes people share, relays sync chains, and serves the web reader, which keeps its library in
+  the browser and fetches feeds through the hub's anonymous proxy. It keeps no libraries.
+
+Either mode can relay sync chains (`PERCH_CHAIN=true`).
 
 ## Run it
 
@@ -90,6 +95,18 @@ handling them is up to you.
   categories, settings or read state (`@perch/core/chain`). It forgets read, unstarred state
   after 60 days, deletions after 90 and chains unused for 180, caps a chain at 100 000 records,
   and limits new chains to 10 an hour per address.
+- **Hub mode.** No reader, sync or notes API and no feed worker. `GET /proxy?url=` fetches a
+  feed or page for the web reader: no session is read, nothing is logged, responses are cached
+  for 10 minutes for everyone (so the server learns which feeds are popular, not who reads
+  them), only feeds, pages and JSON pass, and addresses are rate-limited in memory.
+- **Accounts without email.** Sign-up can ask for a proof of work (`PERCH_SIGNUP_POW`) instead
+  of an email check, and every account can set a recovery code (only its hash is kept) to
+  replace a forgotten password. With email turned on, addresses are kept only as a slow keyed
+  hash (`PERCH_EMAIL_KEY`), never as text.
+- **Shared notes and reports.** A shared note is a public page with a report form; admins see
+  reports in the web app's settings, remove or keep pages, and can restore removed ones.
+- **What it runs.** `/api/v1/server` reports the commit the image was built from; official
+  images are attested by CI (see deploy/README.md).
 - **Retention.** Each feed keeps its newest 200 articles plus anything from the last 90 days.
   Starred articles are never pruned, even after you unsubscribe.
 

@@ -86,7 +86,7 @@
           <ul class="platforms reveal" aria-label="Platforms">
             <li data-i18n="hero.p1">Chrome, Edge, Brave & Firefox</li>
             <li data-i18n="hero.p2">iPhone & iPad</li>
-            <li data-i18n="hero.p3">Web</li>
+            <li data-i18n="hero.p3">Web, at app.perch.ws</li>
           </ul>
           <p class="soon reveal" data-i18n="hero.soon">
             Store releases are on their way; the code is ready to build today.
@@ -189,8 +189,8 @@
             ></span>
             <h3 data-i18n="f2.t">Local by default</h3>
             <p data-i18n="f2.d">
-              Feeds, read state and settings live on your device. No account, no telemetry, no
-              third-party backend.
+              Feeds, reading, notes and settings live on your device. No telemetry, no ads, and no
+              account needed to read.
             </p>
           </article>
           <article class="card glass reveal">
@@ -233,6 +233,36 @@
               all.
             </p>
           </article>
+          <article class="card glass reveal">
+            <span class="badge"
+              ><svg viewBox="0 0 24 24"><use href="#i-note" /></svg
+            ></span>
+            <h3 data-i18n="f7.t">Notes worth sharing</h3>
+            <p data-i18n="f7.d">
+              Write a markdown note on any article. It stays private until you share it as a page of
+              its own.
+            </p>
+          </article>
+          <article class="card glass reveal">
+            <span class="badge"
+              ><svg viewBox="0 0 24 24"><use href="#i-lock" /></svg
+            ></span>
+            <h3 data-i18n="f8.t">Locked when you want</h3>
+            <p data-i18n="f8.d">
+              A PIN in the extension, and a PIN with Face ID on the iPhone, so a passer-by can’t
+              open your reading.
+            </p>
+          </article>
+          <article class="card glass reveal">
+            <span class="badge"
+              ><svg viewBox="0 0 24 24"><use href="#i-shield" /></svg
+            ></span>
+            <h3 data-i18n="f9.t">No email, ever</h3>
+            <p data-i18n="f9.d">
+              Accounts are a username, a password and a recovery code you keep. Forgot your
+              password? The code sets a new one.
+            </p>
+          </article>
         </div>
       </section>
 
@@ -259,8 +289,8 @@
               <div>
                 <h3 data-i18n="s2.t">Scan or type the code</h3>
                 <p data-i18n="s2.d">
-                  Point your iPhone’s camera at the QR code, or enter the 28-character code in
-                  another browser.
+                  Scan the QR code in the Perch app on your iPhone, or enter the 28-character code
+                  in another browser.
                 </p>
               </div>
             </li>
@@ -269,14 +299,15 @@
               <div>
                 <h3 data-i18n="s3.t">Read anywhere</h3>
                 <p data-i18n="s3.d">
-                  Subscriptions, read and starred articles, theme and colours follow you.
+                  Subscriptions, read and starred articles, notes, theme and colours follow you. The
+                  devices in a chain list each other.
                 </p>
               </div>
             </li>
           </ol>
           <p class="aside glass" data-i18n="sync.account">
-            Prefer an account? Sign in to a Perch Server — ours at app.perch.ws, or one you run
-            yourself — and read on the web too.
+            Want to share a note? A Perch account is just a name for that: a username, a password
+            and a recovery code. No email, and it doesn’t touch your library.
           </p>
         </div>
 
@@ -379,6 +410,14 @@
               perch.ws is served by Cloudflare Pages, which handles each visit like any web host.
               The app (app.perch.ws) and the sync relay (sync.perch.ws) don’t go through Cloudflare:
               your devices talk straight to our server, which keeps no access logs.
+            </li>
+            <li data-i18n="pv7">
+              app.perch.ws keeps no libraries and no email addresses: a stolen disk would hold
+              usernames and notes people chose to share.
+            </li>
+            <li data-i18n="pv8">
+              Our server images are built and attested in public; the server tells you which commit
+              it runs. See perch.ws/transparency.
             </li>
           </ul>
         </div>
@@ -499,6 +538,17 @@
           <rect x="3" y="4" width="18" height="12" rx="2" />
           <path d="M8 20h8M12 16v4" />
           <path d="M9.5 10.5 11 12l3.5-3.5" />
+        </g>
+        <g
+          id="i-note"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.7"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M5 4h10l4 4v12H5Z" />
+          <path d="M15 4v4h4M8 12h8M8 16h5" />
         </g>
         <g
           id="i-shield"

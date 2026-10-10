@@ -15,7 +15,7 @@ const TR = {
   'hero.github': 'GitHub’da incele',
   'hero.p1': 'Chrome, Edge, Brave ve Firefox',
   'hero.p2': 'iPhone ve iPad',
-  'hero.p3': 'Web',
+  'hero.p3': 'Web, app.perch.ws’te',
   'hero.soon': 'Mağaza sürümleri yolda; kod bugünden derlenmeye hazır.',
   'features.eyebrow': 'Okumak için yapıldı',
   'features.title': 'Bir feed okuyucunun olması gereken her şey. Olmaması gereken hiçbir şey.',
@@ -24,7 +24,7 @@ const TR = {
     'Makalelerin tamamı kendiliğinden yüklenir; sakin, sade bir düzende, düz ya da tırnaklı yazıyla. Değiştirilecek mod, basılacak düğme yok.',
   'f2.t': 'Varsayılan olarak cihazınızda',
   'f2.d':
-    'Feed’ler, okuma durumu ve ayarlar cihazınızda durur. Hesap yok, telemetri yok, üçüncü taraf sunucu yok.',
+    'Feed’ler, okuduklarınız, notlarınız ve ayarlarınız cihazınızda durur. Telemetri yok, reklam yok; okumak için hesap gerekmez.',
   'f3.t': 'Korkutucu izin yok',
   'f3.d':
     'Eklenti kurulurken hiçbir siteye erişim istemez. Yalnızca eklediğiniz sitelere, tek tek erişir.',
@@ -45,11 +45,12 @@ const TR = {
   's1.d': 'Herhangi bir cihazda: Ayarlar → Senkron → Zincir başlat.',
   's2.t': 'Kodu okutun ya da yazın',
   's2.d':
-    'iPhone’unuzun kamerasını QR koduna tutun ya da 28 karakterlik kodu başka bir tarayıcıda girin.',
+    'iPhone’unuzdaki Perch uygulamasında QR kodunu okutun ya da 28 karakterlik kodu başka bir tarayıcıda girin.',
   's3.t': 'Her yerde okuyun',
-  's3.d': 'Abonelikler, okunan ve yıldızlı makaleler, tema ve renkler sizinle gelir.',
+  's3.d':
+    'Abonelikler, okunan ve yıldızlı makaleler, notlar, tema ve renkler sizinle gelir. Zincirdeki cihazlar birbirini listeler.',
   'sync.account':
-    'Hesap mı tercih edersiniz? Bir Perch Sunucusuna giriş yapın — app.perch.ws’deki bizimki ya da kendi kurduğunuz — ve web’de de okuyun.',
+    'Bir not mu paylaşmak istiyorsunuz? Perch hesabı yalnızca bunun için bir addır: kullanıcı adı, şifre ve kurtarma kodu. E-posta yok ve kitaplığınıza dokunmaz.',
   'sync.relay': 'yalnızca şifreli veri görür',
   'privacy.eyebrow': 'Doğrulayabileceğiniz gizlilik',
   'privacy.title': 'Olabildiğince az şey bilmek için yapıldı.',
@@ -60,6 +61,16 @@ const TR = {
   pv4: 'Site simgeleri indirilmez — her siteye neyi takip ettiğinizi söylerlerdi.',
   pv5: 'Makaleler betikler kapalıyken gösterilir.',
   pv6: 'perch.ws, Cloudflare Pages üzerinden sunulur; Cloudflare her ziyareti herhangi bir web barındırıcısı gibi işler. Uygulama (app.perch.ws) ve senkron aktarıcısı (sync.perch.ws) Cloudflare’den geçmez: cihazlarınız doğrudan sunucumuzla konuşur ve sunucumuz erişim kaydı tutmaz.',
+  'f7.t': 'Paylaşmaya değer notlar',
+  'f7.d':
+    'Herhangi bir makaleye markdown ile not yazın. Kendi sayfası olarak paylaşana kadar gizli kalır.',
+  'f8.t': 'İstediğinde kilitli',
+  'f8.d': 'Eklentide PIN, iPhone’da PIN ve Face ID; yoldan geçen biri okuduklarınızı açamaz.',
+  'f9.t': 'E-posta yok, hiç',
+  'f9.d':
+    'Hesaplar bir kullanıcı adı, bir şifre ve sakladığınız bir kurtarma kodundan ibaret. Şifrenizi mi unuttunuz? Kod yenisini belirler.',
+  pv7: 'app.perch.ws kitaplık da e-posta adresi de tutmaz: çalınan bir diskte yalnızca kullanıcı adları ve kullanıcıların paylaşmayı seçtiği notlar bulunur.',
+  pv8: 'Sunucu imajlarımız herkesin gözü önünde derlenir ve imzalanır; sunucu hangi commit’i çalıştırdığını söyler. Bkz. perch.ws/transparency.',
   'end.title': 'Okumak için sakin bir köşe bulun.',
   'end.star': 'GitHub’da yıldızla',
   'footer.line': '© 2026 Perch katkıcıları · MIT Lisansı',
