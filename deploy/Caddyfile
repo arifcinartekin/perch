@@ -10,7 +10,12 @@
 # The relay for sync chains can have its own name (e.g. sync.perch.ws). It's the
 # same server, but there it answers only the chain API: no web app, no sign-in,
 # no sign-up, just a page saying what the address is.
-{$PERCH_DOMAIN} {$PERCH_SYNC_DOMAIN} {
+{$PERCH_DOMAIN} {$PERCH_SYNC_DOMAIN} {$PERCH_DEMO_DOMAIN} {
+	# The demo server (PERCH_DEMO_DOMAIN), a separate personal-mode Perch.
+	@demo host {$PERCH_DEMO_DOMAIN:demo.invalid}
+	handle @demo {
+		reverse_proxy perch-demo:8080
+	}
 	@sync host {$PERCH_SYNC_DOMAIN:sync.invalid}
 	handle @sync {
 		# /server lets the apps check that this is a relay before joining.

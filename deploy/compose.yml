@@ -36,6 +36,25 @@ services:
     volumes:
       - ${PERCH_DATA:-/var/lib/perch}:/data
 
+  # A second, separate server in personal mode, for App Review and anyone
+  # trying "Sync with a Perch Server" (PERCH_DEMO_DOMAIN, e.g. demo.perch.ws).
+  # Its own database and folder; it shares nothing with the server above.
+  # Started only when .env has COMPOSE_PROFILES=demo.
+  perch-demo:
+    profiles: [demo]
+    image: ${PERCH_IMAGE:-perch/server}:${PERCH_IMAGE_TAG:-latest}
+    restart: unless-stopped
+    environment:
+      PERCH_PUBLIC_URL: https://${PERCH_DEMO_DOMAIN:-demo.invalid}
+      PERCH_MODE: personal
+      PERCH_SIGNUP: ${PERCH_DEMO_SIGNUP:-closed} # the first account is always allowed
+      PERCH_FETCH_INTERVAL_MIN: 60
+      PERCH_TRUST_PROXY: 'true'
+      PERCH_PRIVACY_URL: ${PERCH_PRIVACY_URL:-}
+      PERCH_TERMS_URL: ${PERCH_TERMS_URL:-}
+    volumes:
+      - ${PERCH_DEMO_DATA:-/var/lib/perch-demo}:/data
+
   caddy:
     image: caddy:2
     restart: unless-stopped
@@ -47,6 +66,7 @@ services:
     environment:
       PERCH_DOMAIN: ${PERCH_DOMAIN}
       PERCH_SYNC_DOMAIN: ${PERCH_SYNC_DOMAIN:-}
+      PERCH_DEMO_DOMAIN: ${PERCH_DEMO_DOMAIN:-}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - ./sync:/srv/sync:ro # the page a browser sees on the sync domain

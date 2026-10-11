@@ -85,6 +85,27 @@ PERCH_IMAGE=ghcr.io/arifcinartekin/perch-server
 workflow to finish after a push) and prints its digest. The server reports the commit at
 `/api/v1/server`.
 
+### A demo server for App Review
+
+App Review tries every button, "Sync with a Perch Server" included, which a hub refuses. A second,
+separate server in personal mode gives reviewers (and anyone curious) something to connect to:
+
+1. Point a DNS record at the machine, e.g. `demo.perch.ws` (grey cloud, like app.perch.ws).
+2. Add to `.env` and run `update.sh`:
+
+   ```sh
+   COMPOSE_PROFILES=demo
+   PERCH_DEMO_DOMAIN=demo.perch.ws
+   ```
+
+3. In the iPhone app: Settings → Connect to a Perch Server → `demo.perch.ws`, and create the
+   reviewer account (the first account on a server is its admin; sign-up stays closed after).
+   Give that username and password in App Store Connect → App Review Information.
+
+It keeps its own database in `/var/lib/perch-demo` and shares nothing with the main server. It
+keeps libraries in plain text like any personal server, so it's for testing only, and the privacy
+policy says so. To start it over: stop it, delete that folder, start it again.
+
 ### Policies
 
 The sign-up form, shared notes and the apps link to the privacy policy and terms when they're
