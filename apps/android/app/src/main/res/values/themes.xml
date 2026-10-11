@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <!-- Compose draws everything; the window theme only sets the launch colours. -->
+  <style name="Theme.Perch" parent="android:Theme.Material.Light.NoActionBar">
+    <item name="android:windowBackground">@color/launch_background</item>
+    <item name="android:statusBarColor">@android:color/transparent</item>
+    <item name="android:navigationBarColor">@android:color/transparent</item>
+  </style>
+  <color name="launch_background">#F7F5F0</color>
+</resources>

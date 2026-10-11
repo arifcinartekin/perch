@@ -14,13 +14,14 @@ describe('starter packs', () => {
     expect(starterPacksFor('en-GB')[0]!.lang).toBe('en');
   });
 
-  it('match the copy the iPhone app ships (npm run starter-packs)', () => {
-    const ios = JSON.parse(
-      readFileSync(
-        new URL('../../../apps/ios/Perch/Support/starter-packs.json', import.meta.url),
-        'utf8',
-      ),
-    );
-    expect(ios).toEqual(STARTER_PACKS);
+  it('match the copies the iPhone and Android apps ship (npm run starter-packs)', () => {
+    for (const path of [
+      '../../../apps/ios/Perch/Support/starter-packs.json',
+      '../../../apps/android/app/src/main/assets/starter-packs.json',
+    ]) {
+      expect(JSON.parse(readFileSync(new URL(path, import.meta.url), 'utf8'))).toEqual(
+        STARTER_PACKS,
+      );
+    }
   });
 });

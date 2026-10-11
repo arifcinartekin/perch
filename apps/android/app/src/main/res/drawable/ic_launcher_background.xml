@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The app icon's night gradient and ember glow (brand/src/perch-app-icon-fullbleed.svg). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
+  <path android:pathData="M0,0h108v108h-108z">
+    <aapt:attr name="android:fillColor">
+      <gradient android:type="linear" android:startX="54" android:startY="0" android:endX="54" android:endY="108">
+        <item android:offset="0" android:color="#FF1B2030" />
+        <item android:offset="1" android:color="#FF0A0C12" />
+      </gradient>
+    </aapt:attr>
+  </path>
+  <path android:pathData="M0,0h108v108h-108z">
+    <aapt:attr name="android:fillColor">
+      <gradient android:type="radial" android:centerX="86" android:centerY="30" android:gradientRadius="65">
+        <item android:offset="0" android:color="#33FF7A1A" />
+        <item android:offset="1" android:color="#00FF7A1A" />
+      </gradient>
+    </aapt:attr>
+  </path>
+</vector>

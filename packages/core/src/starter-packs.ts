@@ -5,7 +5,8 @@
 //
 // Every address was fetched and parsed with this repository's parser when it
 // was added (tests/starter-packs.test.ts checks the shape, not the network).
-// The iPhone app reads apps/ios/Perch/Support/starter-packs.json, generated
+// The iPhone and Android apps read a JSON copy (apps/ios/Perch/Support and
+// apps/android/app/src/main/assets), generated
 // from this file by `npm run starter-packs`.
 
 export interface StarterFeed {

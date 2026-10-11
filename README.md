@@ -151,7 +151,8 @@ Perch is an npm-workspaces monorepo. Everything that doesn't depend on a browser
 `packages/core`, so the server shares the exact same parsing, ids and search as the
 extension. The iPhone app is Swift: like the extension it works on its own, fetching feeds on
 the phone, or talks to a server. Its Swift ports of the protocol (key derivation included) and
-of the feed and article ids are tested against the TypeScript ones. The reading app itself lives in `packages/reader` and runs twice:
+of the feed and article ids are tested against the TypeScript ones. The Android app (Kotlin,
+Compose) is local-first in the same way, with Kotlin ports tested the same way. The reading app itself lives in `packages/reader` and runs twice:
 in the extension over local storage, and on the web — either over the same local code run in
 the page (on a hub) or over a personal server's API. One UI, behind one `ReaderBackend`
 interface.
@@ -200,6 +201,7 @@ apps/
 │  │  ├─ backend.ts        the reader's data layer (ReaderBackend over local storage).
 │  │  └─ backup.ts …       JSON backup, messaging, badge, PIN lock.
 │  └─ tests/              Vitest: storage (fake-indexeddb), backup, and a jsdom smoke test.
+├─ android/                The Android app, local-first (Kotlin, Compose, Liquid Glass via Haze). See apps/android/README.md.
 ├─ ios/                    The iPhone and iPad app with widgets, local or synced (SwiftUI, iOS 26+). See apps/ios/README.md.
 │  ├─ Perch/               tabs and screens, sessions (Keychain), sync chain, Perch account,
 │  │                       app lock, QR scanning, offline sync and image cache, background
