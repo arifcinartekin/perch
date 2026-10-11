@@ -1,7 +1,11 @@
 import type { SaveNoteRequest } from '@perch/core/api';
 import type { ReaderBackend } from '@perch/reader';
 import { sendMessage } from './messaging';
-import { hasHostPermission, requestHostPermission } from './permissions/host';
+import {
+  hasHostPermission,
+  requestHostPermission,
+  requestHostPermissions,
+} from './permissions/host';
 import { extractFullText, getCachedFullText } from './readability/extract';
 import {
   getArticle,
@@ -83,6 +87,24 @@ export const localBackend: ReaderBackend = {
           ? 'Feed added'
           : 'Feed added — grant site access to fetch it',
     };
+  },
+
+  async addFeeds(urls, category) {
+    const granted = await requestHostPermissions(urls);
+    const categoryId =
+      'newCategory' in category
+        ? (await addCategory(category.newCategory)).id
+        : category.categoryId;
+    let added = 0;
+    for (const url of urls) {
+      const { created } = await sendMessage('feed:add', {
+        url,
+        categoryId,
+        needsPermission: !granted,
+      });
+      if (created) added++;
+    }
+    return { added };
   },
 
   async updateFeed(feed, patch) {

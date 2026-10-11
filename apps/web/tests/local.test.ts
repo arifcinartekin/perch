@@ -78,4 +78,23 @@ describe('the web reader on a hub', () => {
     } as Parameters<typeof localBackend.listArticles>[0]);
     expect(page1.items.map((a) => a.title)).toEqual(['Hello']);
   });
+
+  it('adds a starter pack into its own category in one go', async () => {
+    served.set('https://two.example/feed.xml', {
+      body: feed.replace('Blog', 'Two'),
+      type: 'application/rss+xml',
+    });
+    const { localBackend } = await import('@/lib/backend');
+    const res = await localBackend.addFeeds(
+      ['https://blog.example/feed.xml', 'https://two.example/feed.xml'],
+      { newCategory: 'Science' },
+    );
+    // The first is already there from the test above.
+    expect(res.added).toBe(1);
+    const { feeds, categories } = await localBackend.loadLibrary();
+    const science = categories.find((c) => c.name === 'Science')!;
+    expect(feeds.find((f) => f.url === 'https://two.example/feed.xml')?.categoryId).toBe(
+      science.id,
+    );
+  });
 });

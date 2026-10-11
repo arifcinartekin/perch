@@ -55,6 +55,17 @@ export async function requestHostPermission(
   }
 }
 
+/** Several sites in one prompt. Must be called from a user gesture. */
+export async function requestHostPermissions(urls: string[]): Promise<boolean> {
+  const origins = [...new Set(urls.map(originPattern).filter((p): p is string => Boolean(p)))];
+  if (!origins.length) return false;
+  try {
+    return await browser.permissions.request({ origins });
+  } catch {
+    return false;
+  }
+}
+
 export async function removeHostPermission(url: string): Promise<void> {
   const pattern = originPattern(url);
   if (!pattern) return;

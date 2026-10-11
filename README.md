@@ -49,6 +49,10 @@ page has a report form; server admins handle reports from the account page.
 
 ### Also
 
+- **Starter packs** on an empty library: a few well-known feeds per topic (science, space,
+  technology, privacy and security, self-hosting, world news; Turkish packs too), picked by hand
+  and listed in [`packages/core/src/starter-packs.ts`](./packages/core/src/starter-packs.ts).
+  They ship inside the apps, so choosing one tells no server anything.
 - **Export / import** subscriptions as OPML, or the extension's full JSON backup.
 - **App lock:** a 6-digit PIN in the extension, and a PIN with Face ID or Touch ID on the iPhone.
 - **Recovery codes** instead of password-reset email, saved as a PDF; accounts can be deleted

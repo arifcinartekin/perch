@@ -24,7 +24,8 @@
     "test": "npm run test --workspaces --if-present",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "brand": "node scripts/brand.mjs"
+    "brand": "node scripts/brand.mjs",
+    "starter-packs": "node --experimental-strip-types --no-warnings scripts/starter-packs.ts"
   },
   "devDependencies": {
     "@resvg/resvg-js": "^2.6.2",

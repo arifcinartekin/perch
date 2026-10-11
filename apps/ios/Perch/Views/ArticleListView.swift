@@ -12,6 +12,7 @@ struct ArticleListView: View {
   /// Bumped by swipe actions, for a tap of haptic feedback.
   @State private var swiped = 0
   @State private var addingFeed = false
+  @State private var choosingPack = false
   @State private var connecting = false
   private let title: String
   /// The Search tab: nothing until you type.
@@ -111,6 +112,7 @@ struct ArticleListView: View {
       }
     }
     .sheet(isPresented: $addingFeed) { AddFeedSheet { _ in } }
+    .sheet(isPresented: $choosingPack) { StarterPacksView() }
     .sheet(isPresented: $connecting) { NavigationStack { ConnectView() } }
     .confirmationDialog(
       "Mark all \(reader.unread(list.scope)) articles in \(title) as read?",
@@ -168,6 +170,9 @@ struct ArticleListView: View {
             .buttonStyle(.glassProminent)
             .tint(theme.button)
             .foregroundStyle(theme.buttonContrast)
+          Button("Start with a starter pack") { choosingPack = true }
+            .font(.subheadline.weight(.medium))
+            .foregroundStyle(theme.accentText)
           if reader.isLocal {
             Button("Sync with a Perch Server") { connecting = true }
               .font(.subheadline.weight(.medium))

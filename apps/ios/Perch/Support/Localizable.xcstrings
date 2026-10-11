@@ -2310,6 +2310,16 @@
         }
       }
     },
+    "Picked by hand and listed in Perch's source. Each pack goes into its own category; remove anything you don't want.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elle seçildi ve Perch'ün kaynak kodunda listeleniyor. Her paket kendi kategorisine eklenir; istemediklerini kaldırabilirsin."
+          }
+        }
+      }
+    },
     "Pictures in article lists": {
       "localizations": {
         "tr": {
@@ -3026,6 +3036,16 @@
         }
       }
     },
+    "Start with a starter pack": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bir başlangıç paketiyle başla"
+          }
+        }
+      }
+    },
     "Started in the browser extension? Choose Join and enter its code, or scan its QR code with the Camera app. Each device fetches the feeds itself.": {
       "localizations": {
         "tr": {
@@ -3042,6 +3062,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Zinciri tarayıcı eklentisinde mi başlattın? Katıl'ı seç, ardından QR kodunu okut ya da kodunu gir. Her cihaz akışları kendisi çeker."
+          }
+        }
+      }
+    },
+    "Starter packs": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Başlangıç paketleri"
           }
         }
       }

@@ -127,6 +127,21 @@ export function createServerBackend(): ReaderBackend & { close(): void } {
       return { created, message: created ? 'Feed added' : 'That feed is already in your reader' };
     },
 
+    async addFeeds(urls, category) {
+      const categoryId =
+        'newCategory' in category
+          ? (await addCategory(category.newCategory)).id
+          : category.categoryId;
+      let added = 0;
+      for (const url of urls) {
+        const { created } = await subscribe(url, categoryId).catch(() => ({ created: false }));
+        if (created) added++;
+      }
+      libraryChanged();
+      each((h) => h.articles?.());
+      return { added };
+    },
+
     async updateFeed(feed, patch) {
       const categoryId = patch.category
         ? 'newCategory' in patch.category

@@ -80,6 +80,11 @@ export interface ReaderBackend {
   // Feeds and categories ----------------------------------------------------
   /** Call straight from a click: the extension asks for site access before anything else. */
   addFeed(url: string, category: CategoryChoice): Promise<AddFeedResult>;
+  /**
+   * Several feeds into one category at once (a starter pack). Call straight
+   * from a click: the extension asks for all their sites in one prompt.
+   */
+  addFeeds(urls: string[], category: CategoryChoice): Promise<{ added: number }>;
   /** Call from a click (a new URL may need site access). Returns an error message, or null. */
   updateFeed(feed: Feed, patch: FeedPatch): Promise<string | null>;
   removeFeed(feedId: string): Promise<void>;

@@ -13,6 +13,7 @@ struct LibraryView: View {
   @Environment(\.theme) private var theme
   @State private var path = NavigationPath()
   @State private var adding = false
+  @State private var choosingPack = false
   @State private var editing: Feed?
   @State private var removing: Feed?
   @State private var naming: CategoryNaming?
@@ -293,8 +294,12 @@ struct LibraryView: View {
           .buttonStyle(.glassProminent)
           .tint(theme.button)
           .foregroundStyle(theme.buttonContrast)
+        Button("Start with a starter pack") { choosingPack = true }
+          .font(.subheadline.weight(.medium))
+          .foregroundStyle(theme.accentText)
       }
       .padding(.top, 180)
+      .sheet(isPresented: $choosingPack) { StarterPacksView() }
     }
   }
 

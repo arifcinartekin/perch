@@ -401,6 +401,31 @@ final class Reader {
     return result.feed
   }
 
+  /// A starter pack: its feeds into a category of their own, fetched side by
+  /// side. Feeds that can't be reached are skipped. Returns how many were added.
+  @discardableResult
+  func addFeeds(_ urls: [String], category name: String) async throws -> Int {
+    let categoryId: String
+    if let existing = library.categories.first(where: { $0.name == name }) {
+      categoryId = existing.id
+    } else {
+      categoryId = try await backend.addCategory(name: name).id
+    }
+    let backend = self.backend
+    let added = await withTaskGroup(of: Bool.self) { group in
+      for url in urls {
+        group.addTask { (try? await backend.addFeed(url: url, categoryId: categoryId)) != nil }
+      }
+      var count = 0
+      for await ok in group where ok { count += 1 }
+      return count
+    }
+    await load()
+    articlesVersion += 1
+    chainSoon()
+    return added
+  }
+
   func removeFeed(_ feed: Feed) async {
     library.feeds.removeAll { $0.id == feed.id }
     await online { try await backend.removeFeed(feed.id) }
