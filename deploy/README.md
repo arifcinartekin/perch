@@ -135,6 +135,11 @@ PERCH_PRIVACY_URL=https://perch.ws/privacy
 PERCH_TERMS_URL=https://perch.ws/terms
 ```
 
+## Moving to another server
+
+See [MIGRATE.md](MIGRATE.md): copy the data folder and `.env` while the old server is stopped,
+start the new one, point DNS at it.
+
 ## Day to day
 
 | Task            | Command                                                        |
