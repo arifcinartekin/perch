@@ -33,6 +33,11 @@ export interface Config {
   termsUrl?: string;
   /** The address Perch accounts are managed at, when it isn't the reader's. */
   accountUrl?: string;
+  /**
+   * A Discourse forum that signs in with Perch accounts (DiscourseConnect):
+   * its address and the shared secret set in its "discourse connect secret".
+   */
+  discourse?: { url: string; secret: string };
   /** Keys the hashes kept instead of email addresses. Kept out of the database. */
   emailKey?: string;
   /** Proof-of-work difficulty for signing up, in bits; 0 for none. */
@@ -113,6 +118,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     email,
     privacyUrl: httpUrl('PERCH_PRIVACY_URL', env.PERCH_PRIVACY_URL),
     accountUrl: httpUrl('PERCH_ACCOUNT_URL', env.PERCH_ACCOUNT_URL)?.replace(/\/+$/, ''),
+    discourse: discourse(env),
     termsUrl: httpUrl('PERCH_TERMS_URL', env.PERCH_TERMS_URL),
     emailKey: emailKey(env.PERCH_EMAIL_KEY),
     signupPow: int(env.PERCH_SIGNUP_POW, 0, 0, 28),
@@ -126,6 +132,17 @@ function emailKey(value: string | undefined): string | undefined {
   if (!v) return undefined;
   if (v.length < 32) throw new Error('PERCH_EMAIL_KEY must be at least 32 characters.');
   return v;
+}
+
+function discourse(env: NodeJS.ProcessEnv): Config['discourse'] {
+  const url = httpUrl('PERCH_DISCOURSE_URL', env.PERCH_DISCOURSE_URL)?.replace(/\/+$/, '');
+  const secret = env.PERCH_DISCOURSE_SECRET?.trim();
+  if (!url && !secret) return undefined;
+  if (!url || !secret) {
+    throw new Error('Set both PERCH_DISCOURSE_URL and PERCH_DISCOURSE_SECRET, or neither.');
+  }
+  if (secret.length < 16) throw new Error('PERCH_DISCOURSE_SECRET must be at least 16 characters.');
+  return { url, secret };
 }
 
 function httpUrl(name: string, value: string | undefined): string | undefined {

@@ -35,6 +35,9 @@ services:
       PERCH_TERMS_URL: ${PERCH_TERMS_URL:-}
       # Where Perch accounts are managed, when it's its own address (account.perch.ws).
       PERCH_ACCOUNT_URL: ${PERCH_ACCOUNT_URL:-}
+      # A Discourse forum that signs in with Perch accounts (DiscourseConnect).
+      PERCH_DISCOURSE_URL: ${PERCH_DISCOURSE_URL:-}
+      PERCH_DISCOURSE_SECRET: ${PERCH_DISCOURSE_SECRET:-}
     volumes:
       - ${PERCH_DATA:-/var/lib/perch}:/data
 

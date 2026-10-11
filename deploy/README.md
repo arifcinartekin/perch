@@ -54,6 +54,34 @@ address, and the reader's /account goes there. Readers anywhere (app.perch.ws, t
 iPhone, someone's own reader) sign in to it with a token kept on the device; no cookie is shared
 across addresses.
 
+### A forum that signs in with Perch accounts (Discourse)
+
+community.perch.ws is a Discourse forum on its own server. People sign in to it with their Perch
+account (DiscourseConnect), so the forum never asks for an email address: it gets the username
+and a fixed account id, after the person confirms on account.perch.ws. Discourse requires an email
+field, so it gets `<account id>@users.perch.invalid`, which can't receive mail.
+
+1. Make a shared secret: `openssl rand -hex 32`.
+2. On the Perch server, add to `.env` and run `update.sh`:
+
+   ```sh
+   PERCH_DISCOURSE_URL=https://community.perch.ws
+   PERCH_DISCOURSE_SECRET=<the secret>
+   ```
+
+3. In Discourse (Admin → Settings), set:
+   - `enable discourse connect`: on
+   - `discourse connect url`: `https://account.perch.ws/discourse/sso`
+   - `discourse connect secret`: the same secret
+   - `auth overrides email`, `auth overrides username`: on
+   - `disable emails`: yes (nothing could be delivered anyway)
+   - `enable local logins`, `allow new registrations` through the forum's own form: off
+   - `email editable`: off
+
+Deleting a Perch account doesn't reach the forum: the forum account and its posts stay until the
+person deletes them in the forum (allow that with `allow users to delete their own accounts`) or
+an admin does. Discourse also keeps IP addresses for abuse prevention; review its log retention.
+
 ### Open sign-up without email
 
 To let anyone sign up, with a proof of work instead of a CAPTCHA or an email check (this is how

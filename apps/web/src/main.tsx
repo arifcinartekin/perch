@@ -17,6 +17,16 @@ type Session =
   | { status: 'signed-out'; info: ServerInfo }
   | { status: 'signed-in'; user: PublicUser; info: ServerInfo };
 
+/**
+ * Where to go once signed in: the forum's sign-in (DiscourseConnect) sends
+ * people here as /?next=/discourse/sso?… when they aren't signed in yet.
+ * Only that path is followed, so the parameter can't send anyone elsewhere.
+ */
+function nextAfterSignIn(): string | null {
+  const next = new URLSearchParams(location.search).get('next');
+  return next?.startsWith('/discourse/sso?') ? next : null;
+}
+
 function App() {
   const [session, setSession] = useState<Session>({ status: 'loading' });
 
@@ -29,6 +39,8 @@ function App() {
     }
     try {
       const { user } = await api<{ user: PublicUser }>('/auth/me');
+      const next = nextAfterSignIn();
+      if (next) return location.replace(next);
       setSession({ status: 'signed-in', user, info });
     } catch {
       setSession({ status: 'signed-out', info });
@@ -77,7 +89,11 @@ function App() {
     return (
       <Auth
         info={session.info}
-        onSignedIn={(user) => setSession({ status: 'signed-in', user, info: session.info })}
+        onSignedIn={(user) => {
+          const next = nextAfterSignIn();
+          if (next) return location.replace(next);
+          setSession({ status: 'signed-in', user, info: session.info });
+        }}
       />
     );
   }

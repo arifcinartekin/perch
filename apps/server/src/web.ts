@@ -39,7 +39,8 @@ const CSP = [
 export function serveWeb(app: Hono<Env>, root: string) {
   app.use('/*', async (c, next) => {
     await next();
-    if (c.req.path.startsWith('/api/')) return;
+    // The API sends no pages; the forum sign-in page sets its own, narrower policy.
+    if (c.req.path.startsWith('/api/') || c.req.path.startsWith('/discourse/')) return;
     c.header('content-security-policy', CSP);
     // Hashed assets never change; everything else is revalidated so updates land.
     const immutable = c.req.path.startsWith('/assets/') && c.res.status === 200;

@@ -3,6 +3,7 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { secureHeaders } from 'hono/secure-headers';
 import { API_PREFIX, type ServerInfo } from '@perch/core/api';
+import { discourseRoutes } from './discourse';
 import type { Config } from './config';
 import { openDatabase, type DB } from './db';
 import {
@@ -215,6 +216,7 @@ export function createApp(ctx: AppContext) {
 
   app.route(API_PREFIX, api);
   app.route('/shared', sharedPages(ctx));
+  if (ctx.config.discourse) app.route('/discourse', discourseRoutes(ctx));
   app.get('/healthz', (c) => c.text('ok'));
   return app;
 }
