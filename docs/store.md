@@ -1,6 +1,6 @@
 # Store listings and review notes
 
-Everything the App Store, Chrome Web Store, Edge Add-ons and Firefox Add-ons ask for, in one
+Everything the App Store, Google Play, Chrome Web Store, Edge Add-ons and Firefox Add-ons ask for, in one
 place. Lengths are checked against each store's limits (in brackets). Keep it in step with the
 apps: if a permission or a kind of data changes, change it here and in the store forms.
 
@@ -137,6 +137,56 @@ developer's declaration.
 >
 > Permissions: the camera is used only to scan a sync chain's QR code; Face ID only for the
 > optional app lock (Settings → App lock).
+
+## Google Play (Android)
+
+| Field                    | Value                                                                                                                           |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
+| App name [30]            | Perch – RSS Reader (TR: Perch – RSS Okuyucu)                                                                                    |
+| Short description [80]   | EN: A calm, private feed reader. No account, no tracking. · TR: Sakin ve gizli bir akış okuyucu. Hesap yok, izleme yok.         |
+| Category                 | News & Magazines                                                                                                                |
+| Contact email            | contact@perch.ws                                                                                                                |
+| Website / privacy policy | https://perch.ws · https://perch.ws/privacy                                                                                     |
+| Ads                      | No                                                                                                                              |
+| Content rating           | Questionnaire: no violence, no user-generated content shown in the app (shared notes are web pages), no ads → Everyone / PEGI 3 |
+| Target audience          | 18+ is safest; the app isn't aimed at children                                                                                  |
+
+**Full description** [4000]: the App Store description, replacing the iPhone lines: "widgets"
+and "six app icons" are left out; "Face ID" becomes "fingerprint or face"; "Share → Perch from
+your browser adds a site's feed" can be added.
+
+**Data safety** (Play Console → App content):
+
+- Does the app collect or share user data? **Yes, collects** (no sharing).
+- Collected, only when the user signs in to a Perch account: **Personal info → User IDs** (the
+  username) and **App activity → Other user-generated content** (notes the user shares as
+  pages). Purpose: App functionality. Optional (the app works without). Not processed
+  ephemerally. Users can request deletion (in the app, Settings → Perch account → Delete
+  account).
+- Sync chain records are end-to-end encrypted on the device; Google's form treats data the
+  developer can't read as not collected. If in doubt, also declare "App activity → Other
+  user-generated content, App functionality, optional".
+- Data is encrypted in transit: **Yes** (HTTPS). Account deletion URL: https://perch.ws/privacy
+  (section "Deleting your data") or in-app.
+- Not collected: location, contacts, photos, files, health, financial info, messages, device
+  IDs, crash logs or diagnostics (the app has no analytics or crash SDK).
+
+**Permissions**
+
+| Permission                                           | Why                                                                                                        |
+| ---------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `INTERNET`                                           | Fetches the user's feeds and articles, and talks to the sync relay or Perch account server the user chose. |
+| `CAMERA` (asked when tapping Scan)                   | Only to scan a sync chain's QR code; the picture is read on the device and not kept.                       |
+| Biometric (`USE_BIOMETRIC`, from androidx.biometric) | Optional app lock: open the app with a fingerprint or face.                                                |
+
+**App access** (for Google's review): the app works without signing in. For the Perch account
+features: Settings → Perch account → Sign in, server account.perch.ws, with the review account
+(credentials only in Play Console). Sync chain: Settings → Sync chain → Start a chain; to join
+from a second device open https://app.perch.ws → Settings → Sync → Join.
+
+**Release**: Play App Signing on; the upload key lives outside the repository and is read from
+`apps/android/keystore.properties` (see apps/android/README.md). Build the bundle with
+`./gradlew :app:bundleRelease` and upload `app/build/outputs/bundle/release/app-release.aab`.
 
 ## Chrome Web Store (and Edge Add-ons)
 
