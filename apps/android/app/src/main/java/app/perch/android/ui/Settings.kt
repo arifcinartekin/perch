@@ -172,8 +172,23 @@ fun SettingsScreen(reader: Reader, nav: Nav) {
           }
         }
         item {
-          Section(stringResource(R.string.sync), footer = stringResource(R.string.sync_soon)) {
-            LabeledRow(stringResource(R.string.on_this_phone)) {}
+          val chainAccount by reader.chain.account.collectAsState()
+          val chainSynced by reader.chain.lastSyncAt.collectAsState()
+          Section(stringResource(R.string.sync), footer = stringResource(R.string.sync_hint)) {
+            Row(
+              Modifier.fillMaxWidth().clickable { nav.chain() }.padding(horizontal = 16.dp, vertical = 14.dp),
+              verticalAlignment = Alignment.CenterVertically,
+            ) {
+              Column(Modifier.weight(1f)) {
+                Text(stringResource(R.string.sync_chain), color = look.text, fontSize = 16.sp)
+                Text(
+                  if (chainAccount == null) stringResource(R.string.chain_off_hint)
+                  else chainSynced?.let { stringResource(R.string.synced_ago, relativeTime(it)) } ?: stringResource(R.string.chain_on),
+                  color = look.muted, fontSize = 13.sp,
+                )
+              }
+              Text("›", color = look.faint, fontSize = 22.sp)
+            }
           }
         }
         item {

@@ -36,6 +36,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -73,6 +74,8 @@ class Nav(private val controller: NavHostController) {
   fun starredFromLibrary() = controller.navigate("list/starred/-")
   fun explore() = controller.navigate("explore")
   fun search() = controller.navigate("search")
+  fun chain() = controller.navigate("chain")
+  fun joinChain(server: String, code: String) = controller.navigate("chain?server=${enc(server)}&code=${enc(code)}")
   fun back() = controller.popBackStack()
   private fun enc(s: String) = URLEncoder.encode(s, "UTF-8")
 }
@@ -83,6 +86,14 @@ private fun dec(s: String?) = URLDecoder.decode(s.orEmpty(), "UTF-8")
 fun PerchRoot(reader: Reader) {
   val controller = rememberNavController()
   val nav = remember(controller) { Nav(controller) }
+  // A chain's QR code opened from another app.
+  val link by reader.pendingChainLink.collectAsState()
+  LaunchedEffect(link) {
+    link?.let { (server, code) ->
+      reader.pendingChainLink.value = null
+      if (reader.chain.account.value == null) nav.joinChain(server, code) else nav.chain()
+    }
+  }
   NavHost(
     controller, startDestination = "home",
     enterTransition = { slideInHorizontally(tween(320)) { it } + fadeIn(tween(220)) },
@@ -107,6 +118,15 @@ fun PerchRoot(reader: Reader) {
     }
     composable("explore") { ExploreScreen(reader, nav) }
     composable("search") { SearchScreen(reader, nav) }
+    composable(
+      "chain?server={server}&code={code}",
+      listOf(
+        navArgument("server") { type = NavType.StringType; nullable = true },
+        navArgument("code") { type = NavType.StringType; nullable = true },
+      ),
+    ) {
+      ChainScreen(reader, nav, it.arguments?.getString("server")?.let(::dec), it.arguments?.getString("code")?.let(::dec))
+    }
   }
 }
 

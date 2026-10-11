@@ -57,6 +57,11 @@ dependencies {
   implementation(libs.haze)
   implementation(libs.haze.glass)
   implementation(libs.haze.blur)
+  // QR codes for sync chains: drawn with ZXing, scanned with CameraX (no Play services).
+  implementation(libs.zxing)
+  implementation(libs.camera.camera2)
+  implementation(libs.camera.lifecycle)
+  implementation(libs.camera.view)
 
   testImplementation(libs.junit)
   testImplementation(libs.kxml2)

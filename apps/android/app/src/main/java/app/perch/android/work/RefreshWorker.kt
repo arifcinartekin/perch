@@ -15,7 +15,10 @@ import java.util.concurrent.TimeUnit
 class RefreshWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
   override suspend fun doWork(): Result {
     val reader = applicationContext.perch.reader
-    return runCatching { reader.refresh() }.fold({ Result.success() }, { Result.retry() })
+    return runCatching {
+      reader.chain.prepare()
+      reader.refresh()
+    }.fold({ Result.success() }, { Result.retry() })
   }
 
   companion object {

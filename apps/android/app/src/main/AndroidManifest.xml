@@ -3,6 +3,9 @@
 
   <!-- Feeds and articles are fetched by the phone itself. Nothing else is asked for. -->
   <uses-permission android:name="android.permission.INTERNET" />
+  <!-- Only to scan a sync chain's QR code, asked for when you tap Scan. -->
+  <uses-permission android:name="android.permission.CAMERA" />
+  <uses-feature android:name="android.hardware.camera" android:required="false" />
 
   <application
       android:name=".PerchApplication"
@@ -17,10 +20,18 @@
     <activity
         android:name=".MainActivity"
         android:exported="true"
+        android:launchMode="singleTask"
         android:windowSoftInputMode="adjustResize">
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />
         <category android:name="android.intent.category.LAUNCHER" />
+      </intent-filter>
+      <!-- A chain's QR code scanned with another app: perch://chain?server=…&code=… -->
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data android:scheme="perch" android:host="chain" />
       </intent-filter>
     </activity>
   </application>

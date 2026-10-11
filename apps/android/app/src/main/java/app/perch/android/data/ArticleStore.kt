@@ -17,7 +17,7 @@ import kotlinx.serialization.json.Json
  * is a JSON file next to it (LibraryFile).
  */
 class ArticleStore(context: Context, name: String? = "articles.db") :
-  SQLiteOpenHelper(context, name, null, 1) {
+  SQLiteOpenHelper(context, name, null, 2) {
 
   data class Query(
     val feedIds: Set<String>? = null,
@@ -39,9 +39,59 @@ class ArticleStore(context: Context, name: String? = "articles.db") :
     db.execSQL("CREATE INDEX articles_feed ON articles(feed_id, published_at DESC)")
     db.execSQL("CREATE INDEX articles_published ON articles(published_at DESC)")
     db.execSQL("CREATE TABLE fulltext (id TEXT PRIMARY KEY, html TEXT NOT NULL, title TEXT, byline TEXT)")
+    createPending(db)
   }
 
-  override fun onUpgrade(db: SQLiteDatabase, old: Int, new: Int) = Unit
+  override fun onUpgrade(db: SQLiteDatabase, old: Int, new: Int) {
+    if (old < 2) createPending(db)
+  }
+
+  /** Read and star changes waiting to go out to the sync chain (null = unchanged). */
+  private fun createPending(db: SQLiteDatabase) {
+    db.execSQL("CREATE TABLE pending (id TEXT PRIMARY KEY, read INTEGER, starred INTEGER, seq INTEGER NOT NULL)")
+  }
+
+  data class Pending(val id: String, val read: Boolean?, val starred: Boolean?, val seq: Long)
+
+  private var seq = System.nanoTime()
+
+  fun enqueue(id: String, read: Boolean? = null, starred: Boolean? = null) {
+    val db = writableDatabase
+    val old = pending().firstOrNull { it.id == id }
+    db.insertWithOnConflict(
+      "pending", null,
+      ContentValues().apply {
+        put("id", id)
+        (read ?: old?.read)?.let { put("read", if (it) 1 else 0) }
+        (starred ?: old?.starred)?.let { put("starred", if (it) 1 else 0) }
+        put("seq", ++seq)
+      },
+      SQLiteDatabase.CONFLICT_REPLACE,
+    )
+  }
+
+  fun pending(): List<Pending> =
+    readableDatabase.rawQuery("SELECT id, read, starred, seq FROM pending", null).use { c ->
+      generateSequence {
+        if (!c.moveToNext()) null
+        else Pending(
+          c.getString(0),
+          if (c.isNull(1)) null else c.getInt(1) != 0,
+          if (c.isNull(2)) null else c.getInt(2) != 0,
+          c.getLong(3),
+        )
+      }.toList()
+    }
+
+  /** Clears these entries unless they changed again since (a newer seq). */
+  fun clearPending(entries: List<Pending>) {
+    val db = writableDatabase
+    for (e in entries) db.delete("pending", "id = ? AND seq = ?", arrayOf(e.id, e.seq.toString()))
+  }
+
+  fun clearAllPending() {
+    writableDatabase.delete("pending", null, null)
+  }
 
   override fun onConfigure(db: SQLiteDatabase) {
     db.enableWriteAheadLogging()

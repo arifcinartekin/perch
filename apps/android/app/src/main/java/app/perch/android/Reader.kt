@@ -33,6 +33,7 @@ class Reader(
   val backend: LocalBackend,
   private val scope: CoroutineScope,
   val device: DeviceSettings,
+  val chain: ChainLink,
 ) {
   private val _library = MutableStateFlow(Library())
   val library: StateFlow<Library> = _library.asStateFlow()
@@ -59,15 +60,61 @@ class Reader(
     StarterPacks.forLanguage(StarterPacks.parse(text), Locale.getDefault().language)
   }
 
+  /** A perch://chain link opened from outside, waiting for the screens to show it. */
+  val pendingChainLink = MutableStateFlow<Pair<String, String>?>(null)
+
   val turkish: Boolean get() = Locale.getDefault().language == "tr"
 
   fun start() {
     scope.launch {
+      chain.prepare()
       _settings.value = backend.settings()
       reloadLibrary()
       _loaded.value = true
+      if (chain.account.value != null) syncChain()
       if (_library.value.feeds.isNotEmpty()) refresh()
     }
+  }
+
+  private var pendingSync: kotlinx.coroutines.Job? = null
+
+  /** A change here: send it to the chain shortly, a burst of changes in one round. */
+  private fun changed() {
+    if (chain.account.value == null) return
+    pendingSync?.cancel()
+    pendingSync = scope.launch {
+      kotlinx.coroutines.delay(1500)
+      syncChain()
+    }
+  }
+
+  /** One chain round; feeds added on another device are fetched right away. */
+  suspend fun syncChain() {
+    val result = chain.sync() ?: return
+    _settings.value = backend.settings()
+    if (result.pulled > 0) {
+      reloadLibrary()
+      _articlesChanged.value++
+    }
+    if (result.newFeedIds.isNotEmpty()) refresh(result.newFeedIds)
+  }
+
+  /**
+   * Starts or joins a chain and runs the first round, in the app's scope:
+   * the chain screen swaps its content as soon as the chain is set, which
+   * would cancel work started from it. The caller awaits only the result.
+   */
+  suspend fun enterChain(action: suspend () -> Unit) = scope.async {
+    action()
+    afterChainChange()
+    scope.launch { syncChain() }
+  }.await()
+
+  /** Joining, starting or leaving a chain changes the library; show what's there now. */
+  suspend fun afterChainChange() {
+    _settings.value = backend.settings()
+    reloadLibrary()
+    _articlesChanged.value++
   }
 
   private suspend fun reloadLibrary() {
@@ -94,12 +141,15 @@ class Reader(
     } finally {
       _refreshing.value = false
     }
+    // Read state and new feeds from the other devices.
+    if (ids == null && chain.account.value != null) syncChain()
   }
 
   suspend fun addFeed(url: String, categoryId: String?): LocalBackend.AddResult {
     val result = backend.addFeed(url, categoryId)
     reloadLibrary()
     _articlesChanged.value++
+    changed()
     return result
   }
 
@@ -114,6 +164,7 @@ class Reader(
     }
     reloadLibrary()
     _articlesChanged.value++
+    changed()
     return added.count { it }
   }
 
@@ -121,50 +172,59 @@ class Reader(
     backend.removeFeed(id)
     reloadLibrary()
     _articlesChanged.value++
+    changed()
   }
 
   suspend fun renameFeed(id: String, title: String) {
     backend.updateFeed(id, customTitle = title)
     reloadLibrary()
+    changed()
   }
 
   suspend fun moveFeed(id: String, categoryId: String) {
     backend.updateFeed(id, categoryId = categoryId)
     reloadLibrary()
+    changed()
   }
 
   suspend fun addCategory(name: String): Category {
     val category = backend.addCategory(name)
     reloadLibrary()
+    changed()
     return category
   }
 
   suspend fun setCollapsed(categoryId: String, collapsed: Boolean) {
     backend.setCategoryCollapsed(categoryId, collapsed)
     reloadLibrary()
+    changed()
   }
 
   suspend fun deleteCategory(id: String) {
     backend.deleteCategory(id)
     reloadLibrary()
+    changed()
   }
 
   suspend fun setRead(articles: List<Article>, read: Boolean) {
     backend.setState(articles.map { it.id }, read = read)
     articles.forEach { _updates.tryEmit(it.copy(read = read)) }
     reloadCounts()
+    changed()
   }
 
   suspend fun setStarred(article: Article, starred: Boolean) {
     backend.setState(listOf(article.id), starred = starred)
     _updates.tryEmit(article.copy(starred = starred))
     reloadCounts()
+    changed()
   }
 
   suspend fun markAllRead(feed: String? = null, category: String? = null) {
     backend.markAllRead(feed, category)
     reloadCounts()
     _articlesChanged.value++
+    changed()
   }
 
   suspend fun fullText(article: Article, force: Boolean = false): FullText =
@@ -172,6 +232,7 @@ class Reader(
 
   suspend fun saveSettings(change: (SyncedSettings) -> SyncedSettings) {
     _settings.value = backend.saveSettings(change)
+    changed()
   }
 
   suspend fun importOpml(data: ByteArray): LocalBackend.ImportResult {

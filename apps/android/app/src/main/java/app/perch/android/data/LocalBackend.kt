@@ -10,6 +10,7 @@ import app.perch.android.core.FullText
 import app.perch.android.core.HtmlText
 import app.perch.android.core.Library
 import app.perch.android.core.NotAFeedException
+import app.perch.android.core.Note
 import app.perch.android.core.Opml
 import app.perch.android.core.ParsedFeed
 import app.perch.android.core.Readability
@@ -40,7 +41,7 @@ import okhttp3.Response
  * [ArticleStore], and this is the only copy of them.
  */
 class LocalBackend(
-  private val store: ArticleStore,
+  internal val store: ArticleStore,
   private val file: File,
   client: OkHttpClient? = null,
 ) {
@@ -62,12 +63,16 @@ class LocalBackend(
     val settings: SyncedSettings = SyncedSettings(),
     /** Per feed: validators for conditional requests. */
     val validators: Map<String, Validators> = emptyMap(),
+    /** Notes on articles, by "feedId:articleId". */
+    val notes: Map<String, Note> = emptyMap(),
   )
 
   data class AddResult(val feed: Feed, val created: Boolean)
   data class ImportResult(val added: Int, val existing: Int, val categories: Int)
 
   companion object {
+    /** Longest note, in characters (NOTE_MAX in core). */
+    const val NOTE_MAX = 10_000
     /** Articles older than this are dropped (starred ones stay). */
     const val KEEP_DAYS = 60.0
     private const val DAY_MS = 86_400_000.0
@@ -90,7 +95,13 @@ class LocalBackend(
   private val lock = Mutex()
   private var state: Saved? = null
 
-  private suspend fun load(): Saved = lock.withLock { loadLocked() }
+  /** In a sync chain: read and star changes are queued to go out. */
+  @Volatile var chainOn = false
+
+  /** Runs after articles arrive, so chain states for them can be applied (set by ChainSync). */
+  internal var afterArticles: (suspend () -> Unit)? = null
+
+  internal suspend fun load(): Saved = lock.withLock { loadLocked() }
 
   private fun loadLocked(): Saved {
     state?.let { return it }
@@ -99,7 +110,7 @@ class LocalBackend(
     return saved
   }
 
-  private suspend fun update(change: (Saved) -> Saved): Saved = lock.withLock {
+  internal suspend fun update(change: (Saved) -> Saved): Saved = lock.withLock {
     val next = change(loadLocked())
     state = next
     withContext(Dispatchers.IO) {
@@ -151,13 +162,21 @@ class LocalBackend(
   suspend fun article(id: String): Article? = withContext(Dispatchers.IO) { store.article(id) }
 
   suspend fun setState(ids: List<String>, read: Boolean? = null, starred: Boolean? = null) =
-    withContext(Dispatchers.IO) { ids.forEach { store.setState(it, read, starred) } }
+    withContext(Dispatchers.IO) {
+      ids.forEach {
+        store.setState(it, read, starred)
+        if (chainOn) store.enqueue(it, read, starred)
+      }
+    }
 
   suspend fun markAllRead(feed: String? = null, category: String? = null) {
     var ids: Set<String>? = null
     if (feed != null) ids = setOf(feed)
     if (category != null) ids = library().feeds.filter { it.categoryId == category }.map { it.id }.toSet()
-    withContext(Dispatchers.IO) { store.markRead(ids, System.currentTimeMillis().toDouble()) }
+    withContext(Dispatchers.IO) {
+      val marked = store.markRead(ids, System.currentTimeMillis().toDouble())
+      if (chainOn) marked.forEach { store.enqueue(it, read = true) }
+    }
   }
 
   suspend fun cachedFullText(article: Article): FullText? = withContext(Dispatchers.IO) { store.fullText(article.id) }
@@ -217,6 +236,7 @@ class LocalBackend(
         validators = saved.validators + newValidators,
       )
     }
+    afterArticles?.invoke()
   }
 
   /** null when the feed hasn't changed since last time (304). */
@@ -279,6 +299,7 @@ class LocalBackend(
         validators = s.validators + (id to validators),
       )
     }
+    afterArticles?.invoke()
     return AddResult(feed, true)
   }
 
@@ -354,6 +375,37 @@ class LocalBackend(
         ),
       )
     }
+  }
+
+  // Notes
+
+  suspend fun notes(): List<Note> = load().notes.values.sortedByDescending { it.updatedAt }
+
+  suspend fun note(id: String): Note? = load().notes[id]
+
+  suspend fun saveNote(article: Article, feedTitle: String?, body: String): Note {
+    val now = System.currentTimeMillis().toDouble()
+    var saved: Note? = null
+    update { s ->
+      val existing = s.notes[article.id]
+      val note = Note(
+        feedId = article.feedId, articleId = article.articleId, title = article.displayTitle,
+        url = article.url, feedTitle = feedTitle, body = body.take(NOTE_MAX),
+        createdAt = existing?.createdAt ?: now, updatedAt = now, sharedUrl = existing?.sharedUrl,
+      )
+      saved = note
+      s.copy(notes = s.notes + (article.id to note))
+    }
+    return saved!!
+  }
+
+  suspend fun deleteNote(id: String) {
+    update { s -> s.copy(notes = s.notes - id) }
+  }
+
+  /** Records (or clears) a note's public link; it syncs with the rest of the note. */
+  suspend fun setSharedUrl(id: String, url: String?) {
+    update { s -> s.notes[id]?.let { s.copy(notes = s.notes + (id to it.copy(sharedUrl = url))) } ?: s }
   }
 
   // OPML
