@@ -102,6 +102,9 @@ struct LibraryView: View {
         LogoToolbarItem()
       }
       ToolbarItem(placement: .topBarTrailing) {
+        Button("Explore", systemImage: "safari") { choosingPack = true }
+      }
+      ToolbarItem(placement: .topBarTrailing) {
         Menu("Add", systemImage: "plus") {
           Button("Add a feed", systemImage: "dot.radiowaves.up.forward") { adding = true }
           Button("New category", systemImage: "folder.badge.plus") {
@@ -112,6 +115,7 @@ struct LibraryView: View {
         }
       }
     }
+    .sheet(isPresented: $choosingPack) { StarterPacksView() }
     .sheet(isPresented: $adding) {
       AddFeedSheet { feed in show(.feed(feed)) }
     }
@@ -299,7 +303,6 @@ struct LibraryView: View {
           .foregroundStyle(theme.accentText)
       }
       .padding(.top, 180)
-      .sheet(isPresented: $choosingPack) { StarterPacksView() }
     }
   }
 

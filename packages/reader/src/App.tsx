@@ -13,6 +13,7 @@ import { ToastProvider } from './reader/Toasts';
 import { AllStream, CategoryStream, FeedStream, StarredStream } from './reader/StreamView';
 import { Settings } from './pages/Settings';
 import { Onboarding } from './reader/Onboarding';
+import { ExploreView } from './reader/ExploreView';
 
 export interface ReaderAppProps {
   backend: ReaderBackend;
@@ -59,6 +60,7 @@ function Shell({ settingsExtra }: { settingsExtra?: ReactNode }) {
                     <Route path="/feed/:feedId" element={<FeedStream />} />
                     <Route path="/category/:categoryId" element={<CategoryStream />} />
                     <Route path="/settings" element={<Settings extra={settingsExtra} />} />
+                    <Route path="/explore" element={<ExploreView />} />
                     <Route path="*" element={<Navigate to="/" replace />} />
                   </Routes>
                 </Gate>
@@ -101,6 +103,8 @@ function Gate({ children }: { children: React.ReactNode }) {
   const { feeds, loading } = useLibrary();
   const { pathname } = useLocation();
   if (loading) return <div className="flex-1" />;
-  if (feeds.length === 0 && pathname !== '/settings') return <Onboarding />;
+  if (feeds.length === 0 && pathname !== '/settings' && pathname !== '/explore') {
+    return <Onboarding />;
+  }
   return <>{children}</>;
 }

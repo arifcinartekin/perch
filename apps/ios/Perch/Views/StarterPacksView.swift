@@ -38,49 +38,78 @@ struct StarterPack: Decodable, Identifiable {
   }()
 }
 
+/// Explore: the starter packs, any time. Add a whole pack into its own
+/// category, or single feeds; what you already follow is marked.
 struct StarterPacksView: View {
   @Environment(Reader.self) private var reader
   @Environment(\.dismiss) private var dismiss
   @Environment(\.theme) private var theme
   @State private var busy: String?
-  @State private var added: Set<String> = []
   @State private var error: String?
+
+  private var following: Set<String> {
+    Set(reader.library.feeds.flatMap { [$0.id, FeedIDs.feed($0.url)] })
+  }
+
+  private func has(_ url: String) -> Bool { following.contains(FeedIDs.feed(url)) }
 
   var body: some View {
     NavigationStack {
       List {
         Section {
-          ForEach(StarterPack.all) { pack in
-            HStack(alignment: .top, spacing: 12) {
-              VStack(alignment: .leading, spacing: 4) {
-                Text(pack.localTitle).font(.headline)
-                Text(pack.localDescription)
-                  .font(.subheadline)
+          Text(
+            "A few well-known feeds per topic, picked by hand and listed in Perch's source. Add a whole pack into its own category, or just the feeds you want."
+          )
+          .font(.subheadline)
+          .foregroundStyle(theme.muted)
+          .listRowBackground(Color.clear)
+        }
+        ForEach(StarterPack.all) { pack in
+          let left = pack.feeds.filter { !has($0.url) }.map(\.url)
+          Section {
+            ForEach(pack.feeds, id: \.url) { feed in
+              HStack {
+                VStack(alignment: .leading, spacing: 2) {
+                  Text(feed.title)
+                  Text(verbatim: URL(string: feed.url)?.host() ?? feed.url)
+                    .font(.caption)
+                    .foregroundStyle(theme.faint)
+                }
+                Spacer()
+                if has(feed.url) {
+                  Image(systemName: "checkmark")
+                    .foregroundStyle(theme.muted)
+                    .accessibilityLabel("Added")
+                } else if busy == feed.url {
+                  ProgressView()
+                } else {
+                  Button("Add") { add([feed.url], to: pack, key: feed.url) }
+                    .buttonStyle(.glass)
+                    .disabled(busy != nil)
+                }
+              }
+              .surfaceRow()
+            }
+          } header: {
+            HStack(alignment: .firstTextBaseline) {
+              VStack(alignment: .leading, spacing: 2) {
+                Text(pack.localTitle).font(.headline).textCase(nil)
+                Text(pack.localDescription).font(.caption).textCase(nil)
                   .foregroundStyle(theme.muted)
-                Text(pack.feeds.map(\.title).joined(separator: " · "))
-                  .font(.caption)
-                  .foregroundStyle(theme.faint)
               }
               Spacer()
               if busy == pack.id {
                 ProgressView()
-              } else if added.contains(pack.id) {
-                Image(systemName: "checkmark.circle.fill")
-                  .foregroundStyle(theme.accent)
-                  .accessibilityLabel("Added")
-              } else {
-                Button("Add") { add(pack) }
-                  .buttonStyle(.glass)
-                  .disabled(busy != nil)
+              } else if !left.isEmpty {
+                Button(left.count == pack.feeds.count ? "Add all" : "Add the rest") {
+                  add(left, to: pack, key: pack.id)
+                }
+                .font(.subheadline.weight(.medium))
+                .textCase(nil)
+                .disabled(busy != nil)
               }
             }
-            .padding(.vertical, 4)
-            .surfaceRow()
           }
-        } footer: {
-          Text(
-            "Picked by hand and listed in Perch's source. Each pack goes into its own category; remove anything you don't want."
-          )
         }
         if let error {
           Section {
@@ -89,7 +118,7 @@ struct StarterPacksView: View {
         }
       }
       .perchBackdrop()
-      .navigationTitle("Starter packs")
+      .navigationTitle("Explore")
       .navigationBarTitleDisplayMode(.inline)
       .toolbar {
         ToolbarItem(placement: .confirmationAction) {
@@ -99,14 +128,16 @@ struct StarterPacksView: View {
     }
   }
 
-  private func add(_ pack: StarterPack) {
-    busy = pack.id
+  private func add(_ urls: [String], to pack: StarterPack, key: String) {
+    busy = key
     error = nil
     Task {
       defer { busy = nil }
       do {
-        try await reader.addFeeds(pack.feeds.map(\.url), category: pack.localTitle)
-        added.insert(pack.id)
+        let added = try await reader.addFeeds(urls, category: pack.localTitle)
+        if added < urls.count {
+          error = String(localized: "Some feeds couldn't be reached. Try again later.")
+        }
       } catch {
         self.error = error.localizedDescription
       }

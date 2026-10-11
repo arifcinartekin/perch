@@ -168,3 +168,10 @@ export const IconLink = (p: IconProps) => (
     <path d="M14 10a4.5 4.5 0 0 0-6.4 0l-3 3a4.5 4.5 0 0 0 6.4 6.4l1-1" />
   </Svg>
 );
+
+export const IconCompass = (p: IconProps) => (
+  <Svg {...p}>
+    <circle cx="12" cy="12" r="9" />
+    <path d="m15.5 8.5-2.1 4.9-4.9 2.1 2.1-4.9Z" />
+  </Svg>
+);

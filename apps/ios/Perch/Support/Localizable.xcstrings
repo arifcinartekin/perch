@@ -132,6 +132,16 @@
         }
       }
     },
+    "A few well-known feeds per topic, picked by hand and listed in Perch's source. Add a whole pack into its own category, or just the feeds you want.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Her konuda birkaç tanınmış akış; elle seçildi ve Perch'ün kaynak kodunda listeleniyor. Bir paketi kendi kategorisine toptan ekle ya da yalnızca istediğin akışları."
+          }
+        }
+      }
+    },
     "A link": {
       "localizations": {
         "tr": {
@@ -242,12 +252,32 @@
         }
       }
     },
+    "Add all": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hepsini ekle"
+          }
+        }
+      }
+    },
     "Add email": {
       "localizations": {
         "tr": {
           "stringUnit": {
             "state": "translated",
             "value": "E-posta ekle"
+          }
+        }
+      }
+    },
+    "Add the rest": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kalanları ekle"
           }
         }
       }
@@ -1294,6 +1324,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Her şey Perch Server'ın üzerinden senkronlanır: feed'ler, okunan ve yıldızlı makaleler, tema ve renkler. Çevrimdışıyken yapılan değişiklikler bağlantı gelince gönderilir."
+          }
+        }
+      }
+    },
+    "Explore": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keşfet"
           }
         }
       }
@@ -2982,6 +3022,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Küçült"
+          }
+        }
+      }
+    },
+    "Some feeds couldn't be reached. Try again later.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bazı akışlara ulaşılamadı. Daha sonra tekrar dene."
           }
         }
       }

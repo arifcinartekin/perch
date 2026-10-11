@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { matchPath, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { IconButton } from '../components/IconButton';
-import { IconRefresh, IconSearch, IconSettings, IconX } from '../components/icons';
+import { IconCompass, IconRefresh, IconSearch, IconSettings, IconX } from '../components/icons';
 import { PerchLogo } from '../components/PerchMark';
 import { Spinner } from '../components/Spinner';
 import { useLibrary } from '../hooks/useLibrary';
@@ -161,6 +161,9 @@ export function TopBar() {
       </div>
 
       <div className="flex shrink-0 items-center gap-1 px-3">
+        <IconButton label="Explore feeds" onClick={() => navigate('/explore')}>
+          <IconCompass size={16} />
+        </IconButton>
         <IconButton label="Refresh all feeds" onClick={refreshAll} disabled={refreshing}>
           {refreshing ? <Spinner size={15} /> : <IconRefresh size={16} />}
         </IconButton>
