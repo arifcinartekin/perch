@@ -458,6 +458,16 @@
         }
       }
     },
+    "App icon": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uygulama ikonu"
+          }
+        }
+      }
+    },
     "App lock": {
       "localizations": {
         "tr": {
@@ -534,6 +544,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Arka plan resmi"
+          }
+        }
+      }
+    },
+    "Black": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Siyah"
+          }
+        }
+      }
+    },
+    "Blue": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mavi"
           }
         }
       }
@@ -1468,6 +1498,16 @@
         }
       }
     },
+    "Green": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yeşil"
+          }
+        }
+      }
+    },
     "How long Perch can be in the background before it asks again.": {
       "localizations": {
         "tr": {
@@ -1914,6 +1954,16 @@
         }
       }
     },
+    "Midnight": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gece yarısı"
+          }
+        }
+      }
+    },
     "Mode": {
       "localizations": {
         "tr": {
@@ -2010,6 +2060,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sonraki makale"
+          }
+        }
+      }
+    },
+    "Night": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gece"
           }
         }
       }
@@ -2220,6 +2280,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Bu iPhone'da"
+          }
+        }
+      }
+    },
+    "Only on this iPhone; your other devices keep theirs.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yalnızca bu iPhone'da; diğer cihazların kendi ikonunu korur."
           }
         }
       }
@@ -3886,6 +3956,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Hesabın nerede"
+          }
+        }
+      }
+    },
+    "White": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Beyaz"
           }
         }
       }

@@ -14,6 +14,7 @@
 		1BE966468E3929309EC3E856 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 547BB3F69F49024BA65F0A6F /* Assets.xcassets */; };
 		1D211E57B19AB93D14A23D11 /* Keychain.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4B64DEB1E6CF6BE639C8433 /* Keychain.swift */; };
 		241FF41B2764A040F6F901C6 /* Session.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D81815F02D951B683871555 /* Session.swift */; };
+		287B1B426FE28C4BBF610120 /* AppIconView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9935AC8942410ED3F2159634 /* AppIconView.swift */; };
 		345B92D540B25F9CCE51DE8F /* WidgetUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AFBD2AF69D4E3C3D7CF7E51 /* WidgetUITests.swift */; };
 		3CC263518A8DB08FE7FE3A01 /* AppearanceSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 659C049AD8C502121851289D /* AppearanceSettingsView.swift */; };
 		467A098C9959101B6914679F /* Reader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BFE3507078C2399F4F0E88D /* Reader.swift */; };
@@ -126,6 +127,7 @@
 		8FD692757B7C347A5C2BDD29 /* LocalLibraryUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalLibraryUITests.swift; sourceTree = "<group>"; };
 		919DE3B89AF84FDDA3735FDC /* ReaderUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderUITests.swift; sourceTree = "<group>"; };
 		97D1CC3C778BF5883D09B768 /* QRScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRScannerView.swift; sourceTree = "<group>"; };
+		9935AC8942410ED3F2159634 /* AppIconView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIconView.swift; sourceTree = "<group>"; };
 		9BFE3507078C2399F4F0E88D /* Reader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Reader.swift; sourceTree = "<group>"; };
 		9D81815F02D951B683871555 /* Session.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Session.swift; sourceTree = "<group>"; };
 		9DEC51BF47974BCC5F748D16 /* PerchUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = PerchUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -204,6 +206,7 @@
 			children = (
 				655340A93FD076C55BABDD92 /* AddFeedSheet.swift */,
 				659C049AD8C502121851289D /* AppearanceSettingsView.swift */,
+				9935AC8942410ED3F2159634 /* AppIconView.swift */,
 				3B7ACCA0FE0FE10D84A4CF9D /* ArticleListView.swift */,
 				CE8C30FB9465701CCD476FE5 /* ArticleView.swift */,
 				8FA84189C9C85EF03F9C74AB /* ChainView.swift */,
@@ -449,6 +452,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				75C83EEB1EC0AA2A6B5E5CAF /* AddFeedSheet.swift in Sources */,
+				287B1B426FE28C4BBF610120 /* AppIconView.swift in Sources */,
 				8D4FE2DF19E952FE4EC0EFE2 /* AppLock.swift in Sources */,
 				3CC263518A8DB08FE7FE3A01 /* AppearanceSettingsView.swift in Sources */,
 				D6603A9321C3D2CB3A192A7F /* ArticleListView.swift in Sources */,
@@ -585,6 +589,7 @@
 		204E4DAFE4A978BD53C4066A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "AppIcon-Black AppIcon-White AppIcon-Green AppIcon-Blue AppIcon-Midnight";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Perch/Support/Perch.entitlements;
@@ -719,6 +724,7 @@
 		DD1BC7C1BF042D41AC16AD92 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "AppIcon-Black AppIcon-White AppIcon-Green AppIcon-Blue AppIcon-Midnight";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Perch/Support/Perch.entitlements;

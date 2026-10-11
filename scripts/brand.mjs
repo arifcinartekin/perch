@@ -5,6 +5,7 @@
 //     layers for Icon Composer (brand/ios); the app's catalog with the icon,
 //     logo, mark and accent colour (apps/ios/Perch/Assets.xcassets); the mark
 //     again for the widgets (apps/ios/PerchWidgets/Assets.xcassets)
+//   - iOS alternate app icons (Settings → App icon) and their previews
 //
 // Run after changing anything in brand/src:  npm run brand
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -112,6 +113,118 @@ for (const dir of ICONSETS) {
       2,
     )}\n`,
     `${dir}/Contents.json`,
+  );
+}
+
+// --- iOS: alternate app icons ------------------------------------------------
+// Picked in Settings → App icon. Each is the same drawing in other colours; the
+// default above stays the one with light, dark and tinted variants. A preview
+// of each goes into an image set, since app icon sets can't be shown in the app.
+const ALT_ICONS = {
+  // Single colour: the waves on the bird take the background's colour.
+  Black: {
+    bg: ['#000000', '#000000'],
+    bird: '#FFFFFF',
+    accent: '#FFFFFF',
+    waves: '#000000',
+    eye: '#000000',
+  },
+  White: {
+    bg: ['#FFFFFF', '#F2F2F2'],
+    bird: '#111111',
+    accent: '#111111',
+    waves: '#FFFFFF',
+    eye: '#FFFFFF',
+  },
+  Green: { bg: ['#14523C', '#08261C'], bird: '#F4F1EA', accent: '#7BE3A6', eye: '#0B2E22' },
+  Blue: { bg: ['#1C3E78', '#0A1A38'], bird: '#F4F1EA', accent: '#6CC1FF', eye: '#0C1F42' },
+  Midnight: {
+    bg: ['#0B0C10', '#000000'],
+    bird: '#262A35',
+    accent: '#3C4252',
+    waves: '#4A5163',
+    eye: '#000000',
+  },
+};
+const birdBody = inner(markFull);
+for (const [name, c] of Object.entries(ALT_ICONS)) {
+  const waves = c.waves ?? c.accent;
+  const body = birdBody
+    .replace(/#F4F1EA/gi, '@BIRD@')
+    // The waves and their dot sit on the bird; the beak and perch sit on the
+    // background. Mark the waves first so each can take its own colour.
+    .replace(/<g fill="none" stroke="#FF7A1A"/i, `<g fill="none" stroke="${waves}"`)
+    .replace(/(<circle cx="214"[^>]*fill=")#FF7A1A/i, `$1${waves}`)
+    .replace(/#FF7A1A/gi, c.accent)
+    .replace(/#12151C/gi, c.eye)
+    .replace(/@BIRD@/g, c.bird);
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+<defs><linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${c.bg[0]}"/><stop offset="1" stop-color="${c.bg[1]}"/></linearGradient></defs>
+<rect width="1024" height="1024" fill="url(#bg)"/>
+<g transform="translate(128 112) scale(1.5)">${body}</g>
+</svg>`;
+  const set = `apps/ios/Perch/Assets.xcassets/AppIcon-${name}.appiconset`;
+  png(svg, 1024, `${set}/AppIcon-${name}.png`);
+  text(
+    `${JSON.stringify(
+      {
+        images: [
+          {
+            filename: `AppIcon-${name}.png`,
+            idiom: 'universal',
+            platform: 'ios',
+            size: '1024x1024',
+          },
+        ],
+        info: { author: 'xcode', version: 1 },
+      },
+      null,
+      2,
+    )}\n`,
+    `${set}/Contents.json`,
+  );
+}
+// Previews for the picker, the default included.
+const previews = {
+  Default: appIconFullBleed,
+  ...Object.fromEntries(
+    Object.keys(ALT_ICONS).map((name) => [
+      name,
+      readFileSync(
+        resolve(
+          ROOT,
+          `apps/ios/Perch/Assets.xcassets/AppIcon-${name}.appiconset/AppIcon-${name}.png`,
+        ),
+      ),
+    ]),
+  ),
+};
+for (const [name, source] of Object.entries(previews)) {
+  const set = `apps/ios/Perch/Assets.xcassets/IconPreview-${name}.imageset`;
+  const file = resolve(ROOT, `${set}/IconPreview-${name}.png`);
+  mkdirSync(dirname(file), { recursive: true });
+  if (typeof source === 'string') {
+    writeFileSync(
+      file,
+      new Resvg(source, { fitTo: { mode: 'width', value: 240 } }).render().asPng(),
+    );
+  } else {
+    // Already a PNG: draw it smaller through an <image>.
+    const data = `data:image/png;base64,${source.toString('base64')}`;
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1024 1024" width="1024" height="1024"><image href="${data}" width="1024" height="1024"/></svg>`;
+    writeFileSync(file, new Resvg(svg, { fitTo: { mode: 'width', value: 240 } }).render().asPng());
+  }
+  console.log('wrote', `${set}/IconPreview-${name}.png`);
+  text(
+    `${JSON.stringify(
+      {
+        images: [{ filename: `IconPreview-${name}.png`, idiom: 'universal' }],
+        info: { author: 'xcode', version: 1 },
+      },
+      null,
+      2,
+    )}\n`,
+    `${set}/Contents.json`,
   );
 }
 

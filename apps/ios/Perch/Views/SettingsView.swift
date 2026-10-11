@@ -31,7 +31,7 @@ struct SettingsView: View {
   @State private var message: String?
   @State private var path = NavigationPath()
 
-  enum Page: String, Hashable { case appearance, offline, devices, invites, chain, lock }
+  enum Page: String, Hashable { case appearance, icon, offline, devices, invites, chain, lock }
 
   var body: some View {
     NavigationStack(path: $path) {
@@ -63,6 +63,17 @@ struct SettingsView: View {
             .surfaceRow()
           NavigationLink(value: Page.appearance) {
             Label("Appearance", systemImage: "paintpalette")
+          }
+          .surfaceRow()
+          NavigationLink(value: Page.icon) {
+            LabeledContent {
+              Image(AppIconView.currentPreview)
+                .resizable()
+                .frame(width: 28, height: 28)
+                .clipShape(.rect(cornerRadius: 7, style: .continuous))
+            } label: {
+              Label("App icon", systemImage: "app.badge")
+            }
           }
           .surfaceRow()
           NavigationLink(value: Page.offline) {
@@ -207,6 +218,7 @@ struct SettingsView: View {
         case .invites: InvitesView()
         case .chain: ChainSettingsView()
         case .lock: AppLockSettingsView()
+        case .icon: AppIconView()
         }
       }
       #if DEBUG
