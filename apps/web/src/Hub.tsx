@@ -46,7 +46,7 @@ export function Hub({
 
           <SharedNotes />
           <div className="glass rounded-[18px] p-5">
-            <WebSettings user={user} onSignOut={onSignOut} hub />
+            <WebSettings user={user} onSignOut={onSignOut} hub signup={info.signup} />
           </div>
 
           {info.build && (

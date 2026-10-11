@@ -25,9 +25,12 @@ export function WebSettings({
   user,
   onSignOut,
   hub = false,
+  signup,
 }: {
   user: PublicUser;
   onSignOut: () => void;
+  /** Invite codes only matter when signing up needs one. */
+  signup?: ServerInfo['signup'];
   /** A hub keeps no library, so there's nothing to import or export. */
   hub?: boolean;
 }) {
@@ -38,7 +41,7 @@ export function WebSettings({
       <RecoverySection user={user} />
       <DevicesSection />
       {user.role === 'admin' && <ReportsSection />}
-      {user.role === 'admin' && <InvitesSection />}
+      {user.role === 'admin' && signup === 'invite' && <InvitesSection />}
       {!hub && <OpmlSection />}
       <DeleteAccountSection user={user} onDeleted={onSignOut} hub={hub} />
     </>

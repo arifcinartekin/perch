@@ -92,17 +92,32 @@ function App() {
       />
     );
   }
-  return <Reader key={session.user.id} user={session.user} onSignOut={() => void check()} />;
+  return (
+    <Reader
+      key={session.user.id}
+      user={session.user}
+      signup={session.info.signup}
+      onSignOut={() => void check()}
+    />
+  );
 }
 
-function Reader({ user, onSignOut }: { user: PublicUser; onSignOut: () => void }) {
+function Reader({
+  user,
+  signup,
+  onSignOut,
+}: {
+  user: PublicUser;
+  signup: ServerInfo['signup'];
+  onSignOut: () => void;
+}) {
   // One backend per signed-in account.
   const backend = useMemo(() => createServerBackend(), []);
   useEffect(() => () => backend.close(), [backend]);
   return (
     <ReaderApp
       backend={backend}
-      settingsExtra={<WebSettings user={user} onSignOut={onSignOut} />}
+      settingsExtra={<WebSettings user={user} onSignOut={onSignOut} signup={signup} />}
     />
   );
 }
