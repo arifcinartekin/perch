@@ -17,6 +17,10 @@ if [[ "${1:-}" != --wait-only ]]; then
   export PERCH_COMMIT PERCH_IMAGE_TAG
   PERCH_COMMIT="$(git -C "$DIR" rev-parse HEAD)"
   if grep -qE '^PERCH_IMAGE=.+' "$DIR/deploy/.env" 2>/dev/null; then
+    # CI builds an image only for commits that change what's in it (the paths
+    # in .github/workflows/image.yml), so run the newest such commit's image.
+    PERCH_COMMIT="$(git -C "$DIR" log -1 --format=%H -- apps/server apps/web apps/extension/src \
+      packages package-lock.json .github/workflows/image.yml)"
     PERCH_IMAGE_TAG="$PERCH_COMMIT"
     if ! "${COMPOSE[@]}" pull -q perch; then
       echo "No image for $PERCH_COMMIT yet; CI may still be building it. Try again in a few minutes."

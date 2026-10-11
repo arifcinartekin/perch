@@ -9,9 +9,12 @@ name: Server image
 on:
   push:
     branches: [main]
+    # What goes into the image. deploy/update.sh looks for the newest commit
+    # touching these same paths; keep the two lists alike.
     paths:
       - apps/server/**
       - apps/web/**
+      - apps/extension/src/**
       - packages/**
       - package-lock.json
       - .github/workflows/image.yml
