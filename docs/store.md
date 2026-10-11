@@ -87,12 +87,12 @@ TR:
 ### App Privacy (nutrition labels)
 
 Answer **"Yes, we collect data"**, because a Perch account sends a username and shared notes to
-app.perch.ws. Everything else stays on the device or is end-to-end encrypted.
+account.perch.ws. Everything else stays on the device or is end-to-end encrypted.
 
 | Data type (Apple's term)                                                 | Collected                                                         | Linked to the user | Tracking | Purpose           |
 | ------------------------------------------------------------------------ | ----------------------------------------------------------------- | ------------------ | -------- | ----------------- |
 | Contact Info → Name                                                      | No                                                                | —                  | —        | —                 |
-| Contact Info → Email Address                                             | No (app.perch.ws asks for none)                                   | —                  | —        | —                 |
+| Contact Info → Email Address                                             | No (account.perch.ws asks for none)                               | —                  | —        | —                 |
 | Identifiers → User ID                                                    | Yes, only with a Perch account or a server account (the username) | Yes                | No       | App Functionality |
 | User Content → Other User Content                                        | Yes, only notes the user shares as public pages                   | Yes                | No       | App Functionality |
 | Usage Data, Diagnostics, Location, Browsing History, Purchases, Contacts | No                                                                | —                  | —        | —                 |
@@ -130,10 +130,10 @@ developer's declaration.
 >
 > Sync with a Perch Server: Settings → Connect to a Perch Server → demo.perch.ws, then sign in
 > with the demo account below. demo.perch.ws is a test server we run for review;
-> app.perch.ws itself only holds accounts for sharing notes.
+> our main server only holds accounts for sharing notes.
 >
-> Perch account (sharing notes): Settings → Perch account → Sign in, server app.perch.ws, with
-> the app.perch.ws account below. Then open an article, write a note and choose Share.
+> Perch account (sharing notes): Settings → Perch account → Sign in, server account.perch.ws,
+> with the account.perch.ws account below. Then open an article, write a note and choose Share.
 >
 > Permissions: the camera is used only to scan a sync chain's QR code; Face ID only for the
 > optional app lock (Settings → App lock).

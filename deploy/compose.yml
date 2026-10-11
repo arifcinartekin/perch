@@ -33,6 +33,8 @@ services:
       # Your privacy policy and terms, linked from sign-up and shared notes (optional).
       PERCH_PRIVACY_URL: ${PERCH_PRIVACY_URL:-}
       PERCH_TERMS_URL: ${PERCH_TERMS_URL:-}
+      # Where Perch accounts are managed, when it's its own address (account.perch.ws).
+      PERCH_ACCOUNT_URL: ${PERCH_ACCOUNT_URL:-}
     volumes:
       - ${PERCH_DATA:-/var/lib/perch}:/data
 
@@ -67,6 +69,7 @@ services:
       PERCH_DOMAIN: ${PERCH_DOMAIN}
       PERCH_SYNC_DOMAIN: ${PERCH_SYNC_DOMAIN:-}
       PERCH_DEMO_DOMAIN: ${PERCH_DEMO_DOMAIN:-}
+      PERCH_ACCOUNT_DOMAIN: ${PERCH_ACCOUNT_DOMAIN:-}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - ./sync:/srv/sync:ro # the page a browser sees on the sync domain

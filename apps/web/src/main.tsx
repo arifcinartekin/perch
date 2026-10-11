@@ -60,8 +60,18 @@ function App() {
   // account (for sharing) lives at /account.
   const info =
     session.status === 'signed-in' || session.status === 'signed-out' ? session.info : null;
-  if (info?.mode === 'hub' && !location.pathname.startsWith('/account')) {
-    return <LocalReader />;
+  // Perch accounts can live at their own address (account.perch.ws): there the
+  // page is the account; the reader's /account goes there.
+  const accountHere = !info?.accountUrl || new URL(info.accountUrl).origin === location.origin;
+  if (info?.mode === 'hub' && info.accountUrl && accountHere) {
+    // Sign-in or the account page below, whatever the path.
+  } else if (info?.mode === 'hub' && location.pathname.startsWith('/account')) {
+    if (!accountHere) {
+      location.replace(info.accountUrl!);
+      return null;
+    }
+  } else if (info?.mode === 'hub') {
+    return <LocalReader info={info} />;
   }
   if (session.status === 'signed-out') {
     return (

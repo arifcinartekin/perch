@@ -30,6 +30,13 @@ export interface ServerInfo {
   email?: boolean;
   /** The operator's privacy policy and terms, when they've published them. */
   legal?: { privacy?: string; terms?: string };
+  /**
+   * Where Perch accounts on this server are managed (e.g. https://account.perch.ws),
+   * when that's a separate address from the reader.
+   */
+  accountUrl?: string;
+  /** The reader's address, given with `accountUrl` so the account page can link back. */
+  readerUrl?: string;
   /** Signing up needs a proof of work this many bits hard (see pow.ts); absent when not. */
   pow?: number;
   /** Accounts can set a recovery code and reset the password with it. */

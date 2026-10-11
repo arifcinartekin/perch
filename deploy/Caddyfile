@@ -10,7 +10,9 @@
 # The relay for sync chains can have its own name (e.g. sync.perch.ws). It's the
 # same server, but there it answers only the chain API: no web app, no sign-in,
 # no sign-up, just a page saying what the address is.
-{$PERCH_DOMAIN} {$PERCH_SYNC_DOMAIN} {$PERCH_DEMO_DOMAIN} {
+# The account address (PERCH_ACCOUNT_DOMAIN, e.g. account.perch.ws) is the same
+# server; the web app shows the Perch account there instead of the reader.
+{$PERCH_DOMAIN} {$PERCH_SYNC_DOMAIN} {$PERCH_DEMO_DOMAIN} {$PERCH_ACCOUNT_DOMAIN} {
 	# The demo server (PERCH_DEMO_DOMAIN), a separate personal-mode Perch.
 	@demo host {$PERCH_DEMO_DOMAIN:demo.invalid}
 	handle @demo {

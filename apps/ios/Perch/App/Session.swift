@@ -29,7 +29,7 @@ final class Session {
   /// Sync without an account, for the library on this phone.
   let chain = ChainLink()
 
-  // The Perch account: a name on a hub (app.perch.ws by default) for sharing
+  // The Perch account: a name on a hub (account.perch.ws by default) for sharing
   // notes. Separate from where the library lives and how it syncs.
   private(set) var communityServer: URL?
   private(set) var communityUsername: String?

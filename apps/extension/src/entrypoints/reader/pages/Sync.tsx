@@ -595,6 +595,7 @@ export function SignInForm({
   onCancel,
   purpose = 'sync',
   onSignedIn = saveAccount,
+  defaultServer,
 }: {
   initial?: Pick<ServerAccount, 'server' | 'username'>;
   notice?: string;
@@ -602,12 +603,14 @@ export function SignInForm({
   /** `sync`: the library syncs with this account. `community`: the Perch account, for sharing. */
   purpose?: 'sync' | 'community';
   onSignedIn?: (account: ServerAccount) => Promise<void>;
+  /** The server address to start from (a Perch account's defaults to account.perch.ws). */
+  defaultServer?: string;
 }) {
   const toast = useToast();
   // 'reset' sets a new password with an emailed code, 'recover' with the recovery code.
   const [mode, setMode] = useState<'in' | 'up' | 'reset' | 'recover'>('in');
   const [server, setServer] = useState(
-    initial?.server ?? (purpose === 'community' ? DEFAULT_HUB : ''),
+    initial?.server ?? defaultServer ?? (purpose === 'community' ? DEFAULT_HUB : ''),
   );
   const [username, setUsername] = useState(initial?.username ?? '');
   const [password, setPassword] = useState('');

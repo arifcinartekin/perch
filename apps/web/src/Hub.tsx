@@ -5,7 +5,7 @@ import { Button, PerchLogo, Section, Spinner, ToastProvider, useToast } from '@p
 import { ServerError, api } from './api';
 import { WebSettings } from './WebSettings';
 
-// What a hub (app.perch.ws) shows once you're signed in: there's no library
+// What a hub's account address (account.perch.ws) shows once you're signed in: there's no library
 // here, so it's your Perch account: the notes you've shared, and settings.
 // Reading happens in the extension and the iPhone app, synced by chain.
 
@@ -35,7 +35,7 @@ export function Hub({
               chain.
             </p>
             <div className="mt-3 flex gap-4 text-[13px] font-medium text-[var(--accent-text)]">
-              <a href="/" className="hover:underline">
+              <a href={info.readerUrl ?? '/'} className="hover:underline">
                 Open the reader →
               </a>
               <a href="https://perch.ws" className="hover:underline">

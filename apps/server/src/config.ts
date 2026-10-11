@@ -31,6 +31,8 @@ export interface Config {
   /** This server's privacy policy and terms, linked from sign-up and shared pages. */
   privacyUrl?: string;
   termsUrl?: string;
+  /** The address Perch accounts are managed at, when it isn't the reader's. */
+  accountUrl?: string;
   /** Keys the hashes kept instead of email addresses. Kept out of the database. */
   emailKey?: string;
   /** Proof-of-work difficulty for signing up, in bits; 0 for none. */
@@ -110,6 +112,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     webRoot: env.PERCH_WEB_ROOT || undefined,
     email,
     privacyUrl: httpUrl('PERCH_PRIVACY_URL', env.PERCH_PRIVACY_URL),
+    accountUrl: httpUrl('PERCH_ACCOUNT_URL', env.PERCH_ACCOUNT_URL)?.replace(/\/+$/, ''),
     termsUrl: httpUrl('PERCH_TERMS_URL', env.PERCH_TERMS_URL),
     emailKey: emailKey(env.PERCH_EMAIL_KEY),
     signupPow: int(env.PERCH_SIGNUP_POW, 0, 0, 28),

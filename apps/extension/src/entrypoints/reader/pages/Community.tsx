@@ -17,7 +17,8 @@ import { SignInForm } from './Sync';
 const inputClass =
   'w-full rounded-[9px] border border-[var(--border-strong)] bg-[var(--bg-solid)] px-2.5 py-1.5 text-[13px]';
 
-export function CommunitySection() {
+/** `defaultServer`: where a new sign-in starts (account.perch.ws unless told otherwise). */
+export function CommunitySection({ defaultServer }: { defaultServer?: string } = {}) {
   const [account, setAccount] = useState<CommunityAccount | null | undefined>(undefined);
   const [form, setForm] = useState(false);
 
@@ -36,6 +37,7 @@ export function CommunitySection() {
     body = (
       <SignInForm
         purpose="community"
+        defaultServer={defaultServer}
         onCancel={() => setForm(false)}
         onSignedIn={async ({ server, username, token }) => {
           await saveCommunity({ server, username, token });
@@ -47,7 +49,7 @@ export function CommunitySection() {
     body = (
       <Row
         label="Perch account"
-        hint="Your name for sharing notes as public pages, on app.perch.ws or a server you run. It
+        hint="Your name for sharing notes as public pages, on account.perch.ws or a server you run. It
         doesn’t sync your library and isn’t needed to read: your feeds stay in this browser."
       >
         <Button size="sm" variant="default" onClick={() => setForm(true)}>

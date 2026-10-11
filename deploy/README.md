@@ -38,6 +38,22 @@ keep theirs on their devices and sync them through a chain. With `PERCH_CHAIN=tr
 server relays the chains. A server switched from personal mode keeps the old libraries until you
 start it once with `PERCH_PURGE_LIBRARIES=true` (move yours to a chain first).
 
+### Perch accounts at their own address
+
+app.perch.ws is the reader; Perch accounts (names for sharing notes) are managed at
+account.perch.ws, which is the same server under another name. Point a DNS record at the machine
+(grey cloud), then add to `.env` and run `update.sh`:
+
+```sh
+PERCH_ACCOUNT_DOMAIN=account.perch.ws
+PERCH_ACCOUNT_URL=https://account.perch.ws
+```
+
+The web app then shows the account (sign-up, recovery code, shared notes, reports) on that
+address, and the reader's /account goes there. Readers anywhere (app.perch.ws, the extension, the
+iPhone, someone's own reader) sign in to it with a token kept on the device; no cookie is shared
+across addresses.
+
 ### Open sign-up without email
 
 To let anyone sign up, with a proof of work instead of a CAPTCHA or an email check (this is how

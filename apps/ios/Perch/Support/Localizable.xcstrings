@@ -4100,6 +4100,16 @@
         }
       }
     },
+    "account.perch.ws, or a Perch Server of your own.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "account.perch.ws ya da kendi Perch sunucun."
+          }
+        }
+      }
+    },
     "app.perch.ws, or a Perch Server of your own.": {
       "localizations": {
         "tr": {

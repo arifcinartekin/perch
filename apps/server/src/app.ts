@@ -147,11 +147,26 @@ export function createApp(ctx: AppContext) {
   // use a relay: a web reader on one server can sync through another's.
   const openToAll = cors({
     origin: '*',
-    allowMethods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
+    allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowHeaders: ['authorization', 'content-type'],
     maxAge: 86400,
   });
-  for (const path of ['/server', '/chain', '/chain/*']) api.use(path, openToAll);
+  // Accounts and sharing are reached with a bearer token too, so a reader on
+  // another address (app.perch.ws, or someone's own reader) can sign in to a
+  // Perch account here. Cookies never go along (no credentials), and the proxy
+  // stays closed to other sites.
+  for (const path of [
+    '/server',
+    '/chain',
+    '/chain/*',
+    '/auth/*',
+    '/devices',
+    '/devices/*',
+    '/shares',
+    '/shares/*',
+  ]) {
+    api.use(path, openToAll);
+  }
   api.get('/server', (c) => {
     const users_ = ctx.db.select({ n: count() }).from(users).get()!.n;
     return c.json<ServerInfo>({
@@ -164,6 +179,10 @@ export function createApp(ctx: AppContext) {
       needsSetup: users_ === 0,
       email: ctx.mailer != null,
       recovery: true,
+      ...(ctx.config.accountUrl && {
+        accountUrl: ctx.config.accountUrl,
+        ...(ctx.config.publicUrl && { readerUrl: ctx.config.publicUrl }),
+      }),
       ...(ctx.config.commit && {
         build: { commit: ctx.config.commit, source: 'https://github.com/arifcinartekin/perch' },
       }),

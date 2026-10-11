@@ -77,3 +77,36 @@ describe('the web app’s security policy', () => {
     }
   });
 });
+
+describe('accounts from a reader on another address', () => {
+  it('answer CORS for sign-in and sharing, never with credentials, and report where accounts live', async () => {
+    const t = setup({ mode: 'hub', accountUrl: 'https://account.perch.test' });
+    try {
+      for (const [path, method] of [
+        ['/api/v1/auth/login', 'POST'],
+        ['/api/v1/shares/f%3Aa', 'PUT'],
+      ] as const) {
+        const pre = await t.app.request(path, {
+          method: 'OPTIONS',
+          headers: {
+            origin: 'https://app.perch.test',
+            'access-control-request-method': method,
+            'access-control-request-headers': 'authorization,content-type',
+          },
+        });
+        expect(pre.status).toBe(204);
+        expect(pre.headers.get('access-control-allow-origin')).toBe('*');
+        expect(pre.headers.get('access-control-allow-methods')).toContain(method);
+        expect(pre.headers.get('access-control-allow-credentials')).toBeNull();
+      }
+      // No network: a refused address still shows the headers.
+      const proxy = await t.app.request('/api/v1/proxy?url=ftp%3A%2F%2Fexample.com', {
+        headers: { origin: 'https://evil.example' },
+      });
+      expect(proxy.headers.get('access-control-allow-origin')).toBeNull();
+      expect((await t.call('GET', '/server')).body.accountUrl).toBe('https://account.perch.test');
+    } finally {
+      t.close();
+    }
+  });
+});

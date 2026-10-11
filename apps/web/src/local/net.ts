@@ -12,7 +12,7 @@ export function routeFetchThroughProxy(): void {
     const url = new URL(input instanceof Request ? input.url : String(input), location.href);
     const perchApi = url.pathname.startsWith(`${API_PREFIX}/`);
     if (url.origin === location.origin || perchApi) {
-      // Here, the session cookie stands in for a token (the Perch account).
+      // Never a cookie to another address: Perch accounts elsewhere use a token.
       return original(
         input,
         url.origin === location.origin ? { ...init, credentials: 'same-origin' } : init,

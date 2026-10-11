@@ -35,7 +35,7 @@ Perch keeps these apart on purpose, so you can tell exactly what goes where.
      other, sealed like everything else.
    - **Your own Perch Server.** Self-hosters and organisations can run a server that keeps each
      account's library and fetches its feeds ([apps/server](./apps/server/README.md)).
-3. **A Perch account is only a name for sharing.** On a hub such as app.perch.ws it's a
+3. **A Perch account is only a name for sharing.** On a hub such as account.perch.ws it's a
    username, a password and a recovery code — no email. You need it only to **share a note** as a
    public page; it doesn't sync anything. Passwords never leave the device: Perch derives a key
    with Argon2id and sends only that.
@@ -62,7 +62,7 @@ page has a report form; server admins handle reports from the account page.
 
 ### Privacy you can check
 
-The official services (app.perch.ws, sync.perch.ws, perch.ws) are run by one person, without
+The official services (app.perch.ws, account.perch.ws, sync.perch.ws, perch.ws) are run by one person, without
 commercial purpose, and keep as little as possible: no email addresses, no access logs, no IP
 addresses, no libraries. Server images are built and attested by this repository's CI, and the
 server reports the commit it runs — see [perch.ws/transparency](https://perch.ws/transparency),
@@ -212,7 +212,7 @@ apps/
 │                          stand-in for the WebExtension API, src/local/) and the Perch account
 │                          at /account. On a personal server: @perch/reader over the server API.
 └─ server/                 Perch Server: self-hostable. `personal` mode keeps libraries and
-   │                       fetches feeds; `hub` mode (app.perch.ws) holds Perch accounts and
+   │                       fetches feeds; `hub` mode (app.perch.ws, account.perch.ws) holds Perch accounts and
    │                       shared notes only.
    ├─ src/auth/            accounts, sessions, devices, invites, recovery codes, the sign-up
    │                       proof of work, optional email (codes; addresses kept only as hashes).
