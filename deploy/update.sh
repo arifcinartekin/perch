@@ -14,6 +14,15 @@ if [[ "${1:-}" != --wait-only ]]; then
   echo "Now at $(git -C "$DIR" log -1 --format='%h %s')"
   # A copy of the database before the new version migrates it.
   "$DIR/deploy/backup.sh"
+  # The demo server's folder, owned by the image's user (node, 1000) like the
+  # main one; left to Docker it would belong to root and the server couldn't
+  # open its database.
+  if grep -qE '^COMPOSE_PROFILES=.*demo' "$DIR/deploy/.env" 2>/dev/null; then
+    DEMO_DATA="$(grep -E '^PERCH_DEMO_DATA=' "$DIR/deploy/.env" | cut -d= -f2-)"
+    DEMO_DATA="${DEMO_DATA:-/var/lib/perch-demo}"
+    mkdir -p "$DEMO_DATA"
+    chown 1000:1000 "$DEMO_DATA"
+  fi
   export PERCH_COMMIT PERCH_IMAGE_TAG
   PERCH_COMMIT="$(git -C "$DIR" rev-parse HEAD)"
   if grep -qE '^PERCH_IMAGE=.+' "$DIR/deploy/.env" 2>/dev/null; then
