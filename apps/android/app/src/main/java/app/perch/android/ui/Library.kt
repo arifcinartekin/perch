@@ -20,6 +20,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.ChevronRight
 import androidx.compose.material.icons.rounded.Explore
+import androidx.compose.material.icons.rounded.EditNote
 import androidx.compose.material.icons.rounded.ErrorOutline
 import androidx.compose.material.icons.rounded.ExpandMore
 import androidx.compose.material.icons.rounded.Inbox
@@ -89,7 +90,10 @@ fun LibraryScreen(reader: Reader, nav: Nav) {
           Section(null) {
             NavRow(Icons.Rounded.Inbox, stringResource(R.string.all_articles), unread.values.sum()) { nav.all() }
             Divider(52.dp)
-            NavRow(Icons.Rounded.Star, stringResource(R.string.tab_starred), starred) { /* the Starred tab */ nav.starredFromLibrary() }
+            NavRow(Icons.Rounded.Star, stringResource(R.string.tab_starred), starred) { nav.starredFromLibrary() }
+            Divider(52.dp)
+            val notes by reader.notes.collectAsState()
+            NavRow(Icons.Rounded.EditNote, stringResource(R.string.notes), notes.size) { nav.notes() }
           }
         }
         if (library.feeds.isEmpty()) {

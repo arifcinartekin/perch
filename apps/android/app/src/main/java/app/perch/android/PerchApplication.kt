@@ -15,10 +15,11 @@ class PerchApplication : Application() {
   val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
   val device by lazy { DeviceSettings(this) }
   val secure by lazy { SecureStore(this) }
+  val lock by lazy { AppLock(this, secure) }
   val reader by lazy {
     val backend = LocalBackend(ArticleStore(this), File(filesDir, "library.json"))
     val chain = ChainLink(secure, ChainSync(backend, File(filesDir, "chain.json"))) { ChainLink.phoneName(this) }
-    Reader(this, backend, scope, device, chain)
+    Reader(this, backend, scope, device, chain, Community(secure))
   }
 
   override fun onCreate() {

@@ -1,1 +1,3 @@
 -keepattributes *Annotation*, InnerClasses
+-keep class org.bouncycastle.crypto.generators.Argon2BytesGenerator { *; }
+-dontwarn org.bouncycastle.**

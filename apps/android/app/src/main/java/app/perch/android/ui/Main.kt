@@ -75,6 +75,8 @@ class Nav(private val controller: NavHostController) {
   fun explore() = controller.navigate("explore")
   fun search() = controller.navigate("search")
   fun chain() = controller.navigate("chain")
+  fun account() = controller.navigate("account")
+  fun notes() = controller.navigate("notes")
   fun joinChain(server: String, code: String) = controller.navigate("chain?server=${enc(server)}&code=${enc(code)}")
   fun back() = controller.popBackStack()
   private fun enc(s: String) = URLEncoder.encode(s, "UTF-8")
@@ -91,7 +93,13 @@ fun PerchRoot(reader: Reader) {
   LaunchedEffect(link) {
     link?.let { (server, code) ->
       reader.pendingChainLink.value = null
-      if (reader.chain.account.value == null) nav.joinChain(server, code) else nav.chain()
+      val current = reader.chain.account.value
+      // The same link again (Android hands back the intent that first opened
+      // the app when it relaunches the task): nothing to do.
+      when {
+        current == null -> nav.joinChain(server, code)
+        current.code != code -> nav.chain()
+      }
     }
   }
   NavHost(
@@ -118,6 +126,8 @@ fun PerchRoot(reader: Reader) {
     }
     composable("explore") { ExploreScreen(reader, nav) }
     composable("search") { SearchScreen(reader, nav) }
+    composable("account") { AccountScreen(reader, nav) }
+    composable("notes") { NotesScreen(reader, nav) }
     composable(
       "chain?server={server}&code={code}",
       listOf(
@@ -148,6 +158,8 @@ private fun Home(reader: Reader, nav: Nav) {
           Tab.SETTINGS -> SettingsScreen(reader, nav)
         }
       }
+      val shared by reader.pendingAddUrl.collectAsState()
+      shared?.let { url -> AddFeedSheet(reader, initialUrl = url, onDismiss = { reader.pendingAddUrl.value = null }) }
       TabBar(
         selected = tab,
         unread = unread.values.sum(),

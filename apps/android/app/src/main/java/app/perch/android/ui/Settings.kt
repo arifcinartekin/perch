@@ -35,6 +35,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -164,6 +165,22 @@ fun SettingsScreen(reader: Reader, nav: Nav) {
             }
           }
         }
+        item { LockSection() }
+        item {
+          val community by reader.community.account.collectAsState()
+          Section(stringResource(R.string.perch_account), footer = stringResource(R.string.account_settings_hint)) {
+            Row(
+              Modifier.fillMaxWidth().clickable { nav.account() }.padding(horizontal = 16.dp, vertical = 14.dp),
+              verticalAlignment = Alignment.CenterVertically,
+            ) {
+              Column(Modifier.weight(1f)) {
+                Text(community?.let { "@${it.username}" } ?: stringResource(R.string.sign_in), color = look.text, fontSize = 16.sp)
+                Text(community?.server?.removePrefix("https://") ?: stringResource(R.string.account_off_hint), color = look.muted, fontSize = 13.sp)
+              }
+              Text("›", color = look.faint, fontSize = 22.sp)
+            }
+          }
+        }
         item {
           Section(stringResource(R.string.library)) {
             ActionRow(stringResource(R.string.import_opml)) { importer.launch(arrayOf("*/*")) }
@@ -245,5 +262,53 @@ private fun <T> Choice(options: List<Pair<T, String>>, selected: T, onSelect: (T
         icon = {},
       ) { Text(label, fontSize = 13.sp, maxLines = 1) }
     }
+  }
+}
+
+/** The app lock: a PIN, and the fingerprint or face to open it. */
+@Composable
+private fun LockSection() {
+  val look = LocalLook.current
+  val context = LocalContext.current
+  val lock = (context.applicationContext as app.perch.android.PerchApplication).lock
+  val enabled by lock.enabled.collectAsState()
+  val biometric by lock.biometric.collectAsState()
+  var setting by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
+  Section(stringResource(R.string.app_lock), footer = stringResource(R.string.app_lock_hint)) {
+    LabeledRow(stringResource(R.string.require_pin)) {
+      PerchSwitch(enabled) { on -> if (on) setting = true else lock.clear() }
+    }
+    if (enabled) {
+      if (canUseBiometric(context)) {
+        Divider()
+        LabeledRow(stringResource(R.string.unlock_biometric)) { PerchSwitch(biometric) { lock.setBiometric(it) } }
+      }
+      Divider()
+      ActionRow(stringResource(R.string.change_pin)) { setting = true }
+    }
+  }
+  if (setting) {
+    var first by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf("") }
+    var second by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf("") }
+    val mismatch = second.length == 6 && first != second
+    androidx.compose.material3.AlertDialog(
+      onDismissRequest = { setting = false },
+      title = { Text(stringResource(R.string.set_pin)) },
+      text = {
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+          val digits = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.NumberPassword)
+          androidx.compose.material3.OutlinedTextField(first, { first = it.filter(Char::isDigit).take(6) }, singleLine = true, label = { Text(stringResource(R.string.new_pin)) }, keyboardOptions = digits, visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation())
+          androidx.compose.material3.OutlinedTextField(second, { second = it.filter(Char::isDigit).take(6) }, singleLine = true, label = { Text(stringResource(R.string.confirm_pin)) }, keyboardOptions = digits, visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(), isError = mismatch)
+          if (mismatch) Text(stringResource(R.string.pins_dont_match), color = androidx.compose.ui.graphics.Color(0xFFEF4444), fontSize = 13.sp)
+        }
+      },
+      confirmButton = {
+        androidx.compose.material3.TextButton(enabled = app.perch.android.AppLock.isValid(first) && first == second, onClick = {
+          lock.setPin(first)
+          setting = false
+        }) { Text(stringResource(R.string.save)) }
+      },
+      dismissButton = { androidx.compose.material3.TextButton({ setting = false }) { Text(stringResource(R.string.cancel)) } },
+    )
   }
 }

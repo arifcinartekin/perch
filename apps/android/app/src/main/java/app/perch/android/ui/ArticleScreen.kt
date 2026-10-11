@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.Article
+import androidx.compose.material.icons.rounded.EditNote
 import androidx.compose.material.icons.rounded.Notes
 import androidx.compose.material.icons.rounded.OpenInBrowser
 import androidx.compose.material.icons.rounded.Share
@@ -33,6 +34,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -69,6 +71,8 @@ fun ArticleScreen(reader: Reader, nav: Nav, id: String) {
   var fullText by remember { mutableStateOf<FullText?>(null) }
   var showFull by remember { mutableStateOf(false) }
   var loadingFull by remember { mutableStateOf(false) }
+  var noting by remember { mutableStateOf(false) }
+  val notes by reader.notes.collectAsState()
   val noText = stringResource(R.string.error_no_article_text)
 
   fun loadFull(force: Boolean = false) {
@@ -109,7 +113,7 @@ fun ArticleScreen(reader: Reader, nav: Nav, id: String) {
       GlassSource(haze) {
         if (a != null) {
           val html = remember(a, fullText, showFull, look) {
-            articleHtml(a, reader.feed(a.feedId)?.displayTitle, if (showFull) fullText else null, look, topInset.value)
+            articleHtml(a, reader.feed(a.feedId)?.displayTitle, if (showFull) fullText else null, look, topInset.value, notes.firstOrNull { it.id == a.id }?.body)
           }
           ArticleWebView(html, a.url)
         }
@@ -133,6 +137,10 @@ fun ArticleScreen(reader: Reader, nav: Nav, id: String) {
                 stringResource(if (showFull) R.string.feed_version else R.string.full_text),
               ) { if (showFull) showFull = false else if (fullText != null) showFull = true else loadFull(force = true) }
             }
+            CapsuleButton(
+              Icons.Rounded.EditNote, stringResource(R.string.note),
+              tint = if (notes.any { it.id == a.id }) look.accent else look.text,
+            ) { noting = true }
             CapsuleButton(
               if (a.starred) Icons.Rounded.Star else Icons.Rounded.StarOutline,
               stringResource(if (a.starred) R.string.unstar else R.string.star),
@@ -159,6 +167,7 @@ fun ArticleScreen(reader: Reader, nav: Nav, id: String) {
       SnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter).padding(bottom = 32.dp))
     }
   }
+  if (noting && a != null) NoteSheet(reader, nav, a) { noting = false }
 }
 
 @SuppressLint("SetJavaScriptEnabled")
@@ -200,7 +209,7 @@ private fun ArticleWebView(html: String, baseUrl: String?) {
 }
 
 /** The article as a page in the palette's colours (the iPhone app's template). */
-private fun articleHtml(article: Article, feedTitle: String?, full: FullText?, look: PerchLook, topInset: Float): String {
+private fun articleHtml(article: Article, feedTitle: String?, full: FullText?, look: PerchLook, topInset: Float, note: String?): String {
   val p = look.palette
   // A page's own headline repeats the title shown above it.
   val content = full?.html?.replaceFirst(Regex("(?is)^\\s*(<[^>]+>\\s*)*?<h1\\b[^>]*>.*?</h1>"), "")
@@ -239,9 +248,11 @@ private fun articleHtml(article: Article, feedTitle: String?, full: FullText?, l
     hr { border: 0; border-top: 1px solid var(--rule); }
     h1 { font-size: 1.4em; line-height: 1.25; } h2, h3, h4 { line-height: 1.3; margin: 1.5em 0 .5em; }
     iframe, form, input, button, object, embed { display: none; }
+    .note { margin-top: 18px; padding: 12px 14px; border-radius: 12px; border-left: 3px solid var(--link); background: var(--code); font-size: 15px; line-height: 1.5; white-space: pre-wrap; }
+    .note .label { display: block; font: 600 11px/1.4 system-ui, sans-serif; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; white-space: normal; }
     </style></head>
     <body>
-    <header><p class="meta">$meta</p><h1 class="title">$heading</h1></header>
+    <header><p class="meta">$meta</p><h1 class="title">$heading</h1>${note?.let { "<div class=\"note\"><span class=\"label\">Note</span>${esc(it)}</div>" } ?: ""}</header>
     <article>$content</article>
     </body></html>
   """.trimIndent()

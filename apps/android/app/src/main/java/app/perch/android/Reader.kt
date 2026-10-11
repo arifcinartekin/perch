@@ -34,6 +34,7 @@ class Reader(
   private val scope: CoroutineScope,
   val device: DeviceSettings,
   val chain: ChainLink,
+  val community: Community,
 ) {
   private val _library = MutableStateFlow(Library())
   val library: StateFlow<Library> = _library.asStateFlow()
@@ -63,6 +64,9 @@ class Reader(
   /** A perch://chain link opened from outside, waiting for the screens to show it. */
   val pendingChainLink = MutableStateFlow<Pair<String, String>?>(null)
 
+  /** A page shared to Perch from another app, to add its feed. */
+  val pendingAddUrl = MutableStateFlow<String?>(null)
+
   val turkish: Boolean get() = Locale.getDefault().language == "tr"
 
   fun start() {
@@ -70,6 +74,7 @@ class Reader(
       chain.prepare()
       _settings.value = backend.settings()
       reloadLibrary()
+      reloadNotes()
       _loaded.value = true
       if (chain.account.value != null) syncChain()
       if (_library.value.feeds.isNotEmpty()) refresh()
@@ -94,6 +99,7 @@ class Reader(
     _settings.value = backend.settings()
     if (result.pulled > 0) {
       reloadLibrary()
+      reloadNotes()
       _articlesChanged.value++
     }
     if (result.newFeedIds.isNotEmpty()) refresh(result.newFeedIds)
@@ -114,6 +120,7 @@ class Reader(
   suspend fun afterChainChange() {
     _settings.value = backend.settings()
     reloadLibrary()
+    reloadNotes()
     _articlesChanged.value++
   }
 
@@ -233,6 +240,64 @@ class Reader(
   suspend fun saveSettings(change: (SyncedSettings) -> SyncedSettings) {
     _settings.value = backend.saveSettings(change)
     changed()
+  }
+
+  // Notes and sharing
+
+  private val _notes = MutableStateFlow<List<app.perch.android.core.Note>>(emptyList())
+  val notes: StateFlow<List<app.perch.android.core.Note>> = _notes.asStateFlow()
+
+  suspend fun reloadNotes() {
+    _notes.value = backend.notes()
+  }
+
+  /** Saves a note; a shared one's public page follows it. */
+  suspend fun saveNote(article: Article, body: String): app.perch.android.core.Note {
+    val note = backend.saveNote(article, feed(article.feedId)?.displayTitle, body)
+    reloadNotes()
+    changed()
+    if (note.sharedUrl != null) scope.launch { runCatching { community.client()?.shareNote(note) } }
+    return note
+  }
+
+  /** Deletes a note, taking its public page down first. */
+  suspend fun deleteNote(id: String) {
+    val note = backend.note(id)
+    if (note?.sharedUrl != null) runCatching { pageClient(note.sharedUrl)?.unshareNote(id) }
+    backend.deleteNote(id)
+    reloadNotes()
+    changed()
+  }
+
+  /** Publishes the note as a public page through the Perch account; returns its address. */
+  suspend fun shareNote(id: String): String {
+    val note = backend.note(id) ?: error("Save the note before sharing it.")
+    val client = community.client() ?: throw IllegalStateException("no-account")
+    val url = client.shareNote(note)
+    backend.setSharedUrl(id, url)
+    reloadNotes()
+    changed()
+    return url
+  }
+
+  suspend fun unshareNote(id: String) {
+    val note = backend.note(id) ?: return
+    val url = note.sharedUrl ?: return
+    (pageClient(url) ?: throw IllegalStateException("other-account")).unshareNote(id)
+    backend.setSharedUrl(id, null)
+    reloadNotes()
+    changed()
+  }
+
+  /** The account a page lives on: the Perch account, when the page is on its server. */
+  private fun pageClient(url: String): app.perch.android.data.ApiClient? {
+    val account = community.account.value ?: return null
+    val host = runCatching { java.net.URI(url).host }.getOrNull()
+    val mine = runCatching { java.net.URI(account.server).host }.getOrNull()
+    // Pages published before accounts moved to account.perch.ws live on app.perch.ws: same server.
+    val official = setOf("app.perch.ws", "account.perch.ws")
+    val same = host == mine || (host in official && mine in official)
+    return if (same) community.client() else null
   }
 
   suspend fun importOpml(data: ByteArray): LocalBackend.ImportResult {
