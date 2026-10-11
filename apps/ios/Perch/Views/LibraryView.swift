@@ -58,10 +58,14 @@ struct LibraryView: View {
           Text("Notes")
           Spacer()
           if !reader.notes.isEmpty {
-            Text("\(reader.notes.count)").foregroundStyle(theme.muted).monospacedDigit()
+            Text("\(reader.notes.count)")
+              .font(.subheadline.monospacedDigit())
+              .foregroundStyle(theme.muted)
           }
         }
       }
+      // The same surface as All Feeds and Starred above it.
+      .listRowBackground(Surface())
     }
 
     ForEach(reader.groups, id: \.category.id) { group in
