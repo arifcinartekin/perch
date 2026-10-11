@@ -49,12 +49,14 @@ page has a report form; server admins handle reports from the account page.
 
 ### Also
 
-- **Starter packs** on an empty library: a few well-known feeds per topic (science, space,
+- **Starter packs and Explore:** on an empty library, and any time from the compass in the
+  top bar (Feeds tab on the iPhone), add a whole pack or single feeds: a few well-known feeds per topic (science, space,
   technology, privacy and security, self-hosting, world news; Turkish packs too), picked by hand
   and listed in [`packages/core/src/starter-packs.ts`](./packages/core/src/starter-packs.ts).
   They ship inside the apps, so choosing one tells no server anything.
 - **Export / import** subscriptions as OPML, or the extension's full JSON backup.
 - **App lock:** a 6-digit PIN in the extension, and a PIN with Face ID or Touch ID on the iPhone.
+- **Six app icons** on the iPhone (Settings → App icon), drawn from the same vector mark.
 - **Recovery codes** instead of password-reset email, saved as a PDF; accounts can be deleted
   from every app.
 

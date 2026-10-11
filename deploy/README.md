@@ -81,8 +81,9 @@ server, add to `.env`:
 PERCH_IMAGE=ghcr.io/arifcinartekin/perch-server
 ```
 
-`update.sh` then pulls the image for the commit it checked out (wait for the "Server image"
-workflow to finish after a push) and prints its digest. The server reports the commit at
+`update.sh` then pulls the image of the newest commit that changes what's in it (the paths in
+`.github/workflows/image.yml`; a docs- or iOS-only push builds no image) and prints its digest.
+After a push that does change it, wait for the "Server image" workflow to finish. The server reports the commit at
 `/api/v1/server`.
 
 ### A demo server for App Review

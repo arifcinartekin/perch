@@ -79,6 +79,11 @@
   oci://ghcr.io/arifcinartekin/perch-server:&lt;commit&gt; \
   --repo arifcinartekin/perch</code></pre>
       <p>
+        The reported commit is the newest one that changes what goes into the server; commits that
+        only touch the apps, the docs or this site build no new image, so it can be older than the
+        repository's latest.
+      </p>
+      <p>
         This proves the image is genuine. It can't prove, from the outside, that the machine
         answering at app.perch.ws is running it: no ordinary server can prove that about itself.
         That's why the design in point 1 matters more, and why we keep as little as possible on the
@@ -133,6 +138,11 @@
       <pre><code>gh attestation verify \
   oci://ghcr.io/arifcinartekin/perch-server:&lt;commit&gt; \
   --repo arifcinartekin/perch</code></pre>
+      <p>
+        Bildirilen commit, sunucunun içeriğini değiştiren en son commit'tir; yalnızca uygulamalara,
+        dokümanlara ya da bu siteye dokunan commit'ler yeni imaj üretmez, bu yüzden deponun en son
+        commit'inden eski olabilir.
+      </p>
       <p>
         Bu, imajın gerçek olduğunu kanıtlar. app.perch.ws'te cevap veren makinenin onu
         çalıştırdığını ise dışarıdan kanıtlayamaz; hiçbir sıradan sunucu bunu kendisi için
