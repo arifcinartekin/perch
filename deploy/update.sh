@@ -18,7 +18,8 @@ if [[ "${1:-}" != --wait-only ]]; then
   # main one; left to Docker it would belong to root and the server couldn't
   # open its database.
   if grep -qE '^COMPOSE_PROFILES=.*demo' "$DIR/deploy/.env" 2>/dev/null; then
-    DEMO_DATA="$(grep -E '^PERCH_DEMO_DATA=' "$DIR/deploy/.env" | cut -d= -f2-)"
+    # (No PERCH_DEMO_DATA line is fine: grep finding nothing mustn't stop the script.)
+    DEMO_DATA="$(grep -E '^PERCH_DEMO_DATA=' "$DIR/deploy/.env" | cut -d= -f2- || true)"
     DEMO_DATA="${DEMO_DATA:-/var/lib/perch-demo}"
     mkdir -p "$DEMO_DATA"
     chown 1000:1000 "$DEMO_DATA"
