@@ -25,7 +25,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "brand": "node scripts/brand.mjs",
-    "starter-packs": "node --experimental-strip-types --no-warnings scripts/starter-packs.ts"
+    "starter-packs": "node --experimental-strip-types --no-warnings scripts/starter-packs.ts",
+    "review-chain": "tsx scripts/review-chain.ts"
   },
   "devDependencies": {
     "@resvg/resvg-js": "^2.6.2",
