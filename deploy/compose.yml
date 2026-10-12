@@ -75,6 +75,9 @@ services:
       PERCH_SYNC_DOMAIN: ${PERCH_SYNC_DOMAIN:-}
       PERCH_DEMO_DOMAIN: ${PERCH_DEMO_DOMAIN:-}
       PERCH_ACCOUNT_DOMAIN: ${PERCH_ACCOUNT_DOMAIN:-}
+      # For the Caddyfile's host matchers, which can't be empty.
+      PERCH_SYNC_HOST: ${PERCH_SYNC_DOMAIN:-sync.invalid}
+      PERCH_DEMO_HOST: ${PERCH_DEMO_DOMAIN:-demo.invalid}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - ../apps/server/relay:/srv/sync:ro # the page a browser sees on the sync domain

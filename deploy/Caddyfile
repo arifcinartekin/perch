@@ -12,13 +12,15 @@
 # no sign-up, just a page saying what the address is.
 # The account address (PERCH_ACCOUNT_DOMAIN, e.g. account.example.com) is the same
 # server; the web app shows the Perch account there instead of the reader.
+# Unset names are left out of this list; the matchers below get a placeholder
+# name instead (PERCH_*_HOST, from compose.yml), since a matcher can't be empty.
 {$PERCH_DOMAIN} {$PERCH_SYNC_DOMAIN} {$PERCH_DEMO_DOMAIN} {$PERCH_ACCOUNT_DOMAIN} {
 	# The demo server (PERCH_DEMO_DOMAIN), a separate personal-mode Perch.
-	@demo host {$PERCH_DEMO_DOMAIN:demo.invalid}
+	@demo host {$PERCH_DEMO_HOST}
 	handle @demo {
 		reverse_proxy perch-demo:8080
 	}
-	@sync host {$PERCH_SYNC_DOMAIN:sync.invalid}
+	@sync host {$PERCH_SYNC_HOST}
 	handle @sync {
 		# /server lets the apps check that this is a relay before joining.
 		@relay path /api/v1/chain /api/v1/chain/* /api/v1/server
