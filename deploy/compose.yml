@@ -17,8 +17,10 @@ services:
     environment:
       PERCH_PUBLIC_URL: https://${PERCH_DOMAIN:?set PERCH_DOMAIN in .env}
       # personal: the server keeps libraries. hub: Perch accounts and shared notes only.
+      # relay: only a sync-chain relay, no accounts.
       PERCH_MODE: ${PERCH_MODE:-personal}
       PERCH_PURGE_LIBRARIES: ${PERCH_PURGE_LIBRARIES:-false}
+      PERCH_PURGE_ACCOUNTS: ${PERCH_PURGE_ACCOUNTS:-false}
       PERCH_SIGNUP: ${PERCH_SIGNUP:-invite}
       PERCH_SIGNUP_POW: ${PERCH_SIGNUP_POW:-0} # proof-of-work bits for signing up; 0 = none
       PERCH_FETCH_INTERVAL_MIN: ${PERCH_FETCH_INTERVAL_MIN:-30}
