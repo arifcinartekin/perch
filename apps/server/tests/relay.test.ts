@@ -2,7 +2,7 @@ import { count as sqlCount } from 'drizzle-orm';
 import { describe, expect, it } from 'vitest';
 import { users } from '../src/db/schema';
 import { createApp, createContext } from '../src/app';
-import { testConfig } from '../src/config';
+import { loadConfig, testConfig } from '../src/config';
 import { setup } from './helpers';
 
 describe('relay mode', () => {
@@ -67,5 +67,11 @@ describe('relay mode', () => {
     );
     expect(count(purged)).toBe(0);
     purged.close();
+  });
+
+  it('runs the housekeeping worker in every mode, so chain retention happens', () => {
+    for (const mode of ['personal', 'hub', 'relay']) {
+      expect(loadConfig({ PERCH_MODE: mode }).worker).toBe(true);
+    }
   });
 });

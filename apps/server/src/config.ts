@@ -117,8 +117,10 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
       .map((h) => h.trim().toLowerCase())
       .filter(Boolean),
     trustProxy: bool(env.PERCH_TRUST_PROXY, false),
-    // A hub fetches no feeds.
-    worker: mode !== 'hub' && bool(env.PERCH_WORKER, true),
+    // Every mode runs it: it fetches the feeds people follow (none on a hub or
+    // a relay) and does the hourly housekeeping — expired sessions, and the
+    // chain retention the privacy policy promises (60 / 90 / 180 days).
+    worker: bool(env.PERCH_WORKER, true),
     webRoot: env.PERCH_WEB_ROOT || undefined,
     email,
     privacyUrl: httpUrl('PERCH_PRIVACY_URL', env.PERCH_PRIVACY_URL),
