@@ -39,7 +39,7 @@ EN:
 >
 > SYNC WITHOUT AN ACCOUNT
 > Start a sync chain and scan its QR code on your other devices: the Perch browser extension,
-> the web reader at app.perch.ws or another iPhone. Everything is encrypted on your devices; the
+> an Android phone or another iPhone. Everything is encrypted on your devices; the
 > relay in between can't read your feeds or what you read.
 >
 > MADE FOR READING
@@ -54,7 +54,7 @@ EN:
 >
 > YOURS
 > Perch is open source. Run your own Perch Server and sync with it, or don't run one at all.
-> A Perch account is only a name for sharing notes, with no email address.
+> No account with us, ever: there's nothing to sign up for.
 
 TR:
 
@@ -67,7 +67,7 @@ TR:
 >
 > HESAPSIZ SENKRON
 > Bir senkron zinciri başlat ve QR kodunu diğer cihazlarında okut: Perch tarayıcı eklentisi,
-> app.perch.ws'teki web okuyucu ya da başka bir iPhone. Her şey cihazlarında şifrelenir; aradaki
+> bir Android telefon ya da başka bir iPhone. Her şey cihazlarında şifrelenir; aradaki
 > aktarıcı akışlarını ya da ne okuduğunu göremez.
 >
 > OKUMAK İÇİN YAPILDI
@@ -82,29 +82,20 @@ TR:
 >
 > SENİN
 > Perch açık kaynaklı. Kendi Perch sunucunu kurup onunla senkron yap ya da hiç sunucu kurma.
-> Perch hesabı yalnızca not paylaşmak için bir ad; e-posta adresi istemez.
+> Bizde hiçbir zaman hesap yok: kaydolunacak bir şey yok.
 
 ### App Privacy (nutrition labels)
 
-Answer **"Yes, we collect data"**, because a Perch account sends a username and shared notes to
-account.perch.ws. Everything else stays on the device or is end-to-end encrypted.
+Answer **"No, we do not collect data from this app."** The label then reads **Data Not
+Collected**.
 
-| Data type (Apple's term)                                                 | Collected                                                         | Linked to the user | Tracking | Purpose           |
-| ------------------------------------------------------------------------ | ----------------------------------------------------------------- | ------------------ | -------- | ----------------- |
-| Contact Info → Name                                                      | No                                                                | —                  | —        | —                 |
-| Contact Info → Email Address                                             | No (account.perch.ws asks for none)                               | —                  | —        | —                 |
-| Identifiers → User ID                                                    | Yes, only with a Perch account or a server account (the username) | Yes                | No       | App Functionality |
-| User Content → Other User Content                                        | Yes, only notes the user shares as public pages                   | Yes                | No       | App Functionality |
-| Usage Data, Diagnostics, Location, Browsing History, Purchases, Contacts | No                                                                | —                  | —        | —                 |
-
-Notes for the form:
-
+- The library, notes and settings stay on the device.
 - Sync chain records leave the device only end-to-end encrypted, with a key the developer never
-  has. Apple's guidance treats data the developer can't read as not collected; if in doubt,
-  disclose "Other User Content — App Functionality, not linked".
-- A server the user connects to themselves (their own Perch Server, or demo.perch.ws) is the
-  user's choice; its operator is responsible for it.
-- Tracking: **No** (no data is used for tracking or shared with data brokers).
+  has, through a relay that keeps no accounts, logs or IP addresses.
+- Perch runs no accounts. A Perch Server the user connects to (their own, a friend's) is run by
+  someone else, who is responsible for it; the demo server exists for App Review only (sign-up
+  closed).
+- No analytics, ads, crash SDKs or tracking. Tracking: **No**.
 
 ### Export compliance (encryption)
 
@@ -117,23 +108,21 @@ developer's declaration.
 
 ### App Review Information
 
-- Sign-in required: **No** (the app works without an account); demo accounts below for the
-  account features.
+- Sign-in required: **No** (the app works without an account); a demo account on demo.perch.ws
+  for "Sync with a Perch Server" and sharing.
 - Contact: Arif Çınar Tekin, contact@perch.ws.
-- Notes (paste, with the passwords filled in only in App Store Connect):
+- Notes (paste; the chain code and password go only into App Store Connect):
 
 > Perch works without any account: add feeds from Feeds → Explore (compass) or the "+" button.
 >
-> Sync chain (no account): Settings → Sync chain → Start a chain. To try joining from a second
-> device, open https://app.perch.ws in any browser → Settings → Sync → Join and enter the code
-> shown on the iPhone (or scan the browser's QR code from the iPhone's Join screen).
+> Sync chain (no account): Settings → Sync chain → Start a chain shows a code and QR code for
+> your other devices. To see joining work, choose Join a chain and enter this test chain's code:
+> [CHAIN CODE]. Its feeds and a note appear in a few seconds.
 >
 > Sync with a Perch Server: Settings → Connect to a Perch Server → demo.perch.ws, then sign in
-> with the demo account below. demo.perch.ws is a test server we run for review;
-> our main server only holds accounts for sharing notes.
->
-> Perch account (sharing notes): Settings → Perch account → Sign in, server account.perch.ws,
-> with the account.perch.ws account below. Then open an article, write a note and choose Share.
+> with the account below. demo.perch.ws is a test server we run for review; Perch itself runs no
+> accounts. The same account works under Settings → Perch account, to share a note as a public
+> page (open an article → Note → Share).
 >
 > Permissions: the camera is used only to scan a sync chain's QR code; Face ID only for the
 > optional app lock (Settings → App lock).
@@ -157,19 +146,10 @@ your browser adds a site's feed" can be added.
 
 **Data safety** (Play Console → App content):
 
-- Does the app collect or share user data? **Yes, collects** (no sharing).
-- Collected, only when the user signs in to a Perch account: **Personal info → User IDs** (the
-  username) and **App activity → Other user-generated content** (notes the user shares as
-  pages). Purpose: App functionality. Optional (the app works without). Not processed
-  ephemerally. Users can request deletion (in the app, Settings → Perch account → Delete
-  account).
-- Sync chain records are end-to-end encrypted on the device; Google's form treats data the
-  developer can't read as not collected. If in doubt, also declare "App activity → Other
-  user-generated content, App functionality, optional".
-- Data is encrypted in transit: **Yes** (HTTPS). Account deletion URL: https://perch.ws/privacy
-  (section "Deleting your data") or in-app.
-- Not collected: location, contacts, photos, files, health, financial info, messages, device
-  IDs, crash logs or diagnostics (the app has no analytics or crash SDK).
+- Does the app collect or share user data? **No.** The library stays on the phone; sync chain
+  records are end-to-end encrypted with a key the developer never has; Perch runs no accounts.
+- Data is encrypted in transit: **Yes** (HTTPS). Account deletion: not applicable (no accounts).
+  A Perch Server the user connects to is run by someone else, under their own policy.
 
 **Permissions**
 
@@ -179,10 +159,10 @@ your browser adds a site's feed" can be added.
 | `CAMERA` (asked when tapping Scan)                   | Only to scan a sync chain's QR code; the picture is read on the device and not kept.                       |
 | Biometric (`USE_BIOMETRIC`, from androidx.biometric) | Optional app lock: open the app with a fingerprint or face.                                                |
 
-**App access** (for Google's review): the app works without signing in. For the Perch account
-features: Settings → Perch account → Sign in, server account.perch.ws, with the review account
-(credentials only in Play Console). Sync chain: Settings → Sync chain → Start a chain; to join
-from a second device open https://app.perch.ws → Settings → Sync → Join.
+**App access** (for Google's review): the app works without signing in. Sync chain: Settings →
+Sync chain → Join a chain with the test chain's code (only in Play Console). Sharing a note as a
+page: Settings → Perch account → Sign in to demo.perch.ws with the review account (only in Play
+Console).
 
 **Release**: Play App Signing on; the upload key lives outside the repository and is read from
 `apps/android/keystore.properties` (see apps/android/README.md). Build the bundle with
@@ -217,8 +197,9 @@ from a second device open https://app.perch.ws → Settings → Sync → Join.
 
 **Data usage disclosures** (Privacy practices tab)
 
-- Collected: **Website content** and **Authentication information** — only when the user turns on
-  sync or signs in to a Perch account, and only to provide that feature.
+- Collected: **Website content** — only when the user turns on a sync chain, and then only end-to-end
+  encrypted (the relay can't read it). **Authentication information** only if the user signs in to
+  a Perch Server of their own, which receives it, not us.
 - Check: not sold to third parties; not used or transferred for purposes unrelated to the
   single purpose; not used to determine creditworthiness or for lending.
 

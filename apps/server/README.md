@@ -1,16 +1,19 @@
 # Perch Server
 
 A self-hostable server for Perch. One process, one SQLite file, no external services (email is
-optional, with your own provider). It runs in one of two modes:
+optional, with your own provider). It runs in one of three modes:
 
 - **`personal`** — it keeps each account's library, fetches the feeds in the background, keeps
   read and starred state, and serves it to every device you sign in on, including the web reader
   over its API. For yourself, a family, or an organisation.
-- **`hub`** — how app.perch.ws runs. It holds Perch accounts (names for sharing notes) and the
-  notes people share, relays sync chains, and serves the web reader, which keeps its library in
-  the browser and fetches feeds through the hub's anonymous proxy. It keeps no libraries.
+- **`hub`** — it holds Perch accounts (names for sharing notes) and the notes people share,
+  relays sync chains, and serves the web reader, which keeps its library in the browser and
+  fetches feeds through the hub's anonymous proxy. It keeps no libraries.
+- **`relay`** — how sync.perch.ws runs: only a relay for sync chains. No accounts, no web app, no
+  proxy; it shows a page saying what the address is. Accounts left from another mode stay until
+  `PERCH_PURGE_ACCOUNTS=true` deletes them.
 
-Either mode can relay sync chains (`PERCH_CHAIN=true`).
+`personal` and `hub` can relay sync chains too (`PERCH_CHAIN=true`).
 
 ## Run it
 
@@ -40,7 +43,7 @@ open http://localhost:5173 — Vite proxies `/api` to the server.
 
 | Variable                    | Default            | Meaning                                                                                                                                                                                                                  |
 | --------------------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `PERCH_MODE`                | `personal`         | `personal`: the server keeps each account's library and fetches its feeds. `hub`: Perch accounts and shared notes only; libraries stay on devices and sync by chain (how app.perch.ws runs). `e2e` is not available yet. |
+| `PERCH_MODE`                | `personal`         | `personal`: the server keeps each account's library and fetches its feeds. `hub`: Perch accounts and shared notes, no libraries. `relay`: only a sync-chain relay. |
 | `PERCH_PURGE_LIBRARIES`     | `false`            | Hub mode: delete the libraries left from personal mode (once, after moving them to a chain).                                                                                                                             |
 | `DATABASE_URL`              | `./data/perch.db`  | SQLite file. The Docker image uses `/data/perch.db`. Postgres support is planned.                                                                                                                                        |
 | `PORT` / `HOST`             | `8080` / `0.0.0.0` | Where to listen.                                                                                                                                                                                                         |
@@ -53,9 +56,10 @@ open http://localhost:5173 — Vite proxies `/api` to the server.
 | `PERCH_EMAIL_KEY`           |                    | At least 32 characters. Email addresses are never stored, only a hash keyed with this; without it the key comes from the database. Never change it.                                                                      |
 | `PERCH_PRIVACY_URL`         |                    | Your privacy policy. Linked from sign-up and shared notes, and shown in apps that read `/server`.                                                                                                                        |
 | `PERCH_TERMS_URL`           |                    | Your terms of use, linked in the same places.                                                                                                                                                                            |
-| `PERCH_ACCOUNT_URL`         |                    | Where Perch accounts are managed when that's its own address (e.g. `https://account.perch.ws`); the web app shows the account there and sends the reader's /account to it.                                               |
+| `PERCH_ACCOUNT_URL`         |                    | Where Perch accounts are managed when that's its own address (e.g. `https://account.example.com`); the web app shows the account there and sends the reader's /account to it.                                               |
 | `PERCH_DISCOURSE_URL`       |                    | A Discourse forum that signs in with Perch accounts (DiscourseConnect at `/discourse/sso`).                                                                                                                              |
 | `PERCH_DISCOURSE_SECRET`    |                    | The secret shared with that forum (at least 16 characters).                                                                                                                                                              |
+| `PERCH_PURGE_ACCOUNTS`      | `false`            | Relay mode: delete accounts, sessions and shared pages left from another mode, once. |
 | `PERCH_FETCH_INTERVAL_MIN`  | `30`               | Minutes between refreshes of a feed (5–1440). Failing feeds back off up to a day.                                                                                                                                        |
 | `PERCH_FETCH_ALLOW_PRIVATE` | `false`            | Allow feeds on private / loopback addresses.                                                                                                                                                                             |
 | `PERCH_FETCH_ALLOW_HOSTS`   |                    | Comma-separated hostnames allowed to resolve to private addresses (e.g. `nas.local`).                                                                                                                                    |
@@ -68,7 +72,7 @@ open http://localhost:5173 — Vite proxies `/api` to the server.
 Whoever runs a server is responsible for it. If other people use yours, you hold their data:
 you are its data controller, and you need your own privacy policy and terms (set
 `PERCH_PRIVACY_URL` and `PERCH_TERMS_URL` so the apps link to them). The policy at perch.ws
-covers only the servers Perch's maintainer runs (app.perch.ws, sync.perch.ws); don't point
+covers only the servers Perch's maintainer runs (sync.perch.ws, demo.perch.ws); don't point
 these settings at it. If you let people share notes, reports reach you at `/admin/reports`, and
 handling them is up to you.
 

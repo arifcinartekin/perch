@@ -6,7 +6,7 @@ itself. The database is a single SQLite file in `/var/lib/perch`.
 ## Before you start
 
 - A VPS with a public IPv4 address (2 vCPU and 2–4 GB RAM is plenty) and SSH access.
-- A DNS `A` record for your domain (e.g. `app.perch.ws`) pointing at it. On Cloudflare, leave it
+- A DNS `A` record for your domain (e.g. `perch.example.com`) pointing at it. On Cloudflare, leave it
   **DNS only** (grey cloud) until the first certificate is issued; if you then turn the proxy
   on, set SSL/TLS to **Full (strict)**.
 
@@ -15,23 +15,39 @@ itself. The database is a single SQLite file in `/var/lib/perch`.
 ```bash
 ssh ubuntu@<server-ip>
 curl -fsSL https://raw.githubusercontent.com/arifcinartekin/perch/main/deploy/setup.sh \
-  | sudo bash -s -- app.perch.ws
+  | sudo bash -s -- perch.example.com
 ```
 
 The script installs Docker, opens only ports 22, 80 and 443, turns on automatic security
 updates, switches SSH to keys only (if a key is installed), checks Perch out to `/opt/perch`,
 builds and starts it, and schedules a daily backup. Running it again is safe.
 
-Add a second name, e.g. `… | sudo bash -s -- app.perch.ws sync.perch.ws`, to also relay sync
+Add a second name, e.g. `… | sudo bash -s -- perch.example.com sync.example.com`, to also relay sync
 chains (sync without an account) there; point its DNS at the same server first. Running the
 script again with it turns that on for an existing install. That name answers only the chain
-API: no web app and no sign-in there, and a browser gets a short page (`deploy/sync/`) saying
+API: no web app and no sign-in there, and a browser gets a short page (`apps/server/relay/`) saying
 what the address is.
 
-Then open `https://app.perch.ws` straight away and create the first account; it becomes the
+Then open `https://perch.example.com` straight away and create the first account; it becomes the
 admin. Sign-up is by invite after that (`PERCH_SIGNUP` in `/opt/perch/deploy/.env`).
 
-### A hub, like app.perch.ws
+### A relay only, like sync.perch.ws
+
+This is how Perch's own server runs: nothing but a relay for sync chains. No accounts, no web
+app, no feed proxy; it stores encrypted records it can't read and shows a page saying what the
+address is. Set it up with the relay's name as the domain, then in `.env`:
+
+```sh
+PERCH_DOMAIN=sync.perch.ws
+PERCH_MODE=relay
+```
+
+(and no `PERCH_SYNC_DOMAIN`). A server switched to relay mode keeps the accounts it had until
+you start it once with `PERCH_PURGE_ACCOUNTS=true`; that deletes them with their sessions and
+shared pages and compacts the database. Old backups still hold them for 14 days, or delete them
+yourself (`/var/lib/perch/backups`).
+
+### A hub
 
 `PERCH_MODE=hub` makes the server hold Perch accounts and shared notes but no libraries: readers
 keep theirs on their devices and sync them through a chain. With `PERCH_CHAIN=true` the same
@@ -40,38 +56,37 @@ start it once with `PERCH_PURGE_LIBRARIES=true` (move yours to a chain first).
 
 ### Perch accounts at their own address
 
-app.perch.ws is the reader; Perch accounts (names for sharing notes) are managed at
-account.perch.ws, which is the same server under another name. Point a DNS record at the machine
-(grey cloud), then add to `.env` and run `update.sh`:
+A hub can manage its Perch accounts at a second name, e.g. the reader at `perch.example.com` and
+accounts at `account.example.com` (the same server). Point a DNS record at the machine (grey
+cloud), then add to `.env` and run `update.sh`:
 
 ```sh
-PERCH_ACCOUNT_DOMAIN=account.perch.ws
-PERCH_ACCOUNT_URL=https://account.perch.ws
+PERCH_ACCOUNT_DOMAIN=account.example.com
+PERCH_ACCOUNT_URL=https://account.example.com
 ```
 
 The web app then shows the account (sign-up, recovery code, shared notes, reports) on that
-address, and the reader's /account goes there. Readers anywhere (app.perch.ws, the extension, the
-iPhone, someone's own reader) sign in to it with a token kept on the device; no cookie is shared
-across addresses.
+address, and the reader's /account goes there. Readers anywhere (yours, the extension, the
+phones) sign in to it with a token kept on the device; no cookie is shared across addresses.
 
 ### A forum that signs in with Perch accounts (Discourse)
 
-community.perch.ws is a Discourse forum on its own server. People sign in to it with their Perch
-account (DiscourseConnect), so the forum never asks for an email address: it gets the username
-and a fixed account id, after the person confirms on account.perch.ws. Discourse requires an email
+A Discourse forum (e.g. `community.example.com`) can sign people in with their Perch
+account on your hub (DiscourseConnect), so it never asks for an email address: it gets the username
+and a fixed account id, after the person confirms on your account page. Discourse requires an email
 field, so it gets `<account id>@users.perch.invalid`, which can't receive mail.
 
 1. Make a shared secret: `openssl rand -hex 32`.
 2. On the Perch server, add to `.env` and run `update.sh`:
 
    ```sh
-   PERCH_DISCOURSE_URL=https://community.perch.ws
+   PERCH_DISCOURSE_URL=https://community.example.com
    PERCH_DISCOURSE_SECRET=<the secret>
    ```
 
 3. In Discourse (Admin → Settings), set:
    - `enable discourse connect`: on
-   - `discourse connect url`: `https://account.perch.ws/discourse/sso`
+   - `discourse connect url`: `https://<your account address>/discourse/sso`
    - `discourse connect secret`: the same secret
    - `auth overrides email`, `auth overrides username`: on
    - `disable emails`: yes (nothing could be delivered anyway)
@@ -84,8 +99,8 @@ an admin does. Discourse also keeps IP addresses for abuse prevention; review it
 
 ### Open sign-up without email
 
-To let anyone sign up, with a proof of work instead of a CAPTCHA or an email check (this is how
-app.perch.ws runs), add to `.env` and run `update.sh`:
+To let anyone sign up, with a proof of work instead of a CAPTCHA or an email check, add to `.env`
+and run `update.sh`:
 
 ```sh
 PERCH_SIGNUP=open
@@ -132,10 +147,10 @@ After a push that does change it, wait for the "Server image" workflow to finish
 
 ### A demo server for App Review
 
-App Review tries every button, "Sync with a Perch Server" included, which a hub refuses. A second,
-separate server in personal mode gives reviewers (and anyone curious) something to connect to:
+App Review tries every button, "Sync with a Perch Server" included, which a relay refuses. A
+second, separate server in personal mode gives reviewers something to connect to:
 
-1. Point a DNS record at the machine, e.g. `demo.perch.ws` (grey cloud, like app.perch.ws).
+1. Point a DNS record at the machine, e.g. `demo.perch.ws` (grey cloud).
 2. Add to `.env` and run `update.sh`:
 
    ```sh
@@ -154,9 +169,9 @@ policy says so. To start it over: stop it, delete that folder, start it again.
 ### Policies
 
 The sign-up form, shared notes and the apps link to the privacy policy and terms when they're
-set. They are the operator's own: for app.perch.ws that's perch.ws, and anyone else running this
-needs their own (see [the server README](../apps/server/README.md#running-it-for-other-people)).
-For app.perch.ws:
+set. They are the operator's own: for Perch's servers that's perch.ws, and anyone else running
+this needs their own (see [the server README](../apps/server/README.md#running-it-for-other-people)).
+For Perch's servers:
 
 ```sh
 PERCH_PRIVACY_URL=https://perch.ws/privacy

@@ -4,7 +4,7 @@ A native SwiftUI feed reader. Like the extension it needs no account: it opens s
 empty library, you add feeds, and the phone fetches them itself. Put the phone's library in a
 sync chain with your other devices (no account), or connect it to a
 [Perch Server](../server/README.md) of your own under Settings → Sync. A **Perch account**
-(app.perch.ws by default) is separate: it's only your name for sharing notes. iOS 26 or later,
+(on a Perch Server someone runs) is separate: it's only a name for sharing notes as pages. iOS 26 or later,
 so the tab bar, toolbars and sheets are Liquid Glass.
 
 - **Without a server:** feeds, categories, read and starred articles and settings live on the

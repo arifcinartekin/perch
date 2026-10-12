@@ -1,7 +1,7 @@
 # Perch
 
-**A calm, private feed reader — in your browser, on your iPhone and on the web. Local by
-default, synced if you want, and never watching what you read.**
+**A calm, private feed reader — in your browser, on iPhone and on Android. Local by default,
+synced if you want, and never watching what you read.**
 
 Perch reads RSS, Atom and JSON feeds. It has no telemetry, no ads and no trackers, and it needs no
 account: your subscriptions, categories, read and starred articles, notes and settings live on
@@ -10,8 +10,8 @@ your device. It comes as:
 - **A browser extension** (Chrome, Edge, Brave, Firefox) with a toolbar popup that finds the
   feeds on the page you're on, and a full-screen reader.
 - **An iPhone and iPad app** with widgets, which fetches feeds on the phone itself.
-- **A web reader** at [app.perch.ws](https://app.perch.ws) (or on any Perch Server), which keeps
-  its library in your browser too.
+- **An Android app**, native too, fetching feeds on the phone.
+- **A web reader** on any Perch Server you run, which keeps its library in your browser too.
 
 The reader is calm and uncluttered — ink, cream and ember on frosted glass, with a sidebar,
 collapsible categories, unread counts and one-column reading. Full articles load by themselves
@@ -35,17 +35,18 @@ Perch keeps these apart on purpose, so you can tell exactly what goes where.
      other, sealed like everything else.
    - **Your own Perch Server.** Self-hosters and organisations can run a server that keeps each
      account's library and fetches its feeds ([apps/server](./apps/server/README.md)).
-3. **A Perch account is only a name for sharing.** On a hub such as account.perch.ws it's a
-   username, a password and a recovery code — no email. You need it only to **share a note** as a
-   public page; it doesn't sync anything. Passwords never leave the device: Perch derives a key
-   with Argon2id and sends only that.
+3. **A Perch account is only a name for sharing,** on a Perch Server someone runs (Perch itself
+   hosts none): a username, a password and a recovery code — no email. You need it only to
+   **share a note** as a public page; it doesn't sync anything. Passwords never leave the device:
+   Perch derives a key with Argon2id and sends only that.
 
 ### Notes and sharing
 
 Write a markdown note on any article. Notes are private and sync with the rest of your library.
-**Share** one and Perch publishes a copy at a random address (`app.perch.ws/shared/…`) under
-your @username; editing the note updates the page, deleting it takes the page down. Every shared
-page has a report form; server admins handle reports from the account page.
+Pass one on as text from any app. Signed in to a Perch Server, **Share** publishes a copy at a
+random address (`<server>/shared/…`) under your @username; editing the note updates the page,
+deleting it takes the page down. Every shared page has a report form; server admins handle
+reports from the account page.
 
 ### Also
 
@@ -55,16 +56,18 @@ page has a report form; server admins handle reports from the account page.
   and listed in [`packages/core/src/starter-packs.ts`](./packages/core/src/starter-packs.ts).
   They ship inside the apps, so choosing one tells no server anything.
 - **Export / import** subscriptions as OPML, or the extension's full JSON backup.
-- **App lock:** a 6-digit PIN in the extension, and a PIN with Face ID or Touch ID on the iPhone.
+- **App lock:** a 6-digit PIN in the extension, and a PIN with Face ID, Touch ID or a fingerprint
+  on the phones.
 - **Six app icons** on the iPhone (Settings → App icon), drawn from the same vector mark.
 - **Recovery codes** instead of password-reset email, saved as a PDF; accounts can be deleted
   from every app.
 
 ### Privacy you can check
 
-The official services (app.perch.ws, account.perch.ws, sync.perch.ws, perch.ws) are run by one person, without
-commercial purpose, and keep as little as possible: no email addresses, no access logs, no IP
-addresses, no libraries. Server images are built and attested by this repository's CI, and the
+The official services are run by one person, without commercial purpose, and are deliberately
+small: this site and **sync.perch.ws**, a relay for sync chains that stores only records it
+can't read — no accounts, no email addresses, no access logs, no IP addresses, no libraries.
+Questions and ideas go to [GitHub Discussions](https://github.com/arifcinartekin/perch/discussions). Server images are built and attested by this repository's CI, and the
 server reports the commit it runs — see [perch.ws/transparency](https://perch.ws/transparency),
 the [privacy policy](https://perch.ws/privacy) and the [terms](https://perch.ws/terms). Servers
 run by anyone else are their operators' responsibility.
@@ -214,8 +217,8 @@ apps/
 │                          stand-in for the WebExtension API, src/local/) and the Perch account
 │                          at /account. On a personal server: @perch/reader over the server API.
 └─ server/                 Perch Server: self-hostable. `personal` mode keeps libraries and
-   │                       fetches feeds; `hub` mode (app.perch.ws, account.perch.ws) holds Perch accounts and
-   │                       shared notes only.
+   │                       fetches feeds; `hub` mode holds Perch accounts and shared notes only;
+   │                       `relay` mode is only a sync-chain relay (how sync.perch.ws runs).
    ├─ src/auth/            accounts, sessions, devices, invites, recovery codes, the sign-up
    │                       proof of work, optional email (codes; addresses kept only as hashes).
    ├─ src/feeds/           SSRF-safe fetcher, background worker, subscribe-from-any-URL.

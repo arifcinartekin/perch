@@ -19,8 +19,8 @@ What it does, as the iPhone app does:
 
 - Sync chains (end-to-end encrypted, no account), byte-compatible with the extension and the
   iPhone app; join by code, QR (CameraX + ZXing, no Play services) or a `perch://chain` link.
-- A Perch account (account.perch.ws or any Perch Server) for sharing notes; Argon2id, proof of
-  work and recovery codes as in packages/core.
+- A Perch account on a Perch Server someone runs, for sharing notes as pages; Argon2id, proof
+  of work and recovery codes as in packages/core. Any note can be shared as text.
 - Notes, app lock (PIN with fingerprint or face), background refresh, OPML, Share → Perch.
 
 Not yet: syncing with your own Perch Server's library (personal mode), widgets, background

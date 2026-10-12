@@ -6,7 +6,7 @@
     <title>Perch — a calm, private feed reader</title>
     <meta
       name="description"
-      content="Perch is a privacy-first reader for RSS, Atom and JSON feeds — in your browser, on your iPhone and on the web. Local by default, synced if you want."
+      content="Perch is a privacy-first reader for RSS, Atom and JSON feeds — in your browser, on iPhone and on Android. Local by default, synced if you want."
     />
     <meta name="color-scheme" content="light dark" />
     <meta name="theme-color" content="#f7f5f0" media="(prefers-color-scheme: light)" />
@@ -16,7 +16,7 @@
     <meta property="og:title" content="Perch — a calm, private feed reader" />
     <meta
       property="og:description"
-      content="RSS, Atom and JSON feeds in your browser, on your iPhone and on the web. Local by default, synced if you want."
+      content="RSS, Atom and JSON feeds in your browser, on iPhone and on Android. Local by default, synced if you want."
     />
     <meta property="og:image" content="https://perch.ws/assets/icon.png" />
     <meta property="og:url" content="https://perch.ws/" />
@@ -52,9 +52,7 @@
           >
             <svg viewBox="0 0 16 16" aria-hidden="true"><use href="#gh" /></svg>
           </a>
-          <a class="btn btn-primary btn-sm" href="https://app.perch.ws" data-i18n="nav.open"
-            >Open app</a
-          >
+          <a class="btn btn-primary btn-sm" href="#get" data-i18n="nav.open">Get Perch</a>
         </div>
       </nav>
     </header>
@@ -69,13 +67,13 @@
             <span class="accent" data-i18n="hero.title2">And only yours.</span>
           </h1>
           <p class="lede reveal" data-i18n="hero.lede">
-            Perch is a privacy-first reader for RSS, Atom and JSON feeds — in your browser, on your
-            iPhone and on the web. Local by default, synced if you want, and never watching what you
+            Perch is a privacy-first reader for RSS, Atom and JSON feeds — in your browser, on
+            iPhone and on Android. Local by default, synced if you want, and never watching what you
             read.
           </p>
           <div class="cta reveal">
-            <a class="btn btn-primary" href="https://app.perch.ws">
-              <span data-i18n="hero.open">Open the web app</span>
+            <a class="btn btn-primary" href="#get">
+              <span data-i18n="hero.open">Get Perch</span>
               <svg viewBox="0 0 20 20" aria-hidden="true"><use href="#arrow" /></svg>
             </a>
             <a class="btn btn-glass" href="https://github.com/arifcinartekin/perch">
@@ -86,7 +84,7 @@
           <ul class="platforms reveal" aria-label="Platforms">
             <li data-i18n="hero.p1">Chrome, Edge, Brave & Firefox</li>
             <li data-i18n="hero.p2">iPhone & iPad</li>
-            <li data-i18n="hero.p3">Web, at app.perch.ws</li>
+            <li data-i18n="hero.p3">Android</li>
           </ul>
           <p class="soon reveal" data-i18n="hero.soon">
             Store releases are on their way; the code is ready to build today.
@@ -98,7 +96,7 @@
           <div class="window glass">
             <div class="window-bar">
               <span></span><span></span><span></span>
-              <div class="url">app.perch.ws</div>
+              <div class="url">Perch</div>
             </div>
             <div class="window-body">
               <aside class="mock-side">
@@ -249,8 +247,8 @@
             ></span>
             <h3 data-i18n="f8.t">Locked when you want</h3>
             <p data-i18n="f8.d">
-              A PIN in the extension, and a PIN with Face ID on the iPhone, so a passer-by can’t
-              open your reading.
+              A PIN in the extension, and a PIN with Face ID or fingerprint on the phones, so a
+              passer-by can’t open your reading.
             </p>
           </article>
           <article class="card glass reveal">
@@ -289,7 +287,7 @@
               <div>
                 <h3 data-i18n="s2.t">Scan or type the code</h3>
                 <p data-i18n="s2.d">
-                  Scan the QR code in the Perch app on your iPhone, or enter the 28-character code
+                  Scan the QR code with the Perch app on your phone, or enter the 28-character code
                   in another browser.
                 </p>
               </div>
@@ -396,8 +394,7 @@
           <ul class="checks">
             <li data-i18n="pv1">No analytics, no ads, no trackers — this page included.</li>
             <li data-i18n="pv2">
-              Your password never leaves your device: Perch derives a key from it with Argon2id and
-              sends only that.
+              We run no accounts: nothing to sign up for, no username, no password, no email.
             </li>
             <li data-i18n="pv3">
               Sync chains are end-to-end encrypted; even feed addresses are hidden from the relay.
@@ -408,18 +405,63 @@
             <li data-i18n="pv5">Articles render with scripts switched off.</li>
             <li data-i18n="pv6">
               perch.ws is served by Cloudflare Pages, which handles each visit like any web host.
-              The app (app.perch.ws) and the sync relay (sync.perch.ws) don’t go through Cloudflare:
-              your devices talk straight to our server, which keeps no access logs.
+              The sync relay (sync.perch.ws) doesn’t go through Cloudflare: your devices talk
+              straight to it, and it keeps no access logs.
             </li>
             <li data-i18n="pv7">
-              app.perch.ws keeps no libraries and no email addresses: a stolen disk would hold
-              usernames and notes people chose to share.
+              The relay is all we run, and it holds only encrypted records: a stolen disk would hold
+              nothing anyone can read, and nothing that says whose it is.
             </li>
             <li data-i18n="pv8">
               Our server images are built and attested in public; the server tells you which commit
               it runs. See perch.ws/transparency.
             </li>
           </ul>
+        </div>
+      </section>
+
+      <!-- Get Perch -->
+      <section id="get" class="section">
+        <div class="section-head reveal">
+          <p class="eyebrow" data-i18n="get.eyebrow">Get Perch</p>
+          <h2 data-i18n="get.title">Free, on every device you read on.</h2>
+        </div>
+        <div class="grid">
+          <article class="card glass reveal">
+            <h3 data-i18n="get.ext.t">Chrome, Edge & Brave</h3>
+            <p data-i18n="get.soon">Coming to the store soon.</p>
+          </article>
+          <article class="card glass reveal">
+            <h3>Firefox</h3>
+            <p data-i18n="get.soon">Coming to the store soon.</p>
+          </article>
+          <article class="card glass reveal">
+            <h3 data-i18n="get.ios.t">iPhone & iPad</h3>
+            <p data-i18n="get.soon">Coming to the store soon.</p>
+          </article>
+          <article class="card glass reveal">
+            <h3>Android</h3>
+            <p data-i18n="get.soon">Coming to the store soon.</p>
+          </article>
+          <article class="card glass reveal">
+            <h3 data-i18n="get.self.t">Your own server</h3>
+            <p data-i18n="get.self.d">
+              Run Perch Server for a web reader, accounts and shared notes of your own: one Docker
+              command, from the repository.
+            </p>
+            <a
+              href="https://github.com/arifcinartekin/perch/tree/main/deploy"
+              data-i18n="get.self.a"
+              >Setup guide</a
+            >
+          </article>
+          <article class="card glass reveal">
+            <h3 data-i18n="get.talk.t">Questions and ideas</h3>
+            <p data-i18n="get.talk.d">Ask, suggest and report bugs in the open, on GitHub.</p>
+            <a href="https://github.com/arifcinartekin/perch/discussions" data-i18n="get.talk.a"
+              >Discussions</a
+            >
+          </article>
         </div>
       </section>
 
@@ -430,8 +472,8 @@
         </svg>
         <h2 data-i18n="end.title">Find a quiet place to read.</h2>
         <div class="cta center">
-          <a class="btn btn-primary" href="https://app.perch.ws">
-            <span data-i18n="hero.open">Open the web app</span>
+          <a class="btn btn-primary" href="#get">
+            <span data-i18n="hero.open">Get Perch</span>
             <svg viewBox="0 0 20 20" aria-hidden="true"><use href="#arrow" /></svg>
           </a>
           <a class="btn btn-glass" href="https://github.com/arifcinartekin/perch">
@@ -449,7 +491,9 @@
         </svg>
         <p data-i18n="footer.line">© 2026 Perch contributors · MIT License</p>
         <nav aria-label="Footer">
-          <a href="https://app.perch.ws" data-i18n="footer.app">Web app</a>
+          <a href="https://github.com/arifcinartekin/perch/discussions" data-i18n="footer.app"
+            >Community</a
+          >
           <a href="/privacy" data-i18n="footer.privacy">Privacy</a>
           <a href="/terms" data-i18n="footer.terms">Terms</a>
           <a href="/transparency" data-i18n="footer.transparency">Transparency</a>

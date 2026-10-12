@@ -48,28 +48,25 @@
          =================================================================== -->
     <main class="legal" data-lang="en">
       <h1>Privacy policy</h1>
-      <p class="updated">Last updated 11 October 2026 · <a href="/terms">Terms of use</a></p>
+      <p class="updated">Last updated 12 October 2026 · <a href="/terms">Terms of use</a></p>
 
       <div class="summary glass">
         <strong>The short version</strong>
         <ul>
           <li>
             Perch has no analytics, no ads, no trackers and no crash-reporting SDKs — in the apps,
-            the extension, the web app or this site.
+            the extension or this site.
+          </li>
+          <li>Your feeds, reading and notes stay on your devices. We never see them.</li>
+          <li>
+            We run no accounts: there is nothing to sign up for, and we hold no usernames, passwords
+            or email addresses.
           </li>
           <li>
-            Without an account, your feeds, reading and notes stay on your device. We never see
-            them.
+            The only server we run is a relay for sync chains. It stores encrypted records it cannot
+            read, and keeps no access logs.
           </li>
-          <li>Sync chains are end-to-end encrypted. Our relay stores data it cannot read.</li>
-          <li>
-            A Perch account on account.perch.ws is only a name for sharing notes. The server keeps
-            no feeds, no reading and no private notes.
-          </li>
-          <li>
-            We don't ask for an email address, keep access logs or store IP addresses. We don't sell
-            or share anything.
-          </li>
+          <li>We don't sell or share anything.</li>
           <li>
             Perch is open source. Everything here can be checked in
             <a href="https://github.com/arifcinartekin/perch">the code</a>.
@@ -85,15 +82,13 @@
       </p>
       <ul>
         <li>
-          <strong>Our services:</strong> perch.ws, app.perch.ws (the web reader), account.perch.ws
-          (Perch accounts), sync.perch.ws (the sync relay) and community.perch.ws (the forum). We
-          are the data controller for these.
+          <strong>Our services:</strong> this site (perch.ws) and sync.perch.ws, the relay for sync
+          chains. We are the data controller for these.
         </li>
-
         <li>
-          <strong>demo.perch.ws</strong>, a separate test server for App Review and anyone trying
-          “Sync with a Perch Server”. Unlike app.perch.ws it keeps the library of each account on
-          it, in plain text, so don't use it for real reading; it may be reset at any time.
+          <strong>demo.perch.ws</strong>, a test server for App Review and anyone trying “Sync with
+          a Perch Server”. Sign-up there is closed; it keeps the test account's library in plain
+          text and may be reset at any time.
         </li>
         <li>
           <strong>The apps we publish</strong> in the App Store, Google Play and the browser
@@ -102,17 +97,18 @@
       </ul>
       <p>
         It does <strong>not</strong> cover Perch Servers or sync relays run by other people, or
-        builds of Perch published by others. If you sign in to someone else's server, its operator
-        is the data controller and their own policy applies. We have no access to those servers and
-        can't see, change or delete anything on them. The apps show which server you're connected
-        to, and that server's own policy when it has published one.
+        builds of Perch published by others. If you connect to someone else's server (to sync your
+        library, or to sign in for sharing notes), its operator is the data controller and their own
+        policy applies. We have no access to those servers and can't see, change or delete anything
+        on them. The apps show which server you're connected to, and its policy when it has
+        published one.
       </p>
       <p>
-        Questions, requests and complaints about our services:
+        Questions, requests and complaints:
         <a href="mailto:contact@perch.ws">contact@perch.ws</a>.
       </p>
 
-      <h2>Using Perch without an account</h2>
+      <h2>On your devices</h2>
       <p>
         The browser extension and the iPhone and Android apps work without any account. Your
         subscriptions, categories, read and starred articles, settings and notes are stored only on
@@ -145,20 +141,14 @@
         anything.
       </p>
       <p>
+        Sharing a note “as text” hands it to your phone's share sheet or clipboard; where it goes
+        from there is up to you. Public pages for notes exist only on Perch Servers that other
+        people run.
+      </p>
+      <p>
         The extension asks for no site access when installed. It asks for one site at a time when
         you add a feed from it, or for all sites only if you turn on automatic feed discovery. It
         reads a page only when you open Perch on it, and only the feed links the page names.
-      </p>
-
-      <h2>The web reader (app.perch.ws)</h2>
-      <p>
-        The reader at app.perch.ws works like the extension: your subscriptions, reading and notes
-        are stored in your browser, and a sync chain links it to your other devices. A web page
-        isn't allowed to fetch other sites itself, so it asks our server to fetch feeds and article
-        pages for it. These requests carry no account or cookie, and the server keeps no record of
-        who asked. It keeps each fetched page for 10 minutes in a cache shared by everyone, so a
-        popular feed is fetched once: the server can tell which feeds are popular, not who reads
-        them. Images inside articles still load straight from the publisher.
       </p>
 
       <h2>Sync chains (sync.perch.ws)</h2>
@@ -174,123 +164,19 @@
       </ul>
       <p>
         We can see how many records a chain has, how big they are and when they change. We cannot
-        see what they contain. Read state is forgotten after 60 days, deleted items after 90 days,
-        and a chain no device has used for 180 days is deleted with everything in it. You can delete
-        a chain at any time from Settings → Sync.
-      </p>
-
-      <h2>A Perch account on account.perch.ws</h2>
-      <p>
-        A Perch account is your name for sharing notes as public pages. It isn't needed to read, and
-        it doesn't sync your library: your feeds, what you read and your notes stay on your devices
-        (and in your sync chain, encrypted). The server keeps only this:
-      </p>
-      <div class="table-wrap">
-        <table>
-          <tr>
-            <th>What</th>
-            <th>Why</th>
-          </tr>
-          <tr>
-            <td>Username and display name</td>
-            <td>To sign in, and to sign your shared notes (as @username).</td>
-          </tr>
-          <tr>
-            <td>A hash of your recovery code</td>
-            <td>
-              To let you set a new password if you forget yours. The code is made on your device and
-              shown to you once; we keep only a hash of it.
-            </td>
-          </tr>
-          <tr>
-            <td>A hash of a key derived from your password</td>
-            <td>
-              To check your password. Your password never leaves your device: the app derives a key
-              from it (Argon2id) and the server stores only a hash of that key.
-            </td>
-          </tr>
-          <tr>
-            <td>Signed-in devices: a name, when it signed in, when it was last seen</td>
-            <td>
-              So you can see and sign out your devices. The name is a generic label the app sends,
-              such as “Perch on iPhone” or “Web · MacIntel”. Sessions expire after 180 days unused.
-            </td>
-          </tr>
-          <tr>
-            <td>The notes you share</td>
-            <td>
-              To show them at their public address. Only the notes you choose to share, until you
-              stop sharing or delete them.
-            </td>
-          </tr>
-        </table>
-      </div>
-
-      <h2>Shared notes</h2>
-      <p>
-        Notes are private. When you share one, Perch publishes a copy at a random address
-        (app.perch.ws/shared/…) that anyone with the link can read. The page shows your note, the
-        article's title, link and source, your @username and the dates. It asks search engines not
-        to index it, but anyone who has the link can copy it. Editing the note updates the page;
-        deleting the note or choosing “Stop sharing” removes it.
-      </p>
-      <p>
-        Each shared page has a report form. A report stores the reason, what you write and, only if
-        you give it, a way to reach you. We use reports only to review the page, and delete the
-        contact address once the report is dealt with.
-      </p>
-
-      <h2>The forum (community.perch.ws)</h2>
-      <p>
-        The forum runs Discourse on a server of ours. You sign in to it with your Perch account: the
-        forum sends you to account.perch.ws, you confirm, and it receives your username and your
-        account's fixed id, nothing else. Discourse needs an email field, so it gets an address
-        under <code>users.perch.invalid</code> that can't receive mail; the forum never sends email.
-      </p>
-      <p>
-        What you post there is public. The forum keeps your posts, likes and profile, and, like any
-        Discourse, the IP addresses you use, to fight spam and abuse. Deleting your Perch account
-        doesn't delete your forum account or posts: delete them in the forum (your profile →
-        Preferences → Delete my account) or ask us at
-        <a href="mailto:contact@perch.ws">contact@perch.ws</a>.
-      </p>
-
-      <h2>No email</h2>
-      <p>
-        account.perch.ws doesn't ask for an email address and never sends email. A forgotten
-        password is replaced with your recovery code. We have no way to write to you, so there are
-        no newsletters, announcements or reminders.
-      </p>
-      <p>
-        Instead of an email check or a CAPTCHA, signing up asks your device for a few seconds of
-        computation (a “proof of work”). It sends nothing about you; it just makes creating accounts
-        in bulk expensive.
-      </p>
-      <p>
-        Perch Servers run by other people can be set up to send email for sign-up and password
-        reset. That's their choice and their responsibility.
+        see what they contain, and nothing ties a chain to a person. Read state is forgotten after
+        60 days, deleted items after 90 days, and a chain no device has used for 180 days is deleted
+        with everything in it. You can delete a chain at any time from Settings → Sync.
       </p>
 
       <h2>If someone took our server</h2>
       <p>
-        We try to keep as little as possible, so that a stolen disk or a leaked backup says little
-        about you. Here is exactly what it would contain:
+        We keep as little as possible, so that a stolen disk or a leaked backup says nothing about
+        you. The relay holds only encrypted chain records: without your chain code they can't be
+        read, and there are no accounts, names, email addresses or IP addresses to link them to
+        anyone. The relay also sends no code to your devices: the apps come from the stores, so a
+        compromised relay can't take your chain code. At worst it could stop passing records on.
       </p>
-      <ul>
-        <li>
-          <strong>Sync chains:</strong> only encrypted data. Without your chain code it can't be
-          read.
-        </li>
-        <li><strong>Email addresses:</strong> none — we never ask for them.</li>
-        <li>
-          <strong>Passwords and recovery codes:</strong> none — only hashes (of a key derived from
-          the password, and of the code).
-        </li>
-        <li>
-          <strong>Accounts on account.perch.ws:</strong> usernames, signed-in device names, and the
-          notes people chose to share, which are public anyway. No feeds, reading or private notes.
-        </li>
-      </ul>
       <p>
         Deleted data is overwritten in the database rather than left on disk, and is gone from
         backups within 14 days. How to check which code our server runs is on the
@@ -299,46 +185,43 @@
 
       <h2>What we don't collect</h2>
       <ul>
+        <li>No accounts, usernames, passwords or email addresses.</li>
         <li>No analytics, telemetry, usage statistics or A/B tests.</li>
         <li>No advertising, ad identifiers or tracking pixels.</li>
         <li>No third-party SDKs for crash reporting, marketing or anything else.</li>
-        <li>No access logs: the web server writes no record of requests.</li>
+        <li>No access logs: the relay writes no record of requests.</li>
         <li>
-          No stored IP addresses. To stop abuse (password guessing, sign-up floods), the server
-          counts recent requests per IP address in memory. Those counters vanish within an hour, or
-          when the server restarts, and are never written to disk.
+          No stored IP addresses. Your device's address reaches the relay, as with any connection,
+          but it isn't written anywhere.
         </li>
-        <li>No reading history beyond the read and starred flags above.</li>
-        <li>No location, contacts, photos, camera or microphone.</li>
+        <li>No location, contacts, photos, camera recordings or microphone.</li>
         <li>
           We don't sell or rent data, don't share it with advertisers or data brokers, and don't use
           it to train AI models.
         </li>
       </ul>
-      <p>
-        The server's own output contains start-up messages and error messages; these don't include
-        IP addresses or what you read.
-      </p>
 
       <h2>Cookies and local storage</h2>
       <p>
-        account.perch.ws sets one cookie when you sign in there: your session, HTTP-only and sent
-        only to account.perch.ws. The reader at app.perch.ws sets none; it keeps your Perch
-        account's sign-in in your browser's storage, like the extension. There are no other cookies,
-        so there is no cookie banner. This site (perch.ws) sets no cookies; it remembers your
-        language choice in your browser's local storage, which never leaves your device.
+        We set no cookies anywhere, so there is no cookie banner. This site remembers your language
+        choice in your browser's local storage, which never leaves your device.
       </p>
 
       <h2>Who else is involved</h2>
       <ul>
         <li>
-          <strong>OVHcloud</strong> hosts our server (app.perch.ws, account.perch.ws and
-          sync.perch.ws). It is currently in <strong>Canada</strong>; we plan to move it to the EU.
-          Accounts, shared notes and encrypted chain records are stored there.
+          <strong>OVHcloud</strong> hosts the relay (sync.perch.ws) and the demo server. It is
+          currently in <strong>Canada</strong>; we plan to move it to the EU. Encrypted chain
+          records are stored there.
         </li>
         <li>
           <strong>Cloudflare</strong> provides DNS for perch.ws and hosts this site. Traffic to
-          app.perch.ws, account.perch.ws and sync.perch.ws does not pass through Cloudflare.
+          sync.perch.ws does not pass through Cloudflare.
+        </li>
+        <li>
+          <strong>GitHub</strong> hosts Perch's code and its Discussions, where people ask and
+          suggest things in the open. Anything you post there is under GitHub's terms and privacy
+          statement, as its controller.
         </li>
         <li>
           <strong>Apple, Google, Microsoft and Mozilla</strong> distribute the apps through their
@@ -349,52 +232,45 @@
         </li>
       </ul>
       <p>
-        Using our servers therefore means your data is transferred outside Türkiye and the EU. If
-        you don't want that, use Perch without an account, or run your own server.
+        Using sync chains through our relay therefore means encrypted records are transferred
+        outside Türkiye and the EU. If you don't want that, use Perch without a chain, or run your
+        own relay.
       </p>
 
       <h2>How long we keep things</h2>
       <ul>
-        <li>Account data: until you delete it or the account.</li>
-        <li>Sessions: 180 days after last use.</li>
-        <li>Chains: as described above (60 / 90 / 180 days).</li>
+        <li>Chains: as described above (60 / 90 / 180 days), or until you delete them.</li>
         <li>
-          Backups: the server keeps daily database backups for 14 days. Something you delete is gone
+          Backups: the relay keeps daily database backups for 14 days. Something deleted is gone
           from the backups within 14 days.
         </li>
       </ul>
 
       <h2>Deleting your data</h2>
       <p>
-        You can delete your Perch account yourself: on account.perch.ws, in the iPhone and Android
-        apps (Settings → Perch account) or in the extension (Settings → Perch account). It deletes
-        your account, its sessions and the notes you shared at once. Data on your devices stays
-        there until you remove it or uninstall the app. You can export your subscriptions as OPML at
-        any time.
+        Everything that's yours is on your devices: remove it in the app, or uninstall it. To remove
+        a sync chain from our relay, use Settings → Sync → Delete the chain on any device in it. You
+        can export your subscriptions as OPML at any time.
       </p>
 
       <h2>Your rights</h2>
       <p>
         Under Türkiye's data protection law (KVKK, article 11) and, where it applies, the EU GDPR,
         you can ask what we hold about you, get a copy, have it corrected or deleted, and object to
-        how it is used. Most of this you can do yourself in the app; for anything else write to
+        how it is used. We hold nothing that identifies you, but you can always write to
         <a href="mailto:contact@perch.ws">contact@perch.ws</a>. We answer within 30 days. You can
         also complain to the Personal Data Protection Authority (KVKK) or your local data protection
         authority.
       </p>
       <p>
-        The legal basis for what we store is that it's needed to provide the service you asked for
-        (KVKK art. 5(2)(c); GDPR art. 6(1)(b)), and, for abuse protection, our legitimate interest
-        in keeping the service working.
+        The legal basis for what the relay stores is that it's needed to provide the service you
+        asked for (KVKK art. 5(2)(c); GDPR art. 6(1)(b)).
       </p>
-
-      <h2>Children</h2>
-      <p>Perch accounts are for people 13 and older.</p>
 
       <h2>Changes</h2>
       <p>
         If we change what we collect, we'll update this page first and announce it here and in the
-        apps — we have no email address to write to you. Every version of this page is in the
+        apps. Every version of this page is in the
         <a href="https://github.com/arifcinartekin/perch/commits/main/site/privacy.html"
           >project's history</a
         >.
@@ -406,28 +282,28 @@
          =================================================================== -->
     <main class="legal" data-lang="tr" hidden>
       <h1>Gizlilik politikası</h1>
-      <p class="updated">Son güncelleme 11 Ekim 2026 · <a href="/terms">Kullanım koşulları</a></p>
+      <p class="updated">Son güncelleme 12 Ekim 2026 · <a href="/terms">Kullanım koşulları</a></p>
 
       <div class="summary glass">
         <strong>Kısaca</strong>
         <ul>
           <li>
-            Perch'te analitik, reklam, izleyici ya da çökme raporlama SDK'sı yok. Bu, uygulamalar,
-            eklenti, web uygulaması ve bu site için geçerli.
+            Perch'te analitik, reklam, izleyici ya da çökme raporlama SDK'sı yok: uygulamalarda,
+            eklentide ya da bu sitede.
           </li>
-          <li>Hesap açmazsan akışların, okudukların ve notların cihazında kalır. Biz görmeyiz.</li>
-          <li>Senkron zincirleri uçtan uca şifrelidir. Aktarıcımız okuyamadığı veriyi saklar.</li>
+          <li>Feed'lerin, okudukların ve notların cihazlarında kalır. Biz hiç görmeyiz.</li>
           <li>
-            account.perch.ws'teki Perch hesabı yalnızca not paylaşmak için bir addır. Sunucu akış,
-            okuma ya da özel not tutmaz.
-          </li>
-          <li>
-            E-posta adresi istemeyiz, erişim kaydı tutmayız, IP adresi saklamayız. Hiçbir şeyi
-            satmayız, paylaşmayız.
+            Hesap işletmiyoruz: kaydolunacak bir şey yok; kullanıcı adı, şifre ya da e-posta adresi
+            tutmuyoruz.
           </li>
           <li>
-            Perch açık kaynaktır. Burada yazan her şey
-            <a href="https://github.com/arifcinartekin/perch">kodda</a> doğrulanabilir.
+            İşlettiğimiz tek sunucu, senkron zincirleri için bir aktarıcıdır. Okuyamadığı şifreli
+            kayıtları saklar ve erişim kaydı tutmaz.
+          </li>
+          <li>Hiçbir şeyi satmıyor ya da paylaşmıyoruz.</li>
+          <li>
+            Perch açık kaynaklıdır. Burada yazan her şey
+            <a href="https://github.com/arifcinartekin/perch">koddan</a> doğrulanabilir.
           </li>
         </ul>
       </div>
@@ -436,21 +312,18 @@
       <p>
         Perch açık kaynaklıdır: herkes onu derleyebilir, değiştirebilir ve kendi sunucusunu
         çalıştırabilir. Resmi hizmetler, tek bir kişinin, Arif Çınar Tekin'in (“biz”) bireysel
-        olarak ve ticari amaç gütmeden işlettiği bir projedir. Bu politika yalnızca onun işlettiği
-        ve yayınladıklarını kapsar:
+        olarak ve ticari amaç gütmeden yürüttüğü bir projedir. Bu politika yalnızca onun işlettiği
+        ve yayınladığı şeyleri kapsar:
       </p>
       <ul>
         <li>
-          <strong>Hizmetlerimiz:</strong> perch.ws, app.perch.ws (web okuyucu), account.perch.ws
-          (Perch hesapları), sync.perch.ws (senkron aktarıcısı) ve community.perch.ws (forum).
-          Bunlarda veri sorumlusu biziz.
+          <strong>Hizmetlerimiz:</strong> bu site (perch.ws) ve senkron zincirlerinin aktarıcısı
+          sync.perch.ws. Bunlarda veri sorumlusu biziz.
         </li>
-
         <li>
           <strong>demo.perch.ws</strong>: App Store incelemesi ve “Perch sunucusuyla senkron”u
-          denemek isteyenler için ayrı bir test sunucusu. app.perch.ws'in aksine üzerindeki her
-          hesabın kitaplığını düz metin olarak tutar; bu yüzden gerçek okumaların için kullanma. Her
-          an sıfırlanabilir.
+          denemek isteyenler için bir test sunucusu. Kayıt kapalıdır; test hesabının kitaplığını düz
+          metin olarak tutar ve her an sıfırlanabilir.
         </li>
         <li>
           <strong>Yayınladığımız uygulamalar:</strong> App Store ve Google Play'deki uygulamalar ile
@@ -459,39 +332,39 @@
         </li>
       </ul>
       <p>
-        Başkalarının işlettiği Perch sunucuları ya da senkron aktarıcıları ile başkalarının
-        yayınladığı Perch sürümleri bu politikanın <strong>kapsamında değildir</strong>. Başkasının
-        sunucusuna giriş yaparsan veri sorumlusu o sunucunun işletmecisidir ve onun politikası
-        geçerlidir. Bu sunuculara erişimimiz yoktur; oradaki hiçbir şeyi göremez, değiştiremez ya da
-        silemeyiz. Uygulamalar hangi sunucuya bağlı olduğunu ve o sunucu yayınlamışsa kendi
-        politikasını gösterir.
+        Başkalarının çalıştırdığı Perch sunucularını ya da aktarıcılarını, ya da başkalarının
+        yayınladığı Perch sürümlerini <strong>kapsamaz</strong>. Başka birinin sunucusuna
+        bağlanırsan (kitaplığını eşitlemek ya da not paylaşmak için giriş yapmak üzere) veri
+        sorumlusu o sunucunun işletmecisidir ve onun politikası geçerlidir. O sunuculara erişimimiz
+        yoktur; üzerlerindeki hiçbir şeyi göremez, değiştiremez ya da silemeyiz. Uygulamalar hangi
+        sunucuya bağlı olduğunu ve yayınladıysa o sunucunun politikasını gösterir.
       </p>
       <p>
-        Hizmetlerimizle ilgili soru, talep ve şikayetler için:
+        Soru, talep ve şikayetler için:
         <a href="mailto:contact@perch.ws">contact@perch.ws</a>.
       </p>
 
-      <h2>Perch'ü hesapsız kullanmak</h2>
+      <h2>Cihazlarında</h2>
       <p>
         Tarayıcı eklentisi ile iPhone ve Android uygulamaları hesap olmadan çalışır. Abonelikler,
         kategoriler, okunan ve yıldızlanan makaleler, ayarlar ve notlar yalnızca cihazında saklanır
         (tarayıcının eklenti deposunda ya da telefonunda uygulamanın dosyalarında; Android'de bulut
         yedeğine dahil edilmez). Bize hiçbir şey gönderilmez.
       </p>
-      <p>Akışları gösterebilmek için cihazın başka sitelere doğrudan bağlanır:</p>
+      <p>Feed'lerini gösterebilmek için cihazın başka sitelere doğrudan bağlanır:</p>
       <ul>
         <li>
-          <strong>Abone olduğun siteler.</strong> Cihazın her akışı ve açtığın makalenin tam metnini
+          <strong>Abone olduğun siteler.</strong> Cihazın her feed'i ve açtığın makalenin tamamını
           doğrudan yayıncıdan indirir. Her ziyarette olduğu gibi o site IP adresini görür.
         </li>
         <li>
-          <strong>Makalelerdeki resim ve videolar</strong> yayıncının koyduğu yerden, hangi sayfadan
-          geldiğin söylenmeden yüklenir. Gömülü YouTube ve Vimeo oynatıcıları o hizmetlerden
-          yüklenir ve onların politikalarına tabidir.
+          <strong>Makalelerdeki resim ve videolar</strong>, yayıncı nereye koyduysa oradan, hangi
+          sayfadan geldiğin söylenmeden yüklenir. Gömülü YouTube ve Vimeo oynatıcıları bu
+          hizmetlerden yüklenir ve onların politikalarına tabidir.
         </li>
         <li>
-          <strong>Site simgesi indirilmez.</strong> Simgeleri indirmek her siteye onu takip ettiğini
-          söylerdi. Bunun yerine akışlar renkli bir harfle gösterilir.
+          <strong>Site simgesi yok.</strong> Perch site simgelerini indirmez; indirse her site onu
+          takip ettiğini öğrenirdi. Feed'ler bunun yerine renkli bir harf alır.
         </li>
       </ul>
       <p>
@@ -503,207 +376,91 @@
         söylemez.
       </p>
       <p>
-        Eklenti kurulurken hiçbir siteye erişim istemez. Ondan bir akış eklediğinde yalnızca o site
-        için izin ister; tüm siteler için izni yalnızca otomatik akış bulmayı açarsan ister. Bir
-        sayfayı yalnızca Perch'ü o sayfada açtığında okur, o da sayfanın belirttiği akış
-        bağlantılarıyla sınırlıdır.
+        Bir notu “metin olarak” paylaşmak onu telefonunun paylaş menüsüne ya da panoya verir; oradan
+        nereye gideceği sana kalmıştır. Notlar için herkese açık sayfalar yalnızca başkalarının
+        çalıştırdığı Perch sunucularında vardır.
       </p>
-
-      <h2>Web okuyucu (app.perch.ws)</h2>
       <p>
-        app.perch.ws'teki okuyucu eklenti gibi çalışır: aboneliklerin, okudukların ve notların
-        tarayıcında saklanır; bir senkron zinciri onu diğer cihazlarına bağlar. Bir web sayfasının
-        başka siteleri kendisi çekmesine izin verilmediği için, akışları ve makale sayfalarını
-        sunucumuzdan ister. Bu istekler hiçbir hesap ya da çerez taşımaz ve sunucu kimin istediğini
-        kaydetmez. Çekilen her sayfayı herkesin ortak kullandığı bir önbellekte 10 dakika tutar;
-        böylece popüler bir akış bir kez çekilir. Sunucu hangi akışların popüler olduğunu bilir,
-        kimin okuduğunu bilmez. Makalelerdeki resimler yine doğrudan yayıncıdan yüklenir.
+        Eklenti kurulurken hiçbir siteye erişim istemez. Ondan bir feed eklediğinde yalnızca o
+        siteye, otomatik feed bulmayı açarsan tüm sitelere erişim ister. Bir sayfayı yalnızca orada
+        Perch'ü açtığında, ve yalnızca sayfanın belirttiği feed bağlantılarını okur.
       </p>
 
       <h2>Senkron zincirleri (sync.perch.ws)</h2>
       <p>
-        Senkron zinciri, cihazlarını hesap olmadan birbirine bağlar. Her şey, zincir kodundan
-        türetilen ve cihazlarından hiç çıkmayan bir anahtarla cihazlarında şifrelenir. Akış
+        Bir senkron zinciri cihazlarını hesapsız olarak birbirine bağlar. Her şey cihazlarında,
+        zincir kodundan türetilen ve cihazlardan hiç çıkmayan bir anahtarla şifrelenir. Feed
         adresleri ve kayıt adları bile gizlidir. Aktarıcımız şunları saklar:
       </p>
       <ul>
-        <li>zincirin erişim belirtecinin özeti (kodun ya da anahtarın kendisi değil);</li>
-        <li>şifreli kayıtlar: her biri anlamsız bir yuva adı, bir zaman damgası ve boyutuyla;</li>
         <li>
-          zincirin ne zaman oluşturulduğu ve saat hassasiyetinde en son ne zaman kullanıldığı.
+          zincirin erişim anahtarının bir özeti (kodun kendisi ya da şifreleme anahtarı değil);
         </li>
+        <li>şifreli kayıtlar; her biri anlamsız bir yuva adı, bir zaman damgası ve boyutuyla;</li>
+        <li>zincirin ne zaman oluşturulduğu ve saat düzeyinde, en son ne zaman kullanıldığı.</li>
       </ul>
       <p>
-        Bir zincirde kaç kayıt olduğunu, ne kadar büyük olduklarını ve ne zaman değiştiklerini
-        görebiliriz; içlerinde ne olduğunu göremeyiz. Okundu bilgisi 60 gün, silinen öğeler 90 gün
-        sonra unutulur. 180 gün boyunca hiçbir cihazın kullanmadığı zincir, içindekilerle birlikte
-        silinir. Bir zinciri istediğin an Ayarlar → Senkron'dan silebilirsin.
-      </p>
-
-      <h2>account.perch.ws'te bir Perch hesabı</h2>
-      <p>
-        Perch hesabı, notları herkese açık sayfa olarak paylaştığın adındır. Okumak için gerekmez ve
-        kitaplığını senkronlamaz: akışların, ne okuduğun ve notların cihazlarında (ve şifreli olarak
-        senkron zincirinde) kalır. Sunucu yalnızca şunları tutar:
-      </p>
-      <div class="table-wrap">
-        <table>
-          <tr>
-            <th>Ne</th>
-            <th>Neden</th>
-          </tr>
-          <tr>
-            <td>Kullanıcı adı ve görünen ad</td>
-            <td>Giriş için ve paylaştığın notlarda imza olarak (@kullanıcıadı).</td>
-          </tr>
-          <tr>
-            <td>Kurtarma kodunun özeti</td>
-            <td>
-              Şifreni unutursan yenisini belirleyebilmen için. Kod cihazında üretilir ve sana bir
-              kez gösterilir; biz yalnızca özetini saklarız.
-            </td>
-          </tr>
-          <tr>
-            <td>Şifrenden türetilen anahtarın özeti</td>
-            <td>
-              Şifreni doğrulamak için. Şifren cihazından çıkmaz: uygulama ondan bir anahtar türetir
-              (Argon2id), sunucu yalnızca o anahtarın özetini saklar.
-            </td>
-          </tr>
-          <tr>
-            <td>Giriş yapılmış cihazlar: bir ad, giriş zamanı, son görülme zamanı</td>
-            <td>
-              Cihazlarını görebilmen ve oturumlarını kapatabilmen için. Ad, uygulamanın gönderdiği
-              genel bir etikettir; örneğin “Perch on iPhone” ya da “Web · MacIntel”. Kullanılmayan
-              oturumlar 180 gün sonra sona erer.
-            </td>
-          </tr>
-          <tr>
-            <td>Paylaştığın notlar</td>
-            <td>
-              Herkese açık adreslerinde gösterebilmek için. Yalnızca paylaşmayı seçtiğin notlar,
-              paylaşmayı durdurana ya da silene kadar.
-            </td>
-          </tr>
-        </table>
-      </div>
-
-      <h2>Paylaşılan notlar</h2>
-      <p>
-        Notlar gizlidir. Birini paylaştığında Perch, bağlantıya sahip herkesin okuyabileceği
-        rastgele bir adreste (app.perch.ws/shared/…) bir kopyasını yayınlar. Sayfada notun,
-        makalenin başlığı, bağlantısı ve kaynağı, @kullanıcıadın ve tarihler görünür. Sayfa arama
-        motorlarından dizine eklenmemesini ister, ama bağlantıya sahip olan herkes içeriği
-        kopyalayabilir. Notu düzenlersen sayfa güncellenir; notu silersen ya da “Paylaşmayı durdur”u
-        seçersen sayfa kaldırılır.
-      </p>
-      <p>
-        Her paylaşılan sayfada bir şikayet formu vardır. Şikayet; nedeni, yazdıklarını ve yalnızca
-        verirsen sana ulaşma yolunu saklar. Şikayetleri yalnızca ilgili sayfayı incelemek için
-        kullanırız; iletişim adresini şikayet sonuçlandığında sileriz.
-      </p>
-
-      <h2>Forum (community.perch.ws)</h2>
-      <p>
-        Forum, bizim bir sunucumuzda çalışan Discourse'tur. Ona Perch hesabınla giriş yaparsın:
-        forum seni account.perch.ws'e gönderir, onaylarsın, ve foruma yalnızca kullanıcı adın ile
-        hesabının sabit kimliği gider. Discourse bir e-posta alanı istediği için ona
-        <code>users.perch.invalid</code> altında, posta alamayan bir adres verilir; forum hiç
-        e-posta göndermez.
-      </p>
-      <p>
-        Orada yazdıkların herkese açıktır. Forum gönderilerini, beğenilerini ve profilini, ve her
-        Discourse gibi spam ve kötüye kullanımla mücadele için kullandığın IP adreslerini tutar.
-        Perch hesabını silmek forum hesabını ya da gönderilerini silmez: onları forumda sil
-        (profilin → Tercihler → Hesabımı sil) ya da
-        <a href="mailto:contact@perch.ws">contact@perch.ws</a> adresinden bize yaz.
-      </p>
-
-      <h2>E-posta yok</h2>
-      <p>
-        account.perch.ws e-posta adresi istemez ve hiç e-posta göndermez. Unutulan bir şifre,
-        kurtarma kodunla yenilenir. Sana yazmamızın hiçbir yolu olmadığı için bülten, duyuru ya da
-        hatırlatma da yoktur.
-      </p>
-      <p>
-        Kayıt sırasında e-posta doğrulaması ya da CAPTCHA yerine cihazın birkaç saniyelik bir hesap
-        yapar (“işlem kanıtı”). Bu senin hakkında hiçbir şey göndermez; yalnızca toplu hesap açmayı
-        pahalı hale getirir.
-      </p>
-      <p>
-        Başkalarının işlettiği Perch sunucuları, kayıt ve şifre sıfırlama için e-posta gönderecek
-        şekilde ayarlanabilir. Bu onların tercihi ve sorumluluğudur.
+        Bir zincirde kaç kayıt olduğunu, ne büyüklükte olduklarını ve ne zaman değiştiklerini
+        görebiliriz; içlerinde ne olduğunu göremeyiz, ve hiçbir şey bir zinciri bir kişiye bağlamaz.
+        Okundu bilgisi 60 gün, silinen öğeler 90 gün sonra unutulur; 180 gündür hiçbir cihazın
+        kullanmadığı bir zincir içindekilerle birlikte silinir. Bir zinciri istediğin zaman Ayarlar
+        → Senkron'dan silebilirsin.
       </p>
 
       <h2>Sunucumuz ele geçirilirse</h2>
       <p>
-        Çalınan bir disk ya da sızan bir yedek senin hakkında olabildiğince az şey söylesin diye
-        mümkün olduğunca az veri tutuyoruz. İçinde tam olarak şunlar bulunur:
+        Çalınan bir diskin ya da sızan bir yedeğin senin hakkında hiçbir şey söylememesi için
+        olabildiğince az şey tutarız. Aktarıcıda yalnızca şifreli zincir kayıtları vardır: zincir
+        kodun olmadan okunamazlar, ve onları birine bağlayacak hesap, ad, e-posta ya da IP adresi
+        yoktur. Aktarıcı cihazlarına kod da göndermez: uygulamalar mağazalardan gelir, bu yüzden ele
+        geçirilmiş bir aktarıcı zincir kodunu alamaz. En kötü durumda kayıtları iletmeyi
+        bırakabilir.
       </p>
-      <ul>
-        <li>
-          <strong>Senkron zincirleri:</strong> yalnızca şifreli veri. Zincir kodun olmadan okunamaz.
-        </li>
-        <li><strong>E-posta adresleri:</strong> yok, hiç istemeyiz.</li>
-        <li>
-          <strong>Şifreler ve kurtarma kodları:</strong> yok, yalnızca özetleri var (şifreden
-          türetilen anahtarın ve kodun).
-        </li>
-        <li>
-          <strong>account.perch.ws hesapları:</strong> kullanıcı adları, giriş yapılmış cihaz adları
-          ve kullanıcıların paylaşmayı seçtiği, zaten herkese açık olan notlar. Akış, okuma ya da
-          özel not yok.
-        </li>
-      </ul>
       <p>
-        Silinen veriler diskte bırakılmaz, veritabanında üzerine yazılır; 14 gün içinde yedeklerden
-        de silinir. Sunucumuzun hangi kodu çalıştırdığını nasıl kontrol edeceğin
+        Silinen veriler diskte bırakılmaz, veritabanında üzerine yazılır ve 14 gün içinde
+        yedeklerden de çıkar. Sunucumuzun hangi kodu çalıştırdığını nasıl kontrol edeceğin
         <a href="/transparency">şeffaflık sayfasında</a>.
       </p>
 
       <h2>Neleri toplamıyoruz</h2>
       <ul>
+        <li>Hesap, kullanıcı adı, şifre ya da e-posta adresi yok.</li>
         <li>Analitik, telemetri, kullanım istatistiği ya da A/B testi yok.</li>
         <li>Reklam, reklam kimliği ya da izleme pikseli yok.</li>
         <li>Çökme raporlama, pazarlama ya da başka bir amaçla üçüncü taraf SDK'sı yok.</li>
-        <li>Erişim kaydı yok: web sunucusu isteklerin kaydını tutmaz.</li>
+        <li>Erişim kaydı yok: aktarıcı isteklerin kaydını tutmaz.</li>
         <li>
-          IP adresi saklanmaz. Kötüye kullanımı önlemek için (şifre denemeleri, toplu kayıt) sunucu,
-          son isteklerin IP başına sayısını bellekte tutar. Bu sayaçlar bir saat içinde ya da sunucu
-          yeniden başladığında silinir ve hiçbir zaman diske yazılmaz.
+          Saklanan IP adresi yok. Her bağlantıda olduğu gibi cihazının adresi aktarıcıya ulaşır, ama
+          hiçbir yere yazılmaz.
         </li>
-        <li>Yukarıdaki okundu ve yıldız işaretleri dışında okuma geçmişi tutulmaz.</li>
-        <li>Konum, rehber, fotoğraf, kamera ya da mikrofon erişimi yok.</li>
+        <li>Konum, rehber, fotoğraf, kamera kaydı ya da mikrofon yok.</li>
         <li>
           Veri satmaz ya da kiralamayız; reklamcılarla ya da veri simsarlarıyla paylaşmayız; yapay
           zeka modeli eğitmek için kullanmayız.
         </li>
       </ul>
-      <p>
-        Sunucunun kendi çıktısında açılış mesajları ve hata mesajları bulunur. Bunlarda IP adresi ya
-        da ne okuduğun yer almaz.
-      </p>
 
       <h2>Çerezler ve yerel depolama</h2>
       <p>
-        account.perch.ws, orada giriş yaptığında tek bir çerez kullanır: oturum çerezi. Bu çerez
-        yalnızca HTTP üzerinden okunabilir ve yalnızca account.perch.ws'e gönderilir.
-        app.perch.ws'teki okuyucu hiç çerez kullanmaz; Perch hesabının oturumunu eklenti gibi
-        tarayıcının deposunda tutar. Başka çerez olmadığı için çerez bildirimi de yoktur. Bu site
-        (perch.ws) çerez kullanmaz; dil tercihini tarayıcının yerel deposunda hatırlar, bu bilgi
-        cihazından çıkmaz.
+        Hiçbir yerde çerez kullanmıyoruz, bu yüzden çerez uyarısı da yok. Bu site dil tercihini
+        tarayıcının yerel deposunda hatırlar; bu bilgi cihazından hiç çıkmaz.
       </p>
 
       <h2>Başka kimler işin içinde</h2>
       <ul>
         <li>
-          <strong>OVHcloud</strong> sunucumuzu barındırır (app.perch.ws, account.perch.ws ve
-          sync.perch.ws). Sunucu şu an <strong>Kanada</strong>'da; AB'ye taşımayı planlıyoruz.
-          Hesaplar, paylaşılan notlar ve şifreli zincir kayıtları orada saklanır.
+          <strong>OVHcloud</strong> aktarıcıyı (sync.perch.ws) ve demo sunucusunu barındırır. Sunucu
+          şu an <strong>Kanada</strong>'dadır; AB'ye taşımayı planlıyoruz. Şifreli zincir kayıtları
+          orada saklanır.
         </li>
         <li>
           <strong>Cloudflare</strong>, perch.ws için DNS hizmeti verir ve bu siteyi barındırır.
-          app.perch.ws, account.perch.ws ve sync.perch.ws trafiği Cloudflare'den geçmez.
+          sync.perch.ws trafiği Cloudflare'den geçmez.
+        </li>
+        <li>
+          <strong>GitHub</strong>, Perch'ün kodunu ve insanların açıkça soru sorup öneride bulunduğu
+          Discussions bölümünü barındırır. Orada yazdıkların, veri sorumlusu olarak GitHub'ın
+          koşullarına ve gizlilik bildirimine tabidir.
         </li>
         <li>
           <strong>Apple, Google, Microsoft ve Mozilla</strong> uygulamaları kendi mağazalarında ve
@@ -714,59 +471,50 @@
         </li>
       </ul>
       <p>
-        Dolayısıyla sunucularımızı kullanmak, verinin Türkiye ve AB dışına aktarılması anlamına
-        gelir. Bunu istemiyorsan Perch'ü hesapsız kullanabilir ya da kendi sunucunu
-        çalıştırabilirsin.
+        Bu nedenle aktarıcımız üzerinden senkron zinciri kullanmak, şifreli kayıtların Türkiye ve AB
+        dışına aktarılması anlamına gelir. Bunu istemiyorsan Perch'ü zincirsiz kullanabilir ya da
+        kendi aktarıcını çalıştırabilirsin.
       </p>
 
       <h2>Ne kadar süre saklıyoruz</h2>
       <ul>
-        <li>Hesap verileri: sen silene ya da hesabını silene kadar.</li>
-        <li>Oturumlar: son kullanımdan 180 gün sonrasına kadar.</li>
-        <li>Zincirler: yukarıda anlatıldığı gibi (60 / 90 / 180 gün).</li>
+        <li>Zincirler: yukarıda anlatıldığı gibi (60 / 90 / 180 gün) ya da sen silene kadar.</li>
         <li>
-          Yedekler: sunucu, veritabanının günlük yedeklerini 14 gün saklar. Sildiğin bir şey 14 gün
-          içinde yedeklerden de silinmiş olur.
+          Yedekler: aktarıcı günlük veritabanı yedeklerini 14 gün tutar. Silinen bir şey 14 gün
+          içinde yedeklerden de çıkar.
         </li>
       </ul>
 
       <h2>Verini silmek</h2>
       <p>
-        Perch hesabını kendin silebilirsin: account.perch.ws'te, iPhone ve Android uygulamalarında
-        (Ayarlar → Perch hesabı) ya da eklentide (Ayarlar → Perch hesabı). Bu işlem hesabını,
-        oturumlarını ve paylaştığın notları tek seferde siler. Cihazlarındaki veriler, sen kaldırana
-        ya da uygulamayı silene kadar orada kalır. Aboneliklerini istediğin zaman OPML olarak dışa
+        Sana ait her şey cihazlarındadır: uygulamadan silebilir ya da uygulamayı kaldırabilirsin.
+        Bir senkron zincirini aktarıcımızdan kaldırmak için zincirdeki herhangi bir cihazda Ayarlar
+        → Senkron → Zinciri sil'i kullan. Aboneliklerini istediğin zaman OPML olarak dışa
         aktarabilirsin.
       </p>
 
       <h2>Hakların</h2>
       <p>
-        6698 sayılı Kişisel Verilerin Korunması Kanunu'nun 11. maddesi ve uygulandığı durumlarda AB
-        Genel Veri Koruma Tüzüğü (GDPR) kapsamında hakkında hangi verileri tuttuğumuzu sorabilir,
-        bir kopyasını alabilir, düzeltilmesini ya da silinmesini isteyebilir ve işlenmesine itiraz
-        edebilirsin. Bunların çoğunu uygulamada kendin yapabilirsin; geri kalanı için
-        <a href="mailto:contact@perch.ws">contact@perch.ws</a> adresine yaz. 30 gün içinde yanıt
-        veririz. Kişisel Verileri Koruma Kurumu'na ya da bulunduğun yerdeki veri koruma otoritesine
-        de şikayette bulunabilirsin.
+        KVKK'nın 11. maddesi ve uygulandığı durumlarda AB GDPR'ı uyarınca hakkında ne tuttuğumuzu
+        sorabilir, bir kopyasını alabilir, düzeltilmesini ya da silinmesini isteyebilir ve
+        işlenmesine itiraz edebilirsin. Seni tanımlayan hiçbir şey tutmuyoruz, ama her zaman
+        <a href="mailto:contact@perch.ws">contact@perch.ws</a> adresine yazabilirsin. 30 gün içinde
+        yanıt veririz. Kişisel Verileri Koruma Kurumu'na ya da bulunduğun yerdeki veri koruma
+        otoritesine de şikayette bulunabilirsin.
       </p>
       <p>
-        Sakladığımız verilerin hukuki dayanağı, istediğin hizmeti sunmak için gerekli olmalarıdır
-        (KVKK m. 5/2-c; GDPR m. 6/1-b). Kötüye kullanıma karşı alınan önlemlerin dayanağı ise
-        hizmeti çalışır tutmaktaki meşru menfaatimizdir.
+        Aktarıcının sakladıkları için hukuki dayanak, istediğin hizmeti sunmak için gerekli
+        olmalarıdır (KVKK m. 5(2)(c); GDPR m. 6(1)(b)).
       </p>
-
-      <h2>Çocuklar</h2>
-      <p>Perch hesapları 13 yaş ve üzeri içindir.</p>
 
       <h2>Değişiklikler</h2>
       <p>
-        Topladığımız veriler değişirse önce bu sayfayı güncelleriz ve bunu burada ve uygulamalarda
-        duyururuz; sana yazabileceğimiz bir e-posta adresi yok. Bu sayfanın her sürümü
+        Topladığımız şeyleri değiştirirsek önce bu sayfayı güncelleyip burada ve uygulamalarda
+        duyururuz. Bu sayfanın her sürümü
         <a href="https://github.com/arifcinartekin/perch/commits/main/site/privacy.html"
           >projenin geçmişinde</a
         >
-        durur. Bu metnin Türkçe ve İngilizce sürümleri arasında fark olursa Türkçe sürüm esas
-        alınır.
+        durur.
       </p>
     </main>
 

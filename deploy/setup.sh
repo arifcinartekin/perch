@@ -2,7 +2,7 @@
 # Sets up a fresh Ubuntu 24.04 server for Perch. Run as root (or with sudo):
 #
 #   curl -fsSL https://raw.githubusercontent.com/arifcinartekin/perch/main/deploy/setup.sh \
-#     | sudo bash -s -- app.perch.ws [sync.perch.ws]
+#     | sudo bash -s -- perch.example.com [sync.example.com]
 #
 # The optional second name serves the relay for sync chains (sync without an
 # account) from the same server.
@@ -24,7 +24,7 @@ DIR=/opt/perch
 DATA=/var/lib/perch
 
 if [[ -z "$DOMAIN" ]]; then
-  echo "usage: setup.sh <domain> [sync domain]   e.g. setup.sh app.perch.ws sync.perch.ws" >&2
+  echo "usage: setup.sh <domain> [sync domain]   e.g. setup.sh perch.example.com sync.example.com" >&2
   exit 1
 fi
 if [[ $EUID -ne 0 ]]; then

@@ -6,19 +6,19 @@ backups) and `deploy/.env`. Caddy's certificates are made again on the new machi
 copying those two things while the old server is stopped, then pointing DNS at the new one.
 
 Expect a few minutes when Perch doesn't answer: from stopping the old server until DNS reaches
-people. Apps keep working offline meanwhile; sync rounds and shares just wait.
+people. Apps keep working offline meanwhile; sync rounds just wait.
 
 ## The day before
 
 1. In Cloudflare, check that every Perch record is "DNS only" (grey) with TTL **Auto** (300 s);
-   that's what lets the switch reach people in minutes. The records: `app`, `account`, `sync`
-   and, if you run it, `demo`.
+   that's what lets the switch reach people in minutes. The records: `sync` and, if you run it,
+   `demo`.
 2. Set up the new server with the usual script, using the same names. Its certificates can't be
    issued until DNS points at it, so Caddy will retry in the background; that's expected.
 
    ```sh
    curl -fsSL https://raw.githubusercontent.com/arifcinartekin/perch/main/deploy/setup.sh \
-     | sudo bash -s -- app.perch.ws sync.perch.ws
+     | sudo bash -s -- sync.perch.ws
    ```
 
 3. On the new server, stop what setup started; it gets the real data later:
@@ -61,20 +61,18 @@ people. Apps keep working offline meanwhile; sync rounds and shares just wait.
    sudo /opt/perch/deploy/update.sh
    ```
 
-8. In Cloudflare, change the A (and AAAA, if any) records of `app`, `account`, `sync` and `demo`
-   to the new server's address. Keep them grey.
+8. In Cloudflare, change the A (and AAAA, if any) records of `sync` and `demo` to the new
+   server's address. Keep them grey.
 
 9. Within a few minutes Caddy gets the certificates. Check:
 
    ```sh
-   curl -s https://app.perch.ws/api/v1/server        # "build": the commit you expect
-   curl -s https://account.perch.ws/api/v1/server
-   curl -s -o /dev/null -w '%{http_code}\n' https://sync.perch.ws/api/v1/server
+   curl -s https://sync.perch.ws/api/v1/server        # "mode": "relay", "build": the commit you expect
+   curl -s https://demo.perch.ws/api/v1/server
    ```
 
-   Then sign in on account.perch.ws with your account and run a sync round on a device in a
-   chain: both prove the database and the instance secret came across (old sessions still work,
-   chains carry on from where they were).
+   Then run a sync round on a device in a chain: it carries on from where it was, which proves
+   the database came across.
 
 ## Afterwards
 

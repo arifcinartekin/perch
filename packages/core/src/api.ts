@@ -32,7 +32,7 @@ export interface ServerInfo {
   /** The operator's privacy policy and terms, when they've published them. */
   legal?: { privacy?: string; terms?: string };
   /**
-   * Where Perch accounts on this server are managed (e.g. https://account.perch.ws),
+   * Where Perch accounts on this server are managed (e.g. https://account.example.com),
    * when that's a separate address from the reader.
    */
   accountUrl?: string;
