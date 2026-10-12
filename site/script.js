@@ -45,12 +45,12 @@ const TR = {
   's1.d': 'Herhangi bir cihazda: Ayarlar → Senkron → Zincir başlat.',
   's2.t': 'Kodu okutun ya da yazın',
   's2.d':
-    'Telefonunuzdaki Perch uygulamasıyla QR kodunu okutun ya da 28 karakterlik kodu başka bir tarayıcıda girin.',
+    'iPhone ya da Android telefonunuzdaki Perch uygulamasıyla QR kodunu okutun ya da 28 karakterlik kodu başka bir tarayıcıda girin.',
   's3.t': 'Her yerde okuyun',
   's3.d':
     'Abonelikler, okunan ve yıldızlı makaleler, notlar, tema ve renkler sizinle gelir. Zincirdeki cihazlar birbirini listeler.',
   'sync.account':
-    'Bir not mu paylaşmak istiyorsunuz? Perch hesabı yalnızca bunun için bir addır: kullanıcı adı, şifre ve kurtarma kodu. E-posta yok ve kitaplığınıza dokunmaz.',
+    'Bizimkini kullanmak istemiyor musunuz? Kendi aktarıcınızı çalıştırın: küçük bir sunucuda relay modunda aynı Perch Server, sonra Ayarlar → Senkron → Aktarıcı’dan seçin. QR kodu onu diğer cihazlarınıza taşır.',
   'sync.relay': 'yalnızca şifreli veri görür',
   'privacy.eyebrow': 'Doğrulayabileceğiniz gizlilik',
   'privacy.title': 'Olabildiğince az şey bilmek için yapıldı.',
@@ -82,7 +82,7 @@ const TR = {
   'get.ios.t': 'iPhone ve iPad',
   'get.self.t': 'Kendi sunucunuz',
   'get.self.d':
-    'Kendi web okuyucunuz, hesaplarınız ve paylaşılan notlarınız için Perch Server’ı çalıştırın: depodan, tek bir Docker komutuyla.',
+    'Perch Server’ı kendiniz çalıştırın: kendi senkron aktarıcınız ya da web okuyuculu, hesaplı ve paylaşılan notlu bir sunucu. Küçük bir VPS’te tek betikle, depodan.',
   'get.self.a': 'Kurulum rehberi',
   'get.talk.t': 'Sorular ve fikirler',
   'get.talk.d': 'GitHub’da açıkça soru sorun, öneride bulunun, hata bildirin.',

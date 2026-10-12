@@ -30,8 +30,8 @@ Perch keeps these apart on purpose, so you can tell exactly what goes where.
 2. **Sync is optional**, under Settings → Sync, one way per library:
    - **Sync chain — no account.** Start a chain on one device, scan its QR code or type its code
      on the others. Everything is encrypted on your devices with keys derived from the code; the
-     relay (`sync.perch.ws`, or any Perch Server with `PERCH_CHAIN` on) can order the records
-     but not read them, and doesn't even see feed addresses. The devices in a chain list each
+     relay (`sync.perch.ws`, [your own](#run-your-own-relay), or any Perch Server with
+     `PERCH_CHAIN` on) can order the records but not read them, and doesn't even see feed addresses. The devices in a chain list each
      other, sealed like everything else.
    - **Your own Perch Server.** Self-hosters and organisations can run a server that keeps each
      account's library and fetches its feeds ([apps/server](./apps/server/README.md)).
@@ -71,6 +71,40 @@ Questions and ideas go to [GitHub Discussions](https://github.com/arifcinartekin
 server reports the commit it runs — see [perch.ws/transparency](https://perch.ws/transparency),
 the [privacy policy](https://perch.ws/privacy) and the [terms](https://perch.ws/terms). Servers
 run by anyone else are their operators' responsibility.
+
+### Run your own relay
+
+`sync.perch.ws` already can't read what it stores; running your own relay keeps even the
+encrypted records on a machine you control. It is the same Perch Server image in `relay` mode:
+only the chain API, no accounts, no web app, no logs.
+
+On a fresh Ubuntu VPS with a DNS record (`relay.example.com`, grey cloud on Cloudflare) pointing
+at it:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/arifcinartekin/perch/main/deploy/setup.sh \
+  | sudo bash -s -- relay.example.com
+echo 'PERCH_MODE=relay' | sudo tee -a /opt/perch/deploy/.env
+sudo /opt/perch/deploy/update.sh
+curl -s https://relay.example.com/api/v1/server     # "mode":"relay","chain":true
+```
+
+Or behind a reverse proxy you already run:
+
+```sh
+docker run -d --restart unless-stopped -p 127.0.0.1:8080:8080 -v perch-relay:/data \
+  -e PERCH_MODE=relay -e PERCH_TRUST_PROXY=true ghcr.io/arifcinartekin/perch-server:<commit>
+```
+
+Then, on one device, Settings → Sync → Relay → **Use another** → `relay.example.com` → Start a
+chain. Devices that scan its QR code get the relay address with it; on a device where you type
+the code, set the same relay first. Moving an existing chain needs no tool: every device already
+holds the whole library, so leave the old chain and start or join one on your relay. Records
+expire on the same schedule as on sync.perch.ws (read, unstarred items after 60 days, deletions
+after 90, unused chains after 180). The relay must be reachable over HTTPS from the public
+internet; the phones refuse plain HTTP except on the local network (iOS) or in debug builds
+(Android). Every setting is in [apps/server/README.md](./apps/server/README.md) and
+[deploy/README.md](./deploy/README.md).
 
 <!-- SCREENSHOT: docs/screenshots/reader.png — the full-screen reader, dark mode -->
 <!-- SCREENSHOT: docs/screenshots/popup.png — the toolbar popup showing a discovered feed -->
