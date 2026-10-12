@@ -129,9 +129,18 @@ struct NoteEditorView: View {
     }
   }
 
+  /// The note as plain text to send anywhere: the article, its link, then the note.
+  private func noteText(_ note: Note) -> String {
+    ([note.title] + (note.url.map { [$0] } ?? []) + ["", draft.trimmingCharacters(in: .whitespacesAndNewlines)])
+      .joined(separator: "\n")
+  }
+
   @ViewBuilder
   private func shareSection(_ note: Note) -> some View {
     Section {
+      // Anyone can pass a note on as text; a public page needs a Perch Server.
+      ShareLink(item: noteText(note)) { Label("Share as text", systemImage: "square.and.arrow.up") }
+        .disabled(draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
       if let shared = note.sharedUrl.flatMap(URL.init(string:)) {
         ShareLink(item: shared) { Label("Share link", systemImage: "square.and.arrow.up") }
         Button(copied ? "Copied" : "Copy link", systemImage: copied ? "checkmark" : "link") {

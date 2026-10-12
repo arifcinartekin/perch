@@ -294,10 +294,7 @@ class Reader(
     val account = community.account.value ?: return null
     val host = runCatching { java.net.URI(url).host }.getOrNull()
     val mine = runCatching { java.net.URI(account.server).host }.getOrNull()
-    // Pages published before accounts moved to account.perch.ws live on app.perch.ws: same server.
-    val official = setOf("app.perch.ws", "account.perch.ws")
-    val same = host == mine || (host in official && mine in official)
-    return if (same) community.client() else null
+    return if (host == mine) community.client() else null
   }
 
   suspend fun importOpml(data: ByteArray): LocalBackend.ImportResult {

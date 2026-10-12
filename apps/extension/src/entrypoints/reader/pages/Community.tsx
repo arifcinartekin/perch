@@ -17,7 +17,7 @@ import { SignInForm } from './Sync';
 const inputClass =
   'w-full rounded-[9px] border border-[var(--border-strong)] bg-[var(--bg-solid)] px-2.5 py-1.5 text-[13px]';
 
-/** `defaultServer`: where a new sign-in starts (account.perch.ws unless told otherwise). */
+/** `defaultServer`: where a new sign-in starts (the web app passes its own address). */
 export function CommunitySection({ defaultServer }: { defaultServer?: string } = {}) {
   const [account, setAccount] = useState<CommunityAccount | null | undefined>(undefined);
   const [form, setForm] = useState(false);
@@ -49,8 +49,8 @@ export function CommunitySection({ defaultServer }: { defaultServer?: string } =
     body = (
       <Row
         label="Perch account"
-        hint="Your name for sharing notes as public pages, on account.perch.ws or a server you run. It
-        doesn’t sync your library and isn’t needed to read: your feeds stay in this browser."
+        hint="To share notes as public pages, sign in to a Perch Server you or a friend runs. Perch
+        itself doesn't host accounts or pages. Not needed to read: your feeds stay in this browser."
       >
         <Button size="sm" variant="default" onClick={() => setForm(true)}>
           Sign in or create

@@ -12,7 +12,6 @@ import { suggestUsername } from '@perch/core/username';
 import { Button, Dialog, RecoveryCode, Row, Section, Spinner, useToast } from '@perch/reader';
 import { sendMessage } from '@/lib/messaging';
 import { DATA_FOR, requestHostPermission } from '@/lib/permissions/host';
-import { DEFAULT_HUB } from '@/lib/community';
 import { chainApi, createChain, deleteChain, joinChain } from '@/lib/sync/chain';
 import { forgetDevice, getDevices, watchDevices, type DeviceMap } from '@/lib/sync/devices';
 import {
@@ -603,15 +602,13 @@ export function SignInForm({
   /** `sync`: the library syncs with this account. `community`: the Perch account, for sharing. */
   purpose?: 'sync' | 'community';
   onSignedIn?: (account: ServerAccount) => Promise<void>;
-  /** The server address to start from (a Perch account's defaults to account.perch.ws). */
+  /** The server address to start from. */
   defaultServer?: string;
 }) {
   const toast = useToast();
   // 'reset' sets a new password with an emailed code, 'recover' with the recovery code.
   const [mode, setMode] = useState<'in' | 'up' | 'reset' | 'recover'>('in');
-  const [server, setServer] = useState(
-    initial?.server ?? defaultServer ?? (purpose === 'community' ? DEFAULT_HUB : ''),
-  );
+  const [server, setServer] = useState(initial?.server ?? defaultServer ?? '');
   const [username, setUsername] = useState(initial?.username ?? '');
   const [password, setPassword] = useState('');
   const [invite, setInvite] = useState('');
@@ -759,7 +756,7 @@ export function SignInForm({
         className={inputClass}
         placeholder={
           purpose === 'community'
-            ? 'Server address: app.perch.ws, or your own'
+            ? 'Your Perch Server, e.g. perch.example.com'
             : 'Server address, e.g. reader.example.com'
         }
         value={server}

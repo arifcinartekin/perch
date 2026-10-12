@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
-/** A Perch account: a name on a hub (account.perch.ws by default) for sharing notes. */
+/** A Perch account: a name on a Perch Server you or a friend runs, for sharing notes. */
 @Serializable
 data class CommunityAccount(val server: String, val username: String, val token: String)
 
@@ -17,11 +17,6 @@ data class CommunityAccount(val server: String, val username: String, val token:
  * session token is kept encrypted (SecureStore).
  */
 class Community(private val secure: SecureStore) {
-  companion object {
-    /** Where Perch accounts live unless you pick another server. */
-    const val DEFAULT_HUB = "https://account.perch.ws"
-  }
-
   private val _account = MutableStateFlow(
     secure.get("community")?.let { runCatching { Json.decodeFromString<CommunityAccount>(it) }.getOrNull() },
   )

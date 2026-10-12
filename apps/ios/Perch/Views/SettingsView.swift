@@ -315,7 +315,7 @@ struct SettingsView: View {
       Text("Perch account")
     } footer: {
       Text(
-        "Your name for sharing notes as public pages. It doesn't sync your library; the sync chain does that."
+        "For sharing notes as public pages, on a Perch Server you or a friend runs. Perch itself doesn't host accounts. Any note can also be shared as text."
       )
     }
   }

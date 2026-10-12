@@ -86,7 +86,7 @@ struct ConnectView: View {
       addressLoaded = true
       address =
         purpose == .community
-        ? session.communityServer?.host() ?? "account.perch.ws"
+        ? session.communityServer?.host() ?? ""
         : UserDefaults.standard.url(forKey: "perch.server")?.absoluteString ?? ""
     }
   }
@@ -176,7 +176,7 @@ struct ConnectView: View {
         .fieldStyle()
       Group {
         if purpose == .community {
-          Text("account.perch.ws, or a Perch Server of your own.")
+          Text("A Perch Server you or a friend runs. Perch itself doesn't host accounts.")
         } else {
           #if targetEnvironment(simulator)
             Text(

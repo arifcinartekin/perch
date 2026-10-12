@@ -122,6 +122,14 @@ fun NoteSheet(reader: Reader, nav: Nav, article: Article, onDismiss: () -> Unit)
         }
       }
       error?.let { Text(it, color = Color(0xFFEF4444), fontSize = 13.sp) }
+      // Anyone can pass a note on as text; a public page needs a Perch Server.
+      TextButton(
+        {
+          val text = listOfNotNull(article.displayTitle, article.url, "", body.trim()).joinToString("\n")
+          context.startActivity(Intent.createChooser(Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, text), null))
+        },
+        enabled = body.isNotBlank(),
+      ) { Text(stringResource(R.string.share_as_text)) }
       Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         if (note != null) {
           TextButton({ act { reader.deleteNote(note.id); onDismiss() } }, enabled = !busy) {

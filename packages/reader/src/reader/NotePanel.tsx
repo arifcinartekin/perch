@@ -249,24 +249,45 @@ export function ShareControls({
     );
   }
 
+  // Anyone can pass a note on as text; a public page needs a Perch Server.
+  const copyText = async () => {
+    await navigator.clipboard?.writeText(noteAsText(note)).catch(() => {});
+    toast('Note copied', 'success');
+  };
+
   return (
-    <span className="ml-auto flex items-center gap-2">
+    <span className="ml-auto flex flex-wrap items-center gap-2">
       {blocked && <span className="text-[11.5px] text-[var(--text-faint)]">{blocked}</span>}
       <Button
         size="sm"
-        variant="default"
-        loading={busy}
-        disabled={!!blocked || !note.body.trim()}
-        onClick={() =>
-          void run(async () => {
-            await beforeShare?.();
-            const url = await backend.sharing.share(note.id);
-            await copy(url);
-          })
-        }
+        variant="ghost"
+        disabled={!note.body.trim()}
+        onClick={() => void copyText()}
       >
-        <IconLink size={13} /> Share
+        Copy note
       </Button>
+      {!blocked && (
+        <Button
+          size="sm"
+          variant="default"
+          loading={busy}
+          disabled={!!blocked || !note.body.trim()}
+          onClick={() =>
+            void run(async () => {
+              await beforeShare?.();
+              const url = await backend.sharing.share(note.id);
+              await copy(url);
+            })
+          }
+        >
+          <IconLink size={13} /> Share
+        </Button>
+      )}
     </span>
   );
+}
+
+/** A note as plain text to paste anywhere: the article, its link, then the note. */
+export function noteAsText(note: Note): string {
+  return [note.title, ...(note.url ? [note.url] : []), '', note.body.trim()].join('\n');
 }

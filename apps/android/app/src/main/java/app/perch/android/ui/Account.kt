@@ -66,7 +66,6 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.perch.android.ChainLink
-import app.perch.android.Community
 import app.perch.android.CommunityAccount
 import app.perch.android.R
 import app.perch.android.Reader
@@ -83,7 +82,7 @@ private val danger = Color(0xFFEF4444)
 
 /**
  * The Perch account: a name for sharing notes as public pages, on
- * account.perch.ws or a server you run. No email address; a recovery code
+ * a Perch Server you or a friend runs (Perch itself hosts none). No email; a recovery code
  * stands in for "forgot password".
  */
 @Composable
@@ -137,8 +136,7 @@ private fun SignIn(reader: Reader, onDone: (CommunityAccount, String?) -> Unit) 
   val context = LocalContext.current
   val scope = rememberCoroutineScope()
   var mode by rememberSaveable { mutableStateOf(Mode.SIGN_IN) }
-  var server by rememberSaveable { mutableStateOf(Community.DEFAULT_HUB.removePrefix("https://")) }
-  var otherServer by rememberSaveable { mutableStateOf(false) }
+  var server by rememberSaveable { mutableStateOf("") }
   var username by rememberSaveable { mutableStateOf("") }
   var password by rememberSaveable { mutableStateOf("") }
   var recovery by rememberSaveable { mutableStateOf("") }
@@ -269,14 +267,11 @@ private fun SignIn(reader: Reader, onDone: (CommunityAccount, String?) -> Unit) 
       else -> null
     },
   ) {
-    if (otherServer) {
-      OutlinedTextField(server, { server = it }, singleLine = true, modifier = Modifier.fillMaxWidth().padding(16.dp), label = { Text(stringResource(R.string.server_address)) })
-    } else {
-      Row(Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-        Text(server, color = look.text, fontSize = 16.sp, modifier = Modifier.weight(1f))
-        Text(stringResource(R.string.use_another), color = look.accentText, fontSize = 15.sp, modifier = Modifier.clickable { otherServer = true })
-      }
-    }
+    OutlinedTextField(
+      server, { server = it }, singleLine = true, modifier = Modifier.fillMaxWidth().padding(16.dp),
+      label = { Text(stringResource(R.string.server_address)) }, placeholder = { Text("perch.example.com") },
+      keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri, autoCorrectEnabled = false),
+    )
   }
   if (mode == Mode.CREATE) {
     val legal = info?.legal

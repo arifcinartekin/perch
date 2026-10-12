@@ -136,9 +136,9 @@
   <string name="delete_chain_title">Zincir silinsin mi?</string>
   <string name="delete_chain_text">Aktarıcı onu unutur ve tüm cihazlar eşitlemeyi bırakır. Kitaplıklar her cihazda kalır.</string>
   <string name="perch_account">Perch hesabı</string>
-  <string name="account_intro">Perch hesabı yalnızca notlarını herkese açık sayfalar olarak paylaşmak için bir addır. E-posta adresi istemez ve kitaplığını tutmaz; kitaplığın bu telefonda kalır.</string>
-  <string name="account_off_hint">Not paylaşmak için; e-posta yok</string>
-  <string name="account_settings_hint">Senkrondan ayrı: bu telefon eşitlense de eşitlenmese de notlarını bir Perch hesabıyla paylaşabilirsin.</string>
+  <string name="account_intro">Notlarını herkese açık sayfalar olarak paylaşmak için, senin ya da bir arkadaşının çalıştırdığı bir Perch sunucusuna giriş yap. Perch\'ün kendisi hesap ya da sayfa barındırmaz; kitaplığın her durumda bu telefonda kalır.</string>
+  <string name="account_off_hint">Kendi Perch sunucunda</string>
+  <string name="account_settings_hint">Yalnızca kendi sunucundan notları herkese açık sayfa olarak paylaşmak için. Her not metin olarak da paylaşılabilir.</string>
   <string name="account_signed_in_hint">Notların, birini paylaşana kadar gizli kalır. Paylaşılan notlar bu ad altında herkese açık sayfalardır.</string>
   <string name="sign_in">Giriş yap</string>
   <string name="sign_out">Çıkış yap</string>
@@ -181,7 +181,7 @@
   <string name="stop_sharing">Paylaşımı durdur</string>
   <string name="shared">Paylaşıldı</string>
   <string name="share_hint">Paylaşmak, bu notun bir kopyasını %1$s üzerinde rastgele bir adreste, Perch hesabının adıyla yayınlar.</string>
-  <string name="share_needs_account">Not paylaşmak için bir Perch hesabına giriş yap (Ayarlar → Perch hesabı).</string>
+  <string name="share_needs_account">Herkese açık sayfalar için kendi Perch sunucun gerekir (Ayarlar → Perch hesabı). Bir notu her zaman metin olarak paylaşabilirsin.</string>
   <string name="share_other_account">Bu sayfa başka bir hesaptan paylaşıldı. Paylaşımı durdurmak için o hesaba giriş yap.</string>
   <string name="pdf_title">Kurtarma kodu</string>
   <string name="pdf_for">@%1$s için, %2$s</string>
@@ -205,4 +205,5 @@
   <string name="wrong_pin">PIN yanlış</string>
   <string name="unlock_perch">Perch\'ün kilidini aç</string>
   <string name="use_pin">PIN kullan</string>
+  <string name="share_as_text">Metin olarak paylaş</string>
 </resources>

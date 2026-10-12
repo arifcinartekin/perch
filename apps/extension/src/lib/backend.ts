@@ -173,7 +173,7 @@ export const localBackend: ReaderBackend = {
       if (await getCommunity()) return null;
       const account = await getAccount();
       if (account && !isChain(account) && !(await getStatus()).signedOut) return null;
-      return 'Sign in to a Perch account under Settings → Perch account to share notes.';
+      return 'Public pages need a Perch Server of your own (Settings → Perch account).';
     },
     async share(noteId) {
       const community = await getCommunity();
@@ -186,7 +186,7 @@ export const localBackend: ReaderBackend = {
       }
       const account = await getAccount();
       if (!account || isChain(account)) {
-        throw new Error('Sign in to a Perch account to share notes.');
+        throw new Error('Public pages need a Perch Server of your own.');
       }
       await sendMessage('sync:now');
       const url = await shareNote(account, noteId);

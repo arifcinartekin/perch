@@ -137,9 +137,9 @@
   <string name="delete_chain_title">Delete the chain?</string>
   <string name="delete_chain_text">The relay forgets it and every device stops syncing. Libraries stay on each device.</string>
   <string name="perch_account">Perch account</string>
-  <string name="account_intro">A Perch account is only a name for sharing notes as public pages. It has no email address and doesn\'t hold your library, which stays on this phone.</string>
-  <string name="account_off_hint">For sharing notes; no email</string>
-  <string name="account_settings_hint">Separate from sync: share notes with a Perch account whether or not this phone syncs.</string>
+  <string name="account_intro">To share notes as public pages, sign in to a Perch Server you or a friend runs. Perch itself doesn\'t host accounts or pages, and your library stays on this phone either way.</string>
+  <string name="account_off_hint">On a Perch Server of your own</string>
+  <string name="account_settings_hint">Only for sharing notes as public pages from your own server. Any note can also be shared as text.</string>
   <string name="account_signed_in_hint">Your notes stay private until you share one. Shared notes are public pages under this name.</string>
   <string name="sign_in">Sign in</string>
   <string name="sign_out">Sign out</string>
@@ -182,7 +182,7 @@
   <string name="stop_sharing">Stop sharing</string>
   <string name="shared">Shared</string>
   <string name="share_hint">Sharing publishes a copy of this note at a random address on %1$s, under your Perch account\'s name.</string>
-  <string name="share_needs_account">To share notes, sign in to a Perch account (Settings → Perch account).</string>
+  <string name="share_needs_account">Public pages need a Perch Server of your own (Settings → Perch account). You can always share a note as text.</string>
   <string name="share_other_account">This page was shared from another account. Sign in to it to stop sharing.</string>
   <string name="pdf_title">Recovery code</string>
   <string name="pdf_for">For @%1$s on %2$s</string>
@@ -206,4 +206,5 @@
   <string name="wrong_pin">Wrong PIN</string>
   <string name="unlock_perch">Unlock Perch</string>
   <string name="use_pin">Use PIN</string>
+  <string name="share_as_text">Share as text</string>
 </resources>

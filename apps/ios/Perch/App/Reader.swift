@@ -225,7 +225,7 @@ final class Reader {
   /// Server through that server.
   var sharingUnavailable: String? {
     if server != nil || community() != nil { return nil }
-    return String(localized: "Sign in to a Perch account in Settings to share notes.")
+    return String(localized: "Public pages need a Perch Server of your own (Settings → Perch account).")
   }
 
   /// Publishes the note; returns the page's address.
