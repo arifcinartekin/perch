@@ -9,9 +9,10 @@ export const API_PREFIX = '/api/v1';
 /**
  * `personal`: the server keeps each account's library and fetches its feeds.
  * `hub`: Perch accounts only (community identity, shared notes); libraries
- * stay on devices and sync through chains. `e2e` is reserved.
+ * stay on devices and sync through chains. `relay`: only a relay for sync
+ * chains, with no accounts at all (sync.perch.ws). `e2e` is reserved.
  */
-export type ServerMode = 'personal' | 'hub' | 'e2e';
+export type ServerMode = 'personal' | 'hub' | 'relay' | 'e2e';
 /** `email`: anyone may sign up after confirming an email address with a code. */
 export type SignupPolicy = 'open' | 'invite' | 'email' | 'closed';
 

@@ -55,3 +55,31 @@ export function serveWeb(app: Hono<Env>, root: string) {
     return serveStatic({ root, path: 'index.html' })(c, next);
   });
 }
+
+/** PERCH_RELAY_PAGE, else apps/server/relay (in the repo, or /app/relay in the image). */
+export function findRelayPage(configured?: string): string | undefined {
+  if (configured) return configured;
+  for (const candidate of ['../relay', '../../relay']) {
+    const path = fileURLToPath(new URL(candidate, import.meta.url));
+    if (existsSync(`${path}/index.html`)) return path;
+  }
+  return undefined;
+}
+
+// A relay's only page says what the address is, for anyone who opens it.
+const RELAY_CSP =
+  "default-src 'none'; img-src 'self'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
+
+export function serveRelayPage(app: Hono<Env>, root: string) {
+  app.use('/*', async (c, next) => {
+    await next();
+    if (c.req.path.startsWith('/api/')) return;
+    c.header('content-security-policy', RELAY_CSP);
+    c.header('referrer-policy', 'no-referrer');
+  });
+  app.get('/favicon.svg', serveStatic({ root, path: 'favicon.svg' }));
+  app.get('/*', async (c, next) => {
+    if (c.req.path.startsWith('/api/') || c.req.path === '/healthz') return next();
+    return serveStatic({ root, path: 'index.html' })(c, next);
+  });
+}

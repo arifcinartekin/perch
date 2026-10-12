@@ -13,7 +13,11 @@ import {
   emailCodes,
   feeds,
   fulltextCache,
+  invites,
   meta,
+  reports,
+  sessions,
+  shares,
   subscriptions,
   syncRecords,
   userSettings,
@@ -107,6 +111,30 @@ function checkLibraries(db: DB, purge: boolean) {
   console.log(`Deleted ${left} library records left from personal mode.`);
 }
 
+/**
+ * A relay has no accounts. Ones left from before (hub or personal mode) stay
+ * until PERCH_PURGE_ACCOUNTS=true says to delete them, with their sessions,
+ * shared pages and reports; the file is then compacted so nothing lingers.
+ */
+function checkAccounts(db: DB, purge: boolean) {
+  const left = db.select({ n: count() }).from(users).get()!.n;
+  if (!left) return;
+  if (!purge) {
+    console.warn(
+      `Relay mode, but ${left} accounts remain from before. They can't sign in here; ` +
+        'start once with PERCH_PURGE_ACCOUNTS=true to delete them and everything they shared.',
+    );
+    return;
+  }
+  db.transaction((tx) => {
+    for (const table of [reports, shares, sessions, emailCodes, invites, users])
+      tx.delete(table).run();
+  });
+  db.run(sql`VACUUM`);
+  db.run(sql`PRAGMA wal_checkpoint(TRUNCATE)`);
+  console.log(`Deleted ${left} accounts and what they shared.`);
+}
+
 export function createContext(
   config: Config,
   deps: { mailer?: Mailer } = {},
@@ -119,7 +147,8 @@ export function createContext(
   const secret = instanceSecret(db);
   const emailKey = config.emailKey ?? hmac(secret, 'email-id').toString('base64url');
   forgetStoredAddresses(db, emailKey);
-  if (config.mode === 'hub') checkLibraries(db, config.purgeLibraries);
+  if (config.mode === 'hub' || config.mode === 'relay') checkLibraries(db, config.purgeLibraries);
+  if (config.mode === 'relay') checkAccounts(db, config.purgeAccounts || config.purgeLibraries);
   const notifier = new Notifier();
   const worker = new FeedWorker(db, fetch, config.fetchIntervalMin, notifier);
   return {
@@ -177,9 +206,9 @@ export function createApp(ctx: AppContext) {
       signup: ctx.config.signup,
       community: ctx.config.community,
       chain: ctx.config.chain,
-      needsSetup: users_ === 0,
+      needsSetup: ctx.config.mode !== 'relay' && users_ === 0,
       email: ctx.mailer != null,
-      recovery: true,
+      ...(ctx.config.mode !== 'relay' && { recovery: true }),
       ...(ctx.config.accountUrl && {
         accountUrl: ctx.config.accountUrl,
         ...(ctx.config.publicUrl && { readerUrl: ctx.config.publicUrl }),
@@ -193,6 +222,13 @@ export function createApp(ctx: AppContext) {
       }),
     });
   });
+  if (ctx.config.mode === 'relay') {
+    // Only the chain API: no accounts, no pages people made, no feeds.
+    api.route('/chain', chainRoutes(ctx));
+    app.route(API_PREFIX, api);
+    app.get('/healthz', (c) => c.text('ok'));
+    return app;
+  }
   api.route('/auth', authRoutes(ctx));
   api.route('/devices', deviceRoutes(ctx));
   api.route('/admin', adminRoutes(ctx));

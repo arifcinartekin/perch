@@ -38,6 +38,8 @@ COPY --from=build /app/node_modules/better-sqlite3 node_modules/better-sqlite3
 COPY --from=build /app/apps/server/dist dist
 COPY --from=build /app/apps/server/drizzle drizzle
 COPY --from=build /app/apps/web/dist web
+# The page a relay (PERCH_MODE=relay) shows at its address.
+COPY --from=build /app/apps/server/relay relay
 RUN mkdir -p /data && chown node:node /data
 USER node
 VOLUME /data

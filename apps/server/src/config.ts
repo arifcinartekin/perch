@@ -44,6 +44,10 @@ export interface Config {
   signupPow: number;
   /** Hub mode: delete libraries left from when the server was personal. */
   purgeLibraries: boolean;
+  /** Relay mode: delete accounts, sessions and shared pages left from before (once). */
+  purgeAccounts: boolean;
+  /** Where the relay's page is (apps/server/relay); found by itself when unset. */
+  relayPage?: string;
   /** Set by the image build (PERCH_COMMIT). */
   commit?: string;
 }
@@ -75,7 +79,7 @@ function oneOf<T extends string>(
 }
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
-  const mode = oneOf('PERCH_MODE', env.PERCH_MODE, ['personal', 'hub', 'e2e'], 'personal');
+  const mode = oneOf('PERCH_MODE', env.PERCH_MODE, ['personal', 'hub', 'relay', 'e2e'], 'personal');
   if (mode === 'e2e') {
     throw new Error('PERCH_MODE=e2e is not available yet; use personal.');
   }
@@ -102,9 +106,10 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     host: env.HOST || '0.0.0.0',
     databasePath: databaseUrl.replace(/^(sqlite|file):(\/\/)?/, '') || './data/perch.db',
     publicUrl: env.PERCH_PUBLIC_URL?.replace(/\/+$/, '') || undefined,
-    signup,
+    // A relay has no accounts to sign up for, and is always a relay.
+    signup: mode === 'relay' ? 'closed' : signup,
     community: bool(env.PERCH_COMMUNITY, false),
-    chain: bool(env.PERCH_CHAIN, false),
+    chain: mode === 'relay' || bool(env.PERCH_CHAIN, false),
     fetchIntervalMin: int(env.PERCH_FETCH_INTERVAL_MIN, 30, 5, 24 * 60),
     fetchAllowPrivate: bool(env.PERCH_FETCH_ALLOW_PRIVATE, false),
     fetchAllowHosts: (env.PERCH_FETCH_ALLOW_HOSTS ?? '')
@@ -123,6 +128,8 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     emailKey: emailKey(env.PERCH_EMAIL_KEY),
     signupPow: int(env.PERCH_SIGNUP_POW, 0, 0, 28),
     purgeLibraries: bool(env.PERCH_PURGE_LIBRARIES, false),
+    purgeAccounts: bool(env.PERCH_PURGE_ACCOUNTS, false),
+    relayPage: env.PERCH_RELAY_PAGE?.trim() || undefined,
     commit: /^[0-9a-f]{7,40}$/.test(env.PERCH_COMMIT ?? '') ? env.PERCH_COMMIT : undefined,
   };
 }
