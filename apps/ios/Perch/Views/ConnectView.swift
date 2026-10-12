@@ -217,6 +217,14 @@ struct ConnectView: View {
               "This server holds Perch accounts, not libraries. Sync with a chain, and sign in to it under Perch account to share notes."
           ))
       }
+      if info.mode == .relay {
+        throw APIError(
+          status: 0, code: "relay",
+          message: String(
+            localized:
+              "This address only relays sync chains: there are no accounts on it. Use it under Settings → Sync chain."
+          ))
+      }
       guard info.mode == .personal || info.mode == .hub else {
         throw APIError(
           status: 0, code: "unsupported",

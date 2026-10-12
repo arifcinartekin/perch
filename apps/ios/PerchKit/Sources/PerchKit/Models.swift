@@ -4,9 +4,10 @@ import Foundation
 // types.ts. Times are epoch milliseconds on the wire.
 
 /// `personal` keeps libraries; `hub` holds Perch accounts and shared notes
-/// only. A mode this version doesn't know reads as `unknown`.
+/// only; `relay` only relays sync chains. A mode this version doesn't know
+/// reads as `unknown`.
 public enum ServerMode: String, Codable, Sendable {
-  case personal, hub, e2e, unknown
+  case personal, hub, relay, e2e, unknown
 
   public init(from decoder: Decoder) throws {
     self = ServerMode(rawValue: try decoder.singleValueContainer().decode(String.self)) ?? .unknown

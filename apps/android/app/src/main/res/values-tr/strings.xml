@@ -206,4 +206,5 @@
   <string name="unlock_perch">Perch\'ün kilidini aç</string>
   <string name="use_pin">PIN kullan</string>
   <string name="share_as_text">Metin olarak paylaş</string>
+  <string name="error_relay_only">Bu adres yalnızca senkron zincirlerini aktarır; üzerinde hesap yoktur. Onu Ayarlar → Senkron zinciri\'nde kullan.</string>
 </resources>

@@ -661,6 +661,11 @@ export function SignInForm({
           `${new URL(url).host} holds Perch accounts, not libraries. Sync with a chain, and sign in to it under Perch account to share notes.`,
         );
       }
+      if (info.mode === 'relay') {
+        return setErr(
+          `${new URL(url).host} only relays sync chains: there are no accounts on it. Use it for a sync chain instead.`,
+        );
+      }
       if (info.mode !== 'personal' && info.mode !== 'hub') {
         return setErr('This server runs in a mode this version of Perch can’t use yet.');
       }

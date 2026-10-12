@@ -3550,6 +3550,16 @@
         }
       }
     },
+    "This address only relays sync chains: there are no accounts on it. Use it under Settings → Sync chain.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu adres yalnızca senkron zincirlerini aktarır; üzerinde hesap yoktur. Onu Ayarlar → Senkron zinciri'nde kullan."
+          }
+        }
+      }
+    },
     "This chain was deleted on another device.": {
       "localizations": {
         "tr": {

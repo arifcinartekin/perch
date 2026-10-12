@@ -167,6 +167,7 @@ private fun SignIn(reader: Reader, onDone: (CommunityAccount, String?) -> Unit) 
       try {
         val device = ChainLink.phoneName(context)
         val client = ApiClient(url)
+        if ((info ?: client.serverInfo()).mode == "relay") throw IllegalStateException(context.getString(R.string.error_relay_only))
         val name = username.trim().removePrefix("@")
         when (mode) {
           Mode.SIGN_IN -> {
@@ -264,6 +265,7 @@ private fun SignIn(reader: Reader, onDone: (CommunityAccount, String?) -> Unit) 
       base == null -> null
       infoError != null -> describe(infoError!!)
       info == null -> stringResource(R.string.checking_server)
+      info?.mode == "relay" -> stringResource(R.string.error_relay_only)
       else -> null
     },
   ) {

@@ -207,4 +207,5 @@
   <string name="unlock_perch">Unlock Perch</string>
   <string name="use_pin">Use PIN</string>
   <string name="share_as_text">Share as text</string>
+  <string name="error_relay_only">This address only relays sync chains: there are no accounts on it. Use it under Settings → Sync chain.</string>
 </resources>
