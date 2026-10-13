@@ -150,12 +150,12 @@ build is reproducible with `npm ci && npm run build`.
    first. It uses `activeTab`, so it only happens for the tab you're on, when you ask for it.
 
 2. **Bounded path probing (fallback).** If the page advertises no feed links, Perch probes a
-   **capped list of ~18 well-known locations** on the same origin (`/feed`, `/rss.xml`,
+   **short list of well-known locations** on the same origin (`/feed`, `/rss.xml`,
    `/atom.xml`, `/index.xml`, `/feeds/posts/default`, `/?feed=rss2`, …). Each probe is a single
-   `GET` with a ~3.5s timeout; Perch reads only the first couple of kilobytes and confirms it's
-   really a feed by checking the `Content-Type` **and** sniffing the bytes (`<rss`, `<feed`,
+   `GET` with a ~3.5s timeout; Perch checks only the first couple of kilobytes of the response and
+   confirms it's really a feed by checking the `Content-Type` **and** sniffing the bytes (`<rss`, `<feed`,
    `<?xml`, `jsonfeed.org`). It stops early once it has found enough, and never makes more than
-   the capped number of requests.
+   20 requests.
 
 3. **The orange dot.** If Perch finds one or more feeds you haven't added, it puts a small orange dot
    on the toolbar icon.

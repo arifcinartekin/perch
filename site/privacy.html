@@ -48,7 +48,7 @@
          =================================================================== -->
     <main class="legal" data-lang="en">
       <h1>Privacy policy</h1>
-      <p class="updated">Last updated 12 October 2026 · <a href="/terms">Terms of use</a></p>
+      <p class="updated">Last updated 13 October 2026 · <a href="/terms">Terms of use</a></p>
 
       <div class="summary glass">
         <strong>The short version</strong>
@@ -147,8 +147,11 @@
       </p>
       <p>
         The extension asks for no site access when installed. It asks for one site at a time when
-        you add a feed from it, or for all sites only if you turn on automatic feed discovery. It
-        reads a page only when you open Perch on it, and only the feed links the page names.
+        you add a feed or open the full text of an article from a new site, or for all sites only if
+        you turn on automatic feed discovery. It looks at a page when you open Perch on it, or at
+        each page as it loads if automatic discovery is on, and reads only the feed links the page
+        names. If a page names none, it tries a few usual addresses on the same site (such as
+        /feed), without cookies. None of this is sent to us.
       </p>
 
       <h2>Sync chains (sync.perch.ws)</h2>
@@ -159,14 +162,18 @@
       </p>
       <ul>
         <li>a hash of the chain's access token (not the code, and not the key);</li>
-        <li>the encrypted records, each with an opaque slot name, a timestamp and its size;</li>
+        <li>
+          the encrypted records, each with an opaque slot name, a timestamp, its size, and whether
+          it marks a deletion or read state that may be forgotten (not which item it is about);
+        </li>
         <li>when the chain was created and, roughly to the hour, when it was last used.</li>
       </ul>
       <p>
         We can see how many records a chain has, how big they are and when they change. We cannot
-        see what they contain, and nothing ties a chain to a person. Read state is forgotten after
-        60 days, deleted items after 90 days, and a chain no device has used for 180 days is deleted
-        with everything in it. You can delete a chain at any time from Settings → Sync.
+        see what they contain, and nothing ties a chain to a person. Read, unstarred state is
+        forgotten after 60 days, deleted items after 90 days, and a chain no device has used for 180
+        days is deleted with everything in it. You can delete a chain at any time from Settings →
+        Sync.
       </p>
 
       <h2>If someone took our server</h2>
@@ -282,7 +289,7 @@
          =================================================================== -->
     <main class="legal" data-lang="tr" hidden>
       <h1>Gizlilik politikası</h1>
-      <p class="updated">Son güncelleme 12 Ekim 2026 · <a href="/terms">Kullanım koşulları</a></p>
+      <p class="updated">Son güncelleme 13 Ekim 2026 · <a href="/terms">Kullanım koşulları</a></p>
 
       <div class="summary glass">
         <strong>Kısaca</strong>
@@ -381,9 +388,12 @@
         çalıştırdığı Perch sunucularında vardır.
       </p>
       <p>
-        Eklenti kurulurken hiçbir siteye erişim istemez. Ondan bir feed eklediğinde yalnızca o
-        siteye, otomatik feed bulmayı açarsan tüm sitelere erişim ister. Bir sayfayı yalnızca orada
-        Perch'ü açtığında, ve yalnızca sayfanın belirttiği feed bağlantılarını okur.
+        Eklenti kurulurken hiçbir siteye erişim istemez. Ondan bir feed eklediğinde ya da yeni bir
+        sitedeki makalenin tamamını açtığında yalnızca o siteye, otomatik feed bulmayı açarsan tüm
+        sitelere erişim ister. Bir sayfaya orada Perch'ü açtığında, ya da otomatik bulma açıksa her
+        sayfa yüklendiğinde bakar ve yalnızca sayfanın belirttiği feed bağlantılarını okur. Sayfa
+        hiç belirtmiyorsa aynı sitede birkaç bilinen adresi (/feed gibi) çerezsiz dener. Bunların
+        hiçbiri bize gönderilmez.
       </p>
 
       <h2>Senkron zincirleri (sync.perch.ws)</h2>
@@ -396,15 +406,18 @@
         <li>
           zincirin erişim anahtarının bir özeti (kodun kendisi ya da şifreleme anahtarı değil);
         </li>
-        <li>şifreli kayıtlar; her biri anlamsız bir yuva adı, bir zaman damgası ve boyutuyla;</li>
+        <li>
+          şifreli kayıtlar; her biri anlamsız bir yuva adı, bir zaman damgası, boyutu ve bir silme
+          mi, yoksa unutulabilecek bir okundu bilgisi mi olduğuyla (hangi öğeye ait olduğu değil);
+        </li>
         <li>zincirin ne zaman oluşturulduğu ve saat düzeyinde, en son ne zaman kullanıldığı.</li>
       </ul>
       <p>
         Bir zincirde kaç kayıt olduğunu, ne büyüklükte olduklarını ve ne zaman değiştiklerini
         görebiliriz; içlerinde ne olduğunu göremeyiz, ve hiçbir şey bir zinciri bir kişiye bağlamaz.
-        Okundu bilgisi 60 gün, silinen öğeler 90 gün sonra unutulur; 180 gündür hiçbir cihazın
-        kullanmadığı bir zincir içindekilerle birlikte silinir. Bir zinciri istediğin zaman Ayarlar
-        → Senkron'dan silebilirsin.
+        Okunmuş ve yıldızsız öğelerin bilgisi 60 gün, silinen öğeler 90 gün sonra unutulur; 180
+        gündür hiçbir cihazın kullanmadığı bir zincir içindekilerle birlikte silinir. Bir zinciri
+        istediğin zaman Ayarlar → Senkron'dan silebilirsin.
       </p>
 
       <h2>Sunucumuz ele geçirilirse</h2>

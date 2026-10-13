@@ -27,7 +27,7 @@ const TR = {
     'Feed’ler, okuduklarınız, notlarınız ve ayarlarınız cihazınızda durur. Telemetri yok, reklam yok; okumak için hesap gerekmez.',
   'f3.t': 'Korkutucu izin yok',
   'f3.d':
-    'Eklenti kurulurken hiçbir siteye erişim istemez. Yalnızca eklediğiniz sitelere, tek tek erişir.',
+    'Eklenti kurulurken hiçbir siteye erişim istemez. Otomatik feed bulmayı açmadıkça yalnızca eklediğiniz sitelere, tek tek erişir.',
   'f4.t': 'Feed’i sizin için bulur',
   'f4.d':
     'Herhangi bir sitede Perch’ü açın: sayfanın gösterdiği feed bağlantılarını okur ya da olağan yerlere bakar. RSS, Atom ve JSON Feed’in hepsi çalışır.',
@@ -61,15 +61,15 @@ const TR = {
   pv4: 'Site simgeleri indirilmez — her siteye neyi takip ettiğinizi söylerlerdi.',
   pv5: 'Makaleler betikler kapalıyken gösterilir.',
   pv6: 'perch.ws, Cloudflare Pages üzerinden sunulur; Cloudflare her ziyareti herhangi bir web barındırıcısı gibi işler. Senkron aktarıcısı (sync.perch.ws) Cloudflare’den geçmez: cihazlarınız doğrudan ona bağlanır ve aktarıcı erişim kaydı tutmaz.',
-  'f7.t': 'Paylaşmaya değer notlar',
+  'f7.t': 'Size ait notlar',
   'f7.d':
-    'Herhangi bir makaleye markdown ile not yazın. Kendi sayfası olarak paylaşana kadar gizli kalır.',
+    'Herhangi bir makaleye markdown ile not yazın. Notlar gizli kalır ve kitaplığınızla eşitlenir; birini herhangi bir uygulamaya metin olarak paylaşabilirsiniz.',
   'f8.t': 'İstediğinde kilitli',
   'f8.d':
     'Eklentide PIN, telefonlarda PIN ile Face ID ya da parmak izi; yoldan geçen biri okuduklarınızı açamaz.',
-  'f9.t': 'E-posta yok, hiç',
+  'f9.t': 'Hesap yok, hiç',
   'f9.d':
-    'Hesaplar bir kullanıcı adı, bir şifre ve sakladığınız bir kurtarma kodundan ibaret. Şifrenizi mi unuttunuz? Kod yenisini belirler.',
+    'Kaydolacak bir şey yok: kullanıcı adı, şifre ya da e-posta yok. Cihazlarınızı bunun yerine bir senkron zinciri kodu bağlar.',
   pv7: 'İşlettiğimiz tek şey aktarıcıdır ve orada yalnızca şifreli kayıtlar durur: çalınan bir diskte kimsenin okuyamayacağı ve kime ait olduğunu söylemeyen veriden başka bir şey bulunmaz.',
   pv8: 'Sunucu imajlarımız herkesin gözü önünde derlenir ve imzalanır; sunucu hangi commit’i çalıştırdığını söyler. Bkz. perch.ws/transparency.',
   'end.title': 'Okumak için sakin bir köşe bulun.',
