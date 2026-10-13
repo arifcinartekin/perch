@@ -50,6 +50,8 @@ and the eye ink, as in the files.
 - `ios/AppIcon.appiconset/` — the same icon set, to drop into another asset catalog. Light, dark
   (mark on transparency; iOS draws its own dark background) and tinted
   (greyscale; iOS maps luminance to the user's tint).
+- `social-preview.png` — 1280×640, for the repository's social preview on GitHub
+  (Settings → General → Social preview).
 - `ios/IconComposer/` — the icon as three flat layers for iOS 26's Liquid
   Glass icons: `1-background.svg`, `2-bird.svg`, `3-accents.svg`. Import them
   into Icon Composer (Xcode 26) in that order to build `AppIcon.icon`; Icon

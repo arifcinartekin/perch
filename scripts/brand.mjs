@@ -284,3 +284,15 @@ text(
   ),
   'brand/ios/IconComposer/3-accents.svg',
 );
+
+// --- GitHub social preview ------------------------------------------------
+// 1280×640 (Settings → General → Social preview): the horizontal logo on the
+// night gradient, with the one-line description under it.
+const socialPreview = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640" width="1280" height="640">
+<defs>${NIGHT}</defs>
+<rect width="1280" height="640" fill="url(#bg)"/>
+<svg x="230" y="130" width="820" height="254" viewBox="90 100 1550 480">${inner(src('perch-logo-horizontal-on-dark.svg'))}</svg>
+<text x="640" y="470" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="40" fill="#F4F1EA">A calm, private feed reader</text>
+<text x="640" y="526" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="26" fill="#F4F1EA" fill-opacity="0.6">No account · No tracking · Your library stays on your device</text>
+</svg>`;
+png(socialPreview, 1280, 'brand/social-preview.png');
