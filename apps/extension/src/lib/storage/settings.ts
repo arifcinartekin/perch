@@ -36,6 +36,7 @@ function normalizeSettings(s: Settings): Settings {
     theme: ['light', 'dark', 'system'].includes(s.theme) ? s.theme : 'system',
     readingFont: s.readingFont === 'serif' ? 'serif' : 'sans',
     autoDiscovery: Boolean(s.autoDiscovery),
+    notifyNewArticles: Boolean(s.notifyNewArticles),
     appearance: {
       light: normalizeColors(s.appearance?.light),
       dark: normalizeColors(s.appearance?.dark),

@@ -39,6 +39,8 @@ export default defineConfig({
       // - Per-origin patterns (e.g. "https://example.com/*") are requested when
       //   the user adds a feed or opens full-text for a new domain.
       optional_host_permissions: ['*://*/*'],
+      // Only requested when you turn on new-article notifications in Settings.
+      optional_permissions: ['notifications'],
       // Signing in to a Perch Server stretches the password with Argon2id, which
       // runs as WebAssembly. This allows compiling Perch's own bundled WASM only;
       // remote code is still blocked.

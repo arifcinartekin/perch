@@ -59,6 +59,8 @@ so the tab bar, toolbars and sheets are Liquid Glass.
   medium, large) and the Lock Screen. Tapping an article opens it.
 - **Notifications** (off until turned on in Settings): background refresh posts one when it
   finds new articles.
+- **Share → Perch:** the share extension keeps a shared page's address in the app group; the
+  next time Perch opens, Add a feed comes up with it. The extension never goes online.
 
 ## Open and run
 
@@ -67,9 +69,9 @@ open apps/ios/Perch.xcodeproj
 ```
 
 Pick the **Perch** scheme and an iPhone or iPad simulator (or your device) and run. For a
-device, set your team under Signing & Capabilities first, for both the Perch and PerchWidgets
+device, set your team under Signing & Capabilities first, for the Perch, PerchWidgets and PerchShare
 targets; they share the `group.app.perch.ios` app group, which your team needs to be able to
-register (change it in both `.entitlements` files and `Shared/WidgetSnapshot.swift` if not).
+register (change it in the three `.entitlements` files and `Shared/WidgetSnapshot.swift` if not).
 
 No server is needed to try it. To sync, on the simulator the app reaches a server on the Mac at
 `http://localhost:8080` (`npm run dev:server` from the repo root). On a phone, use the Mac's LAN
@@ -90,7 +92,8 @@ committed so Xcode opens it directly.
 | `Perch/Views/`              | Connect, library, article list, article, add feed, settings.       |
 | `Perch/App/Glance.swift`    | The widgets' snapshot and new-article notifications.               |
 | `PerchWidgets/`             | Widget extension; reads the snapshot, never the server.            |
-| `Shared/`                   | Code compiled into both the app and the widgets.                   |
+| `PerchShare/`               | Share extension: leaves a shared page's address for the app.       |
+| `Shared/`                   | Code compiled into the app and its extensions.                     |
 | `PerchKit/`                 | Swift package: API client and types, key derivation, HTML helpers. |
 | `PerchKit/…/LocalBackend`   | The library on the phone: fetching, feed discovery, OPML.          |
 | `PerchKit/…/FeedParser`     | RSS, RSS 1.0, Atom and JSON Feed; dates as found in the wild.      |
@@ -119,7 +122,7 @@ committed so Xcode opens it directly.
 ## Languages
 
 English and Turkish, in `Perch/Support/Localizable.xcstrings` (and `InfoPlist.xcstrings` for the
-permission prompt) and `PerchWidgets/Localizable.xcstrings`. Xcode adds new strings to the catalog when it builds; the app follows the
+permission prompt), `PerchWidgets/Localizable.xcstrings` and `PerchShare/Localizable.xcstrings`. Xcode adds new strings to the catalog when it builds; the app follows the
 phone's language.
 
 ## Tests

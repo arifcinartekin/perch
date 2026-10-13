@@ -21,6 +21,7 @@ import {
 import { clearDiscoveryDot } from '@/lib/badge';
 import { onPermissionsChanged } from '@/lib/permissions/host';
 import { scheduleSyncAlarm, startSyncTriggers, syncAndFetch } from '@/lib/sync/background';
+import { handleNotificationClicks, notifyNewArticles } from '@/lib/background/notify';
 
 export default defineBackground(() => {
   registerMessageHandlers({
@@ -102,6 +103,7 @@ export default defineBackground(() => {
   // --- lifecycle ------------------------------------------------------------
 
   startSyncTriggers();
+  handleNotificationClicks();
 
   browser.runtime.onInstalled.addListener(async () => {
     await scheduleRefreshAlarm();
@@ -126,6 +128,7 @@ export default defineBackground(() => {
     if (alarm.name !== REFRESH_ALARM) return;
     await refreshFeeds();
     await markRefreshed();
+    await notifyNewArticles().catch(() => undefined);
   });
 
   // React to settings changes: reschedule the alarm, toggle auto-scan.
@@ -136,6 +139,7 @@ export default defineBackground(() => {
 
   // If the user revokes the all-sites permission, stop auto-scanning.
   onPermissionsChanged(async () => {
+    handleNotificationClicks();
     const settings = await getSettings();
     await setAutoScan(settings.autoDiscovery);
   });

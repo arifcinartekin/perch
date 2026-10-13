@@ -184,6 +184,64 @@ for (const [name, c] of Object.entries(ALT_ICONS)) {
     `${set}/Contents.json`,
   );
 }
+// The same colourings for Android's alternate launcher icons (activity
+// aliases in the manifest, picked in Settings → Appearance): the default's
+// vector layers with the colours swapped.
+const ANDROID_RES = 'apps/android/app/src/main/res';
+const androidForeground = readFileSync(
+  resolve(ROOT, `${ANDROID_RES}/drawable/ic_launcher_foreground.xml`),
+  'utf8',
+);
+const argb = (hex) => `#FF${hex.slice(1).toUpperCase()}`;
+for (const [name, c] of Object.entries(ALT_ICONS)) {
+  const key = name.toLowerCase();
+  const waves = c.waves ?? c.accent;
+  const foreground = androidForeground
+    .replace(
+      /<!--.*?-->/s,
+      `<!-- The Perch mark in the ${name} colours (scripts/brand.mjs, ALT_ICONS). -->`,
+    )
+    .replace(/#FFF4F1EA/g, '@BIRD@')
+    // The waves and their dot sit on the bird; the beak and perch on the background.
+    .replace(/strokeColor="#FFFF7A1A"/g, `strokeColor="${argb(waves)}"`)
+    .replace(
+      /fillColor="#FFFF7A1A" android:pathData="M200,330/,
+      `fillColor="${argb(waves)}" android:pathData="M200,330`,
+    )
+    .replace(/#FFFF7A1A/g, argb(c.accent))
+    .replace(/#FF12151C/g, argb(c.eye))
+    .replace(/@BIRD@/g, argb(c.bird));
+  text(foreground, `${ANDROID_RES}/drawable/ic_launcher_foreground_${key}.xml`);
+  text(
+    `<?xml version="1.0" encoding="utf-8"?>
+<!-- The ${name} icon's background (scripts/brand.mjs, ALT_ICONS). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
+  <path android:pathData="M0,0h108v108h-108z">
+    <aapt:attr name="android:fillColor">
+      <gradient android:type="linear" android:startX="54" android:startY="0" android:endX="54" android:endY="108">
+        <item android:offset="0" android:color="${argb(c.bg[0])}" />
+        <item android:offset="1" android:color="${argb(c.bg[1])}" />
+      </gradient>
+    </aapt:attr>
+  </path>
+</vector>
+`,
+    `${ANDROID_RES}/drawable/ic_launcher_background_${key}.xml`,
+  );
+  text(
+    `<?xml version="1.0" encoding="utf-8"?>
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+  <background android:drawable="@drawable/ic_launcher_background_${key}" />
+  <foreground android:drawable="@drawable/ic_launcher_foreground_${key}" />
+  <monochrome android:drawable="@drawable/ic_launcher_monochrome" />
+</adaptive-icon>
+`,
+    `${ANDROID_RES}/mipmap-anydpi/ic_launcher_${key}.xml`,
+  );
+}
+
 // Previews for the picker, the default included.
 const previews = {
   Default: appIconFullBleed,

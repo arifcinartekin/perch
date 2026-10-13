@@ -161,4 +161,8 @@ object Theme {
     ColorMode.DARK to listOf("#0e1118", "#000000", "#0a0a0b", "#111827", "#1e1e2e", "#002b36", "#282828"),
     ColorMode.LIGHT to listOf("#f7f5f0", "#ffffff", "#f5f5f6", "#fdf6e3", "#eff1f5", "#eef2f7"),
   )
+  val textPresets = mapOf(
+    ColorMode.DARK to listOf("#f4f1ea", "#ffffff", "#e7e7ea", "#d4d4d8", "#cdd6f4", "#93a1a1", "#a9b1d6"),
+    ColorMode.LIGHT to listOf("#12151c", "#000000", "#18181b", "#3f3f46", "#433422", "#4c4f69"),
+  )
 }

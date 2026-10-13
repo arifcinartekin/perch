@@ -10,6 +10,7 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import app.perch.android.core.ColorMode
 import app.perch.android.core.GlassSettings
 import app.perch.android.core.Palette
@@ -22,7 +23,16 @@ import app.perch.android.core.Theme
  * reading font.
  */
 @Immutable
-data class PerchLook(val palette: Palette, val glass: GlassSettings, val serif: Boolean) {
+data class PerchLook(
+  val palette: Palette,
+  val glass: GlassSettings,
+  val serif: Boolean,
+  val wallpaper: Wallpaper? = null,
+) {
+  /** This phone's background picture, with the background colour over it ([dim], 0–0.9) and a blur in dp. */
+  @Immutable
+  data class Wallpaper(val image: ImageBitmap, val dim: Float, val blur: Float)
+
   val dark: Boolean get() = palette.scheme == ColorMode.DARK
   val background: Color get() = palette.background.color
   val solid: Color get() = palette.solid.color
@@ -46,16 +56,16 @@ val String.color: Color get() = Color(Theme.argb(this))
 val LocalLook = staticCompositionLocalOf { PerchLook(Theme.palette(ColorMode.LIGHT), GlassSettings(), false) }
 
 @Composable
-fun PerchTheme(settings: SyncedSettings, content: @Composable () -> Unit) {
+fun PerchTheme(settings: SyncedSettings, wallpaper: PerchLook.Wallpaper? = null, content: @Composable () -> Unit) {
   val systemDark = isSystemInDarkTheme()
   val mode = when (settings.theme) {
     "light" -> ColorMode.LIGHT
     "dark" -> ColorMode.DARK
     else -> if (systemDark) ColorMode.DARK else ColorMode.LIGHT
   }
-  val look = remember(settings, mode) {
+  val look = remember(settings, mode, wallpaper) {
     val overrides = settings.appearance?.get(mode) ?: app.perch.android.core.ColorOverrides()
-    PerchLook(Theme.palette(mode, overrides), settings.glass ?: GlassSettings(), settings.readingFont == "serif")
+    PerchLook(Theme.palette(mode, overrides), settings.glass ?: GlassSettings(), settings.readingFont == "serif", wallpaper)
   }
   val colors = if (look.dark) {
     darkColorScheme(

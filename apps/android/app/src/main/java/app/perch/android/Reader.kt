@@ -64,6 +64,12 @@ class Reader(
   /** A perch://chain link opened from outside, waiting for the screens to show it. */
   val pendingChainLink = MutableStateFlow<Pair<String, String>?>(null)
 
+  /** An article opened from the widget or a notification. */
+  val pendingArticle = MutableStateFlow<String?>(null)
+
+  /** The widget or a notification asked for the unread list. */
+  val pendingUnread = MutableStateFlow(false)
+
   /** A page shared to Perch from another app, to add its feed. */
   val pendingAddUrl = MutableStateFlow<String?>(null)
 
@@ -132,6 +138,8 @@ class Reader(
   suspend fun reloadCounts() {
     _unread.value = backend.unreadCounts()
     _starred.value = backend.starredCount()
+    // The widget follows what's read here, without notifying about it.
+    scope.launch { app.perch.android.widget.Headlines.update(context, notify = false) }
   }
 
   fun feed(id: String): Feed? = _library.value.feeds.firstOrNull { it.id == id }

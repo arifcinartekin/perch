@@ -3,6 +3,7 @@
 package app.perch.android.ui
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -22,7 +23,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import app.perch.android.core.GlassSettings
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -33,7 +37,9 @@ import androidx.compose.ui.unit.dp
 import dev.chrisbanes.haze.ExperimentalHazeApi
 import dev.chrisbanes.haze.HazeInput
 import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.glass.GlassDefaults
 import dev.chrisbanes.haze.glass.GlassStyle
+import dev.chrisbanes.haze.glass.OpticalSizeValue
 import dev.chrisbanes.haze.glass.hazeGlass
 import dev.chrisbanes.haze.hazeSource
 
@@ -46,12 +52,24 @@ import dev.chrisbanes.haze.hazeSource
 val LocalHaze = staticCompositionLocalOf<HazeState?> { null }
 
 /**
- * The backdrop every screen sits on: the background colour with a soft
- * ember glow, like the app icon's, so glass has something to bend.
+ * The backdrop every screen sits on: this phone's wallpaper if it has one,
+ * else the background colour with a soft ember glow, like the app icon's, so
+ * glass has something to bend.
  */
 @Composable
 fun AppBackground(modifier: Modifier = Modifier) {
   val look = LocalLook.current
+  val wallpaper = look.wallpaper
+  if (wallpaper != null) {
+    Box(modifier.fillMaxSize()) {
+      Image(
+        wallpaper.image, null, contentScale = ContentScale.Crop,
+        modifier = Modifier.fillMaxSize().then(if (wallpaper.blur > 0) Modifier.blur(wallpaper.blur.dp) else Modifier),
+      )
+      Box(Modifier.fillMaxSize().background(look.background.copy(alpha = wallpaper.dim)))
+    }
+    return
+  }
   Canvas(modifier.fillMaxSize()) {
     drawRect(look.background)
     drawCircle(
@@ -100,10 +118,15 @@ fun Modifier.glass(
     return outline.clip(shape).background(look.solid)
   }
   val tint = look.solid.copy(alpha = look.surfaceOpacity() * 0.55f)
-  val style = remember(shape, tint) {
+  val blur = look.glass.blur
+  val style = remember(shape, tint, blur) {
     GlassStyle {
       shape(shape)
       tint(tint)
+      // The default blur is about the synced default (24); anything else is fixed.
+      if (blur != GlassSettings().blur) {
+        optics(GlassDefaults.optics.copy(blurRadius = OpticalSizeValue.Fixed(blur.dp)))
+      }
     }
   }
   return this.hazeGlass(HazeInput.Sources(haze), style = style, interactionSource = interactionSource)

@@ -1818,12 +1818,12 @@
         }
       }
     },
-    "Light and dark keep their own colors. They sync with your account, so the extension and web reader match.": {
+    "Light and dark keep their own colors. They sync with your chain, so your other devices match.": {
       "localizations": {
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Açık ve koyu temanın renkleri ayrı tutulur. Hesabınla senkronlanır, böylece eklenti ve web okuyucu da aynı görünür."
+            "value": "Açık ve koyu temanın renkleri ayrı tutulur. Zincirinle senkronlanır, böylece diğer cihazların da aynı görünür."
           }
         }
       }
@@ -2150,6 +2150,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Yok"
+          }
+        }
+      }
+    },
+    "Normal": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Normal"
           }
         }
       }
@@ -2776,6 +2786,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Şifreni sıfırla"
+          }
+        }
+      }
+    },
+    "Roomy": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Geniş"
           }
         }
       }
@@ -3676,6 +3696,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Bu sunucu uçtan uca şifreleme kullanıyor; iPhone uygulaması bunu henüz desteklemiyor."
+          }
+        }
+      }
+    },
+    "Tight": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sık"
           }
         }
       }

@@ -1,0 +1,76 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "Add": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ekle"
+          }
+        }
+      }
+    },
+    "Add to Perch": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Perch'e ekle"
+          }
+        }
+      }
+    },
+    "Cancel": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vazgeç"
+          }
+        }
+      }
+    },
+    "Done": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bitti"
+          }
+        }
+      }
+    },
+    "Open Perch to finish: it finds this site's feed and asks where to put it.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bitirmek için Perch'ü aç: bu sitenin feed'ini bulur ve nereye ekleneceğini sorar."
+          }
+        }
+      }
+    },
+    "Perch finds this site's feed the next time you open it.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Perch bu sitenin feed'ini onu bir sonraki açışında bulur."
+          }
+        }
+      }
+    },
+    "There's no web address in what you shared.": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paylaştığında bir web adresi yok."
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

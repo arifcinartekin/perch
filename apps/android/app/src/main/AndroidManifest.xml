@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-  <!-- Feeds and articles are fetched by the phone itself. Nothing else is asked for. -->
+  <!-- Feeds and articles are fetched by the phone itself. -->
   <uses-permission android:name="android.permission.INTERNET" />
+  <!-- Only for new-article notifications, asked for when you turn them on. -->
+  <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
   <!-- Only to scan a sync chain's QR code, asked for when you tap Scan. -->
   <uses-permission android:name="android.permission.CAMERA" />
   <uses-feature android:name="android.hardware.camera" android:required="false" />
@@ -22,10 +24,6 @@
         android:exported="true"
         android:launchMode="singleTask"
         android:windowSoftInputMode="adjustResize">
-      <intent-filter>
-        <action android:name="android.intent.action.MAIN" />
-        <category android:name="android.intent.category.LAUNCHER" />
-      </intent-filter>
       <!-- "Share → Perch" from a browser: add the site's feed. -->
       <intent-filter>
         <action android:name="android.intent.action.SEND" />
@@ -40,5 +38,90 @@
         <data android:scheme="perch" android:host="chain" />
       </intent-filter>
     </activity>
+
+    <!-- The launcher icon, one alias per colouring; Settings → Appearance turns
+         one on and the others off (AppIcons). Night is the default. -->
+    <activity-alias
+        android:name=".IconNight"
+        android:targetActivity=".MainActivity"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:enabled="true"
+        android:exported="true">
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LAUNCHER" />
+      </intent-filter>
+    </activity-alias>
+    <activity-alias
+        android:name=".IconBlack"
+        android:targetActivity=".MainActivity"
+        android:icon="@mipmap/ic_launcher_black"
+        android:roundIcon="@mipmap/ic_launcher_black"
+        android:enabled="false"
+        android:exported="true">
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LAUNCHER" />
+      </intent-filter>
+    </activity-alias>
+    <activity-alias
+        android:name=".IconWhite"
+        android:targetActivity=".MainActivity"
+        android:icon="@mipmap/ic_launcher_white"
+        android:roundIcon="@mipmap/ic_launcher_white"
+        android:enabled="false"
+        android:exported="true">
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LAUNCHER" />
+      </intent-filter>
+    </activity-alias>
+    <activity-alias
+        android:name=".IconGreen"
+        android:targetActivity=".MainActivity"
+        android:icon="@mipmap/ic_launcher_green"
+        android:roundIcon="@mipmap/ic_launcher_green"
+        android:enabled="false"
+        android:exported="true">
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LAUNCHER" />
+      </intent-filter>
+    </activity-alias>
+    <activity-alias
+        android:name=".IconBlue"
+        android:targetActivity=".MainActivity"
+        android:icon="@mipmap/ic_launcher_blue"
+        android:roundIcon="@mipmap/ic_launcher_blue"
+        android:enabled="false"
+        android:exported="true">
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LAUNCHER" />
+      </intent-filter>
+    </activity-alias>
+    <activity-alias
+        android:name=".IconMidnight"
+        android:targetActivity=".MainActivity"
+        android:icon="@mipmap/ic_launcher_midnight"
+        android:roundIcon="@mipmap/ic_launcher_midnight"
+        android:enabled="false"
+        android:exported="true">
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LAUNCHER" />
+      </intent-filter>
+    </activity-alias>
+    <!-- The home-screen widget: the unread count and the newest articles. -->
+    <receiver
+        android:name=".widget.UnreadWidgetReceiver"
+        android:label="@string/widget_unread"
+        android:exported="true">
+      <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+      </intent-filter>
+      <meta-data android:name="android.appwidget.provider" android:resource="@xml/unread_widget" />
+    </receiver>
   </application>
 </manifest>

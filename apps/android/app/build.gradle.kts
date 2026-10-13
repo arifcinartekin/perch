@@ -68,6 +68,8 @@ dependencies {
   implementation(libs.lifecycle.runtime.compose)
   implementation(libs.navigation.compose)
   implementation(libs.work.runtime)
+  // The home-screen widget.
+  implementation(libs.glance.appwidget)
   implementation(libs.coroutines.android)
   implementation(libs.serialization.json)
   implementation(libs.okhttp)

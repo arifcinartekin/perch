@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		07A5C7C984CD07E27F1D9CCE /* ArticleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE8C30FB9465701CCD476FE5 /* ArticleView.swift */; };
+		0B42353B8C79F97F162A2897 /* WidgetSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C002131DCED71D23198C29F /* WidgetSnapshot.swift */; };
 		105023448514C3FCC6015A94 /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A04F0519598EE4BAAF1557C /* MainTabView.swift */; };
 		127E09B57F30910A82578417 /* LocalLibraryUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FD692757B7C347A5C2BDD29 /* LocalLibraryUITests.swift */; };
 		138B6760503FFEAD1AD323C9 /* Glance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82260F0564F0916912CA9610 /* Glance.swift */; };
@@ -15,8 +16,10 @@
 		1D211E57B19AB93D14A23D11 /* Keychain.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4B64DEB1E6CF6BE639C8433 /* Keychain.swift */; };
 		241FF41B2764A040F6F901C6 /* Session.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D81815F02D951B683871555 /* Session.swift */; };
 		287B1B426FE28C4BBF610120 /* AppIconView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9935AC8942410ED3F2159634 /* AppIconView.swift */; };
+		2B149F526DC7A739A77DE070 /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE5B6AB348743CECB739603B /* ShareViewController.swift */; };
 		345B92D540B25F9CCE51DE8F /* WidgetUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AFBD2AF69D4E3C3D7CF7E51 /* WidgetUITests.swift */; };
 		3CC263518A8DB08FE7FE3A01 /* AppearanceSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 659C049AD8C502121851289D /* AppearanceSettingsView.swift */; };
+		43F7C6B0E35F696C04F9E4D7 /* SharedInbox.swift in Sources */ = {isa = PBXBuildFile; fileRef = 172B0E128ACAC5B02F02979F /* SharedInbox.swift */; };
 		467A098C9959101B6914679F /* Reader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BFE3507078C2399F4F0E88D /* Reader.swift */; };
 		49CB1B63982C5321FC47CE2A /* NotificationUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AD33D28974BE522ACB04697 /* NotificationUITests.swift */; };
 		49E7093A28E89B11086975D7 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 53F5CA3D96CAEDA6AACDFF56 /* Localizable.xcstrings */; };
@@ -24,6 +27,7 @@
 		56880F4CEC3AB4715CDA8CAC /* RecoveryCodeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B33E132281CEFE3D5A1B0680 /* RecoveryCodeView.swift */; };
 		60DC4360D085209EB712A956 /* BackgroundRefresh.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16DB99A3BC6609013D614C6A /* BackgroundRefresh.swift */; };
 		655661C904120964A8A50CAA /* starter-packs.json in Resources */ = {isa = PBXBuildFile; fileRef = DAA2E57C454833F285A1C46C /* starter-packs.json */; };
+		6B27774C23A2E282C24D8A7D /* SharedInbox.swift in Sources */ = {isa = PBXBuildFile; fileRef = 172B0E128ACAC5B02F02979F /* SharedInbox.swift */; };
 		6E140EB56A427E4A8FA10D64 /* ReaderUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 919DE3B89AF84FDDA3735FDC /* ReaderUITests.swift */; };
 		6F527C13A9E9966F5C687A1D /* NoteViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2C6F632894A32B83E38C56E /* NoteViews.swift */; };
 		6FB486DF2AA9F2C06344CEDB /* PerchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8FEB8A1AEBD4A3546F97BED /* PerchApp.swift */; };
@@ -54,8 +58,11 @@
 		D6603A9321C3D2CB3A192A7F /* ArticleListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B7ACCA0FE0FE10D84A4CF9D /* ArticleListView.swift */; };
 		E0C5A4BC053C607181EF9A7A /* ChainLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEFA7A4F78253BE6F5EE1EC4 /* ChainLink.swift */; };
 		E694A9F5C25936946F2C5F40 /* ConnectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 655E06FA19C1CD5AF49DDF1B /* ConnectView.swift */; };
+		EAAB4CD2033261691EC8FD95 /* SharedInbox.swift in Sources */ = {isa = PBXBuildFile; fileRef = 172B0E128ACAC5B02F02979F /* SharedInbox.swift */; };
+		EAD44E8EA3D7B0422C41AFB1 /* PerchLogoDrawing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70BBDD6EDC6471189293BDD1 /* PerchLogoDrawing.swift */; };
 		F317DF96E4AB0F2B532938F0 /* DeviceSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AC49BD3F4ABE421B671D9FE /* DeviceSettings.swift */; };
 		F6D5AA773490F7ACE656DD29 /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 0B38BABEE4FFF5518DD3A8C6 /* InfoPlist.xcstrings */; };
+		F91CD75D1222B176987E2D05 /* PerchShare.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 19B13A117CCFF41D6B6FA82D /* PerchShare.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		F9BA724330B7D06328BFA2BB /* LockViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56B9F8351AAFF21F855FA8AC /* LockViews.swift */; };
 /* End PBXBuildFile section */
 
@@ -74,6 +81,13 @@
 			remoteGlobalIDString = 45DC64F4606392864F14C513;
 			remoteInfo = Perch;
 		};
+		C3A6D123E33A96C11680AF28 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 78904F42286EE3E52ED2700B /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 1E96F2C422FC7A12278819DA;
+			remoteInfo = PerchShare;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -84,6 +98,7 @@
 			dstSubfolderSpec = 13;
 			files = (
 				C29B92C76B861FF08D135E51 /* PerchWidgets.appex in Embed Foundation Extensions */,
+				F91CD75D1222B176987E2D05 /* PerchShare.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -96,6 +111,8 @@
 		159E7E8EC98970DD5A0F1568 /* StarterPacksView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StarterPacksView.swift; sourceTree = "<group>"; };
 		16D59EB0C384D24D03E73507 /* OfflineSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineSettingsView.swift; sourceTree = "<group>"; };
 		16DB99A3BC6609013D614C6A /* BackgroundRefresh.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundRefresh.swift; sourceTree = "<group>"; };
+		172B0E128ACAC5B02F02979F /* SharedInbox.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedInbox.swift; sourceTree = "<group>"; };
+		19B13A117CCFF41D6B6FA82D /* PerchShare.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = PerchShare.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		1B00D3F911F440538B501763 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		1C002131DCED71D23198C29F /* WidgetSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetSnapshot.swift; sourceTree = "<group>"; };
 		27F0387D28DCB4DC90BC12D9 /* ChainUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainUITests.swift; sourceTree = "<group>"; };
@@ -112,6 +129,7 @@
 		547BB3F69F49024BA65F0A6F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		56B9F8351AAFF21F855FA8AC /* LockViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockViews.swift; sourceTree = "<group>"; };
 		5AD33D28974BE522ACB04697 /* NotificationUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationUITests.swift; sourceTree = "<group>"; };
+		5B95D0DFA1806CF5FF8EBDE4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		5D2C8281A15D24FE521E108C /* LibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryView.swift; sourceTree = "<group>"; };
 		655340A93FD076C55BABDD92 /* AddFeedSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddFeedSheet.swift; sourceTree = "<group>"; };
 		655E06FA19C1CD5AF49DDF1B /* ConnectView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectView.swift; sourceTree = "<group>"; };
@@ -141,9 +159,11 @@
 		D996D51567887C53BCFD5308 /* Perch.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Perch.entitlements; sourceTree = "<group>"; };
 		DAA2E57C454833F285A1C46C /* starter-packs.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "starter-packs.json"; sourceTree = "<group>"; };
 		DC2FE76BD6C0799CC419FA49 /* OfflineSync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineSync.swift; sourceTree = "<group>"; };
+		DE5B6AB348743CECB739603B /* ShareViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareViewController.swift; sourceTree = "<group>"; };
 		E4B64DEB1E6CF6BE639C8433 /* Keychain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Keychain.swift; sourceTree = "<group>"; };
 		EA8BC973C4DCA309F5756D56 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		EEF8ECF81F405087AC882051 /* PerchWidgets.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = PerchWidgets.entitlements; sourceTree = "<group>"; };
+		F487714BD3E573640A19BA44 /* PerchShare.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = PerchShare.entitlements; sourceTree = "<group>"; };
 		FEFA7A4F78253BE6F5EE1EC4 /* ChainLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainLink.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -186,6 +206,7 @@
 			isa = PBXGroup;
 			children = (
 				70BBDD6EDC6471189293BDD1 /* PerchLogoDrawing.swift */,
+				172B0E128ACAC5B02F02979F /* SharedInbox.swift */,
 				1C002131DCED71D23198C29F /* WidgetSnapshot.swift */,
 			);
 			path = Shared;
@@ -195,10 +216,21 @@
 			isa = PBXGroup;
 			children = (
 				D41D4D3B908363F711572982 /* Perch.app */,
+				19B13A117CCFF41D6B6FA82D /* PerchShare.appex */,
 				9DEC51BF47974BCC5F748D16 /* PerchUITests.xctest */,
 				41DD0921F6DAAC3FC42FC199 /* PerchWidgets.appex */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		5AA1A5C75BB3DA8D05AB84D5 /* PerchShare */ = {
+			isa = PBXGroup;
+			children = (
+				5B95D0DFA1806CF5FF8EBDE4 /* Info.plist */,
+				F487714BD3E573640A19BA44 /* PerchShare.entitlements */,
+				DE5B6AB348743CECB739603B /* ShareViewController.swift */,
+			);
+			path = PerchShare;
 			sourceTree = "<group>";
 		};
 		781A9BD3DFD468DC020677DE /* Views */ = {
@@ -252,6 +284,7 @@
 			children = (
 				9D0550E96E022111AD197242 /* Packages */,
 				E32E753CE6364804D2CF49B3 /* Perch */,
+				5AA1A5C75BB3DA8D05AB84D5 /* PerchShare */,
 				9019F5C59F8C2B93EDFCB2BE /* PerchUITests */,
 				25757B0BE689282F63722EA7 /* PerchWidgets */,
 				4B9430EA749E54FCA6B60A3F /* Shared */,
@@ -294,6 +327,23 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		1E96F2C422FC7A12278819DA /* PerchShare */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D4732A3D07796EECDC98EA85 /* Build configuration list for PBXNativeTarget "PerchShare" */;
+			buildPhases = (
+				1310EF796BCD9A5C955BF035 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = PerchShare;
+			packageProductDependencies = (
+			);
+			productName = PerchShare;
+			productReference = 19B13A117CCFF41D6B6FA82D /* PerchShare.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		288E65F32FE78ECDCB9FED41 /* PerchWidgets */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = C199B9FDCD53A92EEFB0AF6B /* Build configuration list for PBXNativeTarget "PerchWidgets" */;
@@ -325,6 +375,7 @@
 			);
 			dependencies = (
 				54CCD7752A111072B839D58C /* PBXTargetDependency */,
+				2956A78BB81FFD437907E3F0 /* PBXTargetDependency */,
 			);
 			name = Perch;
 			packageProductDependencies = (
@@ -361,6 +412,10 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
+					1E96F2C422FC7A12278819DA = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Automatic;
+					};
 					288E65F32FE78ECDCB9FED41 = {
 						DevelopmentTeam = "";
 						ProvisioningStyle = Automatic;
@@ -396,6 +451,7 @@
 			targets = (
 				45DC64F4606392864F14C513 /* Perch */,
 				288E65F32FE78ECDCB9FED41 /* PerchWidgets */,
+				1E96F2C422FC7A12278819DA /* PerchShare */,
 				9D5ECBB07DF30C831907761C /* PerchUITests */,
 			);
 		};
@@ -424,12 +480,24 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		1310EF796BCD9A5C955BF035 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				EAD44E8EA3D7B0422C41AFB1 /* PerchLogoDrawing.swift in Sources */,
+				2B149F526DC7A739A77DE070 /* ShareViewController.swift in Sources */,
+				43F7C6B0E35F696C04F9E4D7 /* SharedInbox.swift in Sources */,
+				0B42353B8C79F97F162A2897 /* WidgetSnapshot.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		34CB11F7AEFCD15384AB311D /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				79F2755C31B2B89313B6B836 /* PerchLogoDrawing.swift in Sources */,
 				C0FA23DD4FD6880334ED109A /* PerchWidgets.swift in Sources */,
+				EAAB4CD2033261691EC8FD95 /* SharedInbox.swift in Sources */,
 				C5D454879992C50B9D388CCD /* WidgetSnapshot.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -483,6 +551,7 @@
 				C4B9F75F8C58BA1709DC3215 /* RecoveryPDF.swift in Sources */,
 				241FF41B2764A040F6F901C6 /* Session.swift in Sources */,
 				ACAD3E4D8FB017B803231DD3 /* SettingsView.swift in Sources */,
+				6B27774C23A2E282C24D8A7D /* SharedInbox.swift in Sources */,
 				C8228A62FF0D8AF6D56D3CC2 /* StarterPacksView.swift in Sources */,
 				4FA21E71EC99A47ADAFCA162 /* WidgetSnapshot.swift in Sources */,
 			);
@@ -491,6 +560,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		2956A78BB81FFD437907E3F0 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 1E96F2C422FC7A12278819DA /* PerchShare */;
+			targetProxy = C3A6D123E33A96C11680AF28 /* PBXContainerItemProxy */;
+		};
 		54CCD7752A111072B839D58C /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 288E65F32FE78ECDCB9FED41 /* PerchWidgets */;
@@ -721,6 +795,26 @@
 			};
 			name = Debug;
 		};
+		A0FE27C91842F2A197936367 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = PerchShare/PerchShare.entitlements;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = PerchShare/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Perch;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = app.perch.ios.share;
+				PRODUCT_NAME = PerchShare;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
 		DD1BC7C1BF042D41AC16AD92 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -767,6 +861,26 @@
 			};
 			name = Debug;
 		};
+		FDA02A73E860A3703A2015AC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = PerchShare/PerchShare.entitlements;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = PerchShare/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Perch;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = app.perch.ios.share;
+				PRODUCT_NAME = PerchShare;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -784,6 +898,15 @@
 			buildConfigurations = (
 				267A7D118BF180281ABE123F /* Debug */,
 				17703D9DB8EDEF85959F9F31 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		D4732A3D07796EECDC98EA85 /* Build configuration list for PBXNativeTarget "PerchShare" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A0FE27C91842F2A197936367 /* Debug */,
+				FDA02A73E860A3703A2015AC /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

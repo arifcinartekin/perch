@@ -31,6 +31,7 @@ targets:
     dependencies:
       - package: PerchKit
       - target: PerchWidgets
+      - target: PerchShare
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: app.perch.ios
@@ -68,6 +69,24 @@ targets:
         INFOPLIST_FILE: PerchWidgets/Info.plist
         INFOPLIST_KEY_CFBundleDisplayName: Perch
         CODE_SIGN_ENTITLEMENTS: PerchWidgets/PerchWidgets.entitlements
+        SKIP_INSTALL: YES
+  # Share → Perch: leaves a shared page's address in the app group for the
+  # app's Add a feed sheet (Shared/SharedInbox.swift). Never goes online.
+  PerchShare:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: PerchShare
+      - path: Shared
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: app.perch.ios.share
+        PRODUCT_NAME: PerchShare
+        TARGETED_DEVICE_FAMILY: '1,2'
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_FILE: PerchShare/Info.plist
+        INFOPLIST_KEY_CFBundleDisplayName: Perch
+        CODE_SIGN_ENTITLEMENTS: PerchShare/PerchShare.entitlements
         SKIP_INSTALL: YES
   # Drives the app in the simulator against a test server; see README.
   PerchUITests:

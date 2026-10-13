@@ -27,6 +27,7 @@ import androidx.compose.material.icons.rounded.Notes
 import androidx.compose.material.icons.rounded.OpenInBrowser
 import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material.icons.rounded.Star
+import androidx.compose.material.icons.rounded.TextFields
 import androidx.compose.material.icons.rounded.StarOutline
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.SnackbarHost
@@ -73,6 +74,9 @@ fun ArticleScreen(reader: Reader, nav: Nav, id: String) {
   var loadingFull by remember { mutableStateOf(false) }
   var noting by remember { mutableStateOf(false) }
   val notes by reader.notes.collectAsState()
+  var styling by remember { mutableStateOf(false) }
+  val textSize by reader.device.textSize.collectAsState()
+  val lineHeight by reader.device.lineHeight.collectAsState()
   val noText = stringResource(R.string.error_no_article_text)
 
   fun loadFull(force: Boolean = false) {
@@ -112,8 +116,11 @@ fun ArticleScreen(reader: Reader, nav: Nav, id: String) {
     Box(Modifier.fillMaxSize()) {
       GlassSource(haze) {
         if (a != null) {
-          val html = remember(a, fullText, showFull, look) {
-            articleHtml(a, reader.feed(a.feedId)?.displayTitle, if (showFull) fullText else null, look, topInset.value, notes.firstOrNull { it.id == a.id }?.body)
+          val html = remember(a, fullText, showFull, look, textSize, lineHeight) {
+            articleHtml(
+              a, reader.feed(a.feedId)?.displayTitle, if (showFull) fullText else null, look, topInset.value,
+              notes.firstOrNull { it.id == a.id }?.body, textSize, lineHeight,
+            )
           }
           ArticleWebView(html, a.url)
         }
@@ -137,6 +144,7 @@ fun ArticleScreen(reader: Reader, nav: Nav, id: String) {
                 stringResource(if (showFull) R.string.feed_version else R.string.full_text),
               ) { if (showFull) showFull = false else if (fullText != null) showFull = true else loadFull(force = true) }
             }
+            CapsuleButton(Icons.Rounded.TextFields, stringResource(R.string.text_style)) { styling = true }
             CapsuleButton(
               Icons.Rounded.EditNote, stringResource(R.string.note),
               tint = if (notes.any { it.id == a.id }) look.accent else look.text,
@@ -168,6 +176,7 @@ fun ArticleScreen(reader: Reader, nav: Nav, id: String) {
     }
   }
   if (noting && a != null) NoteSheet(reader, nav, a) { noting = false }
+  if (styling) TextStyleSheet(reader) { styling = false }
 }
 
 @SuppressLint("SetJavaScriptEnabled")
@@ -209,7 +218,10 @@ private fun ArticleWebView(html: String, baseUrl: String?) {
 }
 
 /** The article as a page in the palette's colours (the iPhone app's template). */
-private fun articleHtml(article: Article, feedTitle: String?, full: FullText?, look: PerchLook, topInset: Float, note: String?): String {
+private fun articleHtml(
+  article: Article, feedTitle: String?, full: FullText?, look: PerchLook, topInset: Float, note: String?,
+  textSize: Float, lineHeight: Float,
+): String {
   val p = look.palette
   // A page's own headline repeats the title shown above it.
   val content = full?.html?.replaceFirst(Regex("(?is)^\\s*(<[^>]+>\\s*)*?<h1\\b[^>]*>.*?</h1>"), "")
@@ -232,7 +244,7 @@ private fun articleHtml(article: Article, feedTitle: String?, full: FullText?, l
     <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src https: http: data:; media-src https: http:; style-src 'unsafe-inline'; font-src https:">
     <style>
     :root { color-scheme: ${if (look.dark) "dark" else "light"}; --text: ${p.text}; --muted: ${p.textMuted}; --link: ${p.accentText}; --rule: $rule; --code: $code; }
-    body { margin: 0; padding: ${top}px 20px 80px; background: transparent; color: var(--text); font-family: $font; font-size: 18px; line-height: 1.6; overflow-wrap: anywhere; }
+    body { margin: 0; padding: ${top}px 20px 80px; background: transparent; color: var(--text); font-family: $font; font-size: ${textSize}px; line-height: $lineHeight; overflow-wrap: anywhere; }
     header, article { max-width: 42em; margin-left: auto; margin-right: auto; }
     header { margin-bottom: 22px; }
     .meta { font: 600 13px/1.4 system-ui, sans-serif; color: var(--muted); margin: 0 0 8px; }

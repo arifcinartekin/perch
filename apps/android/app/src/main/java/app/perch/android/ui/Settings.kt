@@ -52,6 +52,7 @@ import app.perch.android.core.Appearance
 import app.perch.android.core.ColorMode
 import app.perch.android.core.GlassSettings
 import app.perch.android.core.Theme
+import app.perch.android.widget.Headlines
 import app.perch.android.work.RefreshWorker
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -66,9 +67,10 @@ fun SettingsScreen(reader: Reader, nav: Nav) {
   val settings by reader.settings.collectAsState()
   val listImages by reader.device.listImages.collectAsState()
   val refreshMinutes by reader.device.refreshMinutes.collectAsState()
-  val glass = settings.glass ?: GlassSettings()
-  val mode = if (look.dark) ColorMode.DARK else ColorMode.LIGHT
-  val accent = settings.appearance?.get(mode)?.accent ?: Theme.EMBER
+  val notifyNew by reader.device.notifyNew.collectAsState()
+  val permission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+    reader.device.setNotifyNew(granted)
+  }
 
   val importedText = stringResource(R.string.imported)
   val importFailed = stringResource(R.string.import_failed)
@@ -102,57 +104,18 @@ fun SettingsScreen(reader: Reader, nav: Nav) {
       ) {
         item { ListHeader(stringResource(R.string.tab_settings), showLogo = true) }
         item {
-          Section(stringResource(R.string.appearance)) {
-            LabeledRow(stringResource(R.string.theme)) {}
-            Choice(
-              listOf("system" to stringResource(R.string.theme_system), "light" to stringResource(R.string.theme_light), "dark" to stringResource(R.string.theme_dark)),
-              settings.theme ?: "system",
-            ) { v -> scope.launch { reader.saveSettings { it.copy(theme = v) } } }
-            Divider()
+          Section(null) {
+            NavRow(stringResource(R.string.appearance), stringResource(R.string.appearance_hint)) { nav.appearance() }
+          }
+        }
+        item {
+          Section(stringResource(R.string.reading)) {
             LabeledRow(stringResource(R.string.reading_font)) {}
             Choice(
               listOf("sans" to stringResource(R.string.font_sans), "serif" to stringResource(R.string.font_serif)),
               settings.readingFont ?: "sans",
             ) { v -> scope.launch { reader.saveSettings { it.copy(readingFont = v) } } }
             Divider()
-            LabeledRow(stringResource(R.string.accent)) {}
-            Row(Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, bottom = 14.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-              for (c in Theme.accentPresets.take(7)) {
-                Box(
-                  Modifier.size(30.dp).clip(CircleShape).background(c.color)
-                    .then(if (c == accent) Modifier.border(3.dp, look.text, CircleShape) else Modifier)
-                    .clickable {
-                      scope.launch {
-                        reader.saveSettings { s ->
-                          val a = s.appearance ?: Appearance()
-                          s.copy(appearance = a.copy(light = a.light.copy(accent = c), dark = a.dark.copy(accent = c)))
-                        }
-                      }
-                    },
-                )
-              }
-            }
-          }
-        }
-        item {
-          Section(stringResource(R.string.glass), footer = stringResource(R.string.glass_hint)) {
-            LabeledRow(stringResource(R.string.glass_on)) {
-              PerchSwitch(glass.enabled) { on -> scope.launch { reader.saveSettings { it.copy(glass = glass.copy(enabled = on)) } } }
-            }
-            if (glass.enabled) {
-              Divider()
-              LabeledRow(stringResource(R.string.transparency)) {}
-              Slider(
-                value = glass.transparency.toFloat(), valueRange = 0f..100f,
-                onValueChange = { v -> scope.launch { reader.saveSettings { it.copy(glass = glass.copy(transparency = v.toDouble())) } } },
-                colors = SliderDefaults.colors(thumbColor = look.accent, activeTrackColor = look.accent),
-                modifier = Modifier.padding(horizontal = 16.dp),
-              )
-            }
-          }
-        }
-        item {
-          Section(stringResource(R.string.reading)) {
             LabeledRow(stringResource(R.string.list_images)) { PerchSwitch(listImages) { reader.device.setListImages(it) } }
             Divider()
             LabeledRow(stringResource(R.string.background_refresh)) {}
@@ -162,6 +125,21 @@ fun SettingsScreen(reader: Reader, nav: Nav) {
             ) { m ->
               reader.device.setRefreshMinutes(m)
               RefreshWorker.schedule(context, m)
+            }
+          }
+        }
+        item {
+          Section(stringResource(R.string.notifications), footer = stringResource(R.string.notifications_hint)) {
+            LabeledRow(stringResource(R.string.notify_new)) {
+              PerchSwitch(notifyNew && refreshMinutes > 0) { on ->
+                if (on && !Headlines.canNotify(context)) permission.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+                else reader.device.setNotifyNew(on)
+                // Notifications come with background refresh.
+                if (on && refreshMinutes == 0) {
+                  reader.device.setRefreshMinutes(60)
+                  RefreshWorker.schedule(context, 60)
+                }
+              }
             }
           }
         }
@@ -226,7 +204,7 @@ fun SettingsScreen(reader: Reader, nav: Nav) {
 }
 
 @Composable
-private fun LabeledRow(label: String, trailing: @Composable () -> Unit) {
+internal fun LabeledRow(label: String, trailing: @Composable () -> Unit) {
   val look = LocalLook.current
   Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
     Text(label, color = look.text, fontSize = 16.sp, modifier = Modifier.weight(1f))
@@ -234,8 +212,24 @@ private fun LabeledRow(label: String, trailing: @Composable () -> Unit) {
   }
 }
 
+/** A row that opens another screen. */
 @Composable
-private fun ActionRow(label: String, onClick: () -> Unit) {
+internal fun NavRow(title: String, subtitle: String?, onClick: () -> Unit) {
+  val look = LocalLook.current
+  Row(
+    Modifier.fillMaxWidth().clickable(onClick = onClick).padding(horizontal = 16.dp, vertical = 14.dp),
+    verticalAlignment = Alignment.CenterVertically,
+  ) {
+    Column(Modifier.weight(1f)) {
+      Text(title, color = look.text, fontSize = 16.sp)
+      if (subtitle != null) Text(subtitle, color = look.muted, fontSize = 13.sp)
+    }
+    Text("›", color = look.faint, fontSize = 22.sp)
+  }
+}
+
+@Composable
+internal fun ActionRow(label: String, onClick: () -> Unit) {
   val look = LocalLook.current
   Text(
     label, color = look.accentText, fontSize = 16.sp, fontWeight = FontWeight.Medium,
@@ -244,13 +238,13 @@ private fun ActionRow(label: String, onClick: () -> Unit) {
 }
 
 @Composable
-private fun PerchSwitch(checked: Boolean, onChange: (Boolean) -> Unit) {
+internal fun PerchSwitch(checked: Boolean, onChange: (Boolean) -> Unit) {
   val look = LocalLook.current
   Switch(checked, onChange, colors = SwitchDefaults.colors(checkedTrackColor = look.accent, checkedThumbColor = look.accentContrast))
 }
 
 @Composable
-private fun <T> Choice(options: List<Pair<T, String>>, selected: T, onSelect: (T) -> Unit) {
+internal fun <T> Choice(options: List<Pair<T, String>>, selected: T, onSelect: (T) -> Unit) {
   val look = LocalLook.current
   SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, bottom = 14.dp)) {
     options.forEachIndexed { i, (value, label) ->

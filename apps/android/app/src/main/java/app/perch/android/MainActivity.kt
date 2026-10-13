@@ -11,6 +11,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.graphics.asImageBitmap
 import app.perch.android.ui.LocalLook
 import app.perch.android.ui.PerchRoot
 import app.perch.android.ui.PerchTheme
@@ -31,7 +32,7 @@ class MainActivity : FragmentActivity() {
     handle(intent)
   }
 
-  /** perch://chain?server=…&code=… from a QR code scanned with another app. */
+  /** perch:// links: a chain's QR code scanned with another app, the widget, notifications. */
   private fun handle(intent: Intent?) {
     // Reopened from Recents, Android hands back the intent that first opened
     // the app; a chain link in it was dealt with then.
@@ -43,8 +44,14 @@ class MainActivity : FragmentActivity() {
       setIntent(Intent(intent).setAction(Intent.ACTION_MAIN))
       return
     }
-    val data = intent.data?.toString() ?: return
-    ChainCode.parseLink(data)?.let { perch.reader.pendingChainLink.value = it }
+    val data = intent.data ?: return
+    when {
+      // perch://article/<id> and perch://unread, from the widget and notifications.
+      data.scheme == "perch" && data.host == "article" ->
+        data.lastPathSegment?.let { perch.reader.pendingArticle.value = it }
+      data.scheme == "perch" && data.host == "unread" -> perch.reader.pendingUnread.value = true
+      else -> ChainCode.parseLink(data.toString())?.let { perch.reader.pendingChainLink.value = it }
+    }
     setIntent(Intent(intent).setData(null))
   }
 
@@ -58,7 +65,12 @@ class MainActivity : FragmentActivity() {
     enableEdgeToEdge()
     setContent {
       val settings by reader.settings.collectAsState()
-      PerchTheme(settings) {
+      val photo by reader.device.wallpaper.collectAsState()
+      val dim by reader.device.wallpaperDim.collectAsState()
+      val blur by reader.device.wallpaperBlur.collectAsState()
+      val image = androidx.compose.runtime.remember(photo) { photo?.asImageBitmap() }
+      val wallpaper = image?.let { app.perch.android.ui.PerchLook.Wallpaper(it, dim, blur) }
+      PerchTheme(settings, wallpaper) {
         val dark = LocalLook.current.dark
         // Status and navigation bar icons follow the palette, not the system.
         LaunchedEffect(dark) {

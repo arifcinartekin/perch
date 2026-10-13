@@ -11,6 +11,14 @@ struct MainTabView: View {
   /// An article opened from a widget or notification.
   @State private var linked: Article?
   @State private var joiningChain: JoinRequest?
+  /// A page shared to Perch from another app, to add its feed.
+  @State private var sharedPage: SharedPage?
+  @Environment(\.scenePhase) private var scenePhase
+
+  struct SharedPage: Identifiable {
+    var url: String
+    var id: String { url }
+  }
 
   /// A chain to join, from a scanned QR code.
   struct JoinRequest: Identifiable {
@@ -83,6 +91,13 @@ struct MainTabView: View {
     .task(id: links.pending) { await openLink() }
     .sheet(item: $joiningChain) { request in
       NavigationStack { JoinChainView(server: request.server, code: request.code) }
+    }
+    .task(id: scenePhase) {
+      guard scenePhase == .active, let url = SharedInbox.take() else { return }
+      sharedPage = SharedPage(url: url)
+    }
+    .sheet(item: $sharedPage) { page in
+      AddFeedSheet(initialURL: page.url) { _ in tab = .feeds }
     }
   }
 

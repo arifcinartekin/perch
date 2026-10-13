@@ -77,6 +77,7 @@ class Nav(private val controller: NavHostController) {
   fun chain() = controller.navigate("chain")
   fun account() = controller.navigate("account")
   fun notes() = controller.navigate("notes")
+  fun appearance() = controller.navigate("appearance")
   fun joinChain(server: String, code: String) = controller.navigate("chain?server=${enc(server)}&code=${enc(code)}")
   fun back() = controller.popBackStack()
   private fun enc(s: String) = URLEncoder.encode(s, "UTF-8")
@@ -102,6 +103,17 @@ fun PerchRoot(reader: Reader) {
       }
     }
   }
+  // An article from the widget or a notification.
+  val article by reader.pendingArticle.collectAsState()
+  LaunchedEffect(article) {
+    article?.let {
+      reader.pendingArticle.value = null
+      controller.popBackStack("home", inclusive = false)
+      nav.article(it)
+    }
+  }
+  val unreadAsked by reader.pendingUnread.collectAsState()
+  LaunchedEffect(unreadAsked) { if (unreadAsked) controller.popBackStack("home", inclusive = false) }
   NavHost(
     controller, startDestination = "home",
     enterTransition = { slideInHorizontally(tween(320)) { it } + fadeIn(tween(220)) },
@@ -128,6 +140,7 @@ fun PerchRoot(reader: Reader) {
     composable("search") { SearchScreen(reader, nav) }
     composable("account") { AccountScreen(reader, nav) }
     composable("notes") { NotesScreen(reader, nav) }
+    composable("appearance") { AppearanceScreen(reader, nav) }
     composable(
       "chain?server={server}&code={code}",
       listOf(
@@ -146,6 +159,13 @@ private enum class Tab { UNREAD, FEEDS, STARRED, SETTINGS }
 @Composable
 private fun Home(reader: Reader, nav: Nav) {
   var tab by rememberSaveable { mutableStateOf(Tab.UNREAD) }
+  val unreadAsked by reader.pendingUnread.collectAsState()
+  LaunchedEffect(unreadAsked) {
+    if (unreadAsked) {
+      tab = Tab.UNREAD
+      reader.pendingUnread.value = false
+    }
+  }
   val haze = rememberHazeState()
   val unread by reader.unread.collectAsState()
   CompositionLocalProvider(LocalHaze provides haze) {

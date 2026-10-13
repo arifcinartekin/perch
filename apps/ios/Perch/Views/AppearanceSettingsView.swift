@@ -85,7 +85,7 @@ struct AppearanceSettingsView: View {
         Text("Colors")
       } footer: {
         Text(
-          "Light and dark keep their own colors. They sync with your account, so the extension and web reader match."
+          "Light and dark keep their own colors. They sync with your chain, so your other devices match."
         )
       }
 

@@ -8,12 +8,18 @@ struct AddFeedSheet: View {
   @Environment(\.dismiss) private var dismiss
   let onAdded: (Feed) -> Void
 
-  @State private var url = ""
+  @State private var url: String
   @State private var categoryId = uncategorizedId
   @State private var newCategory = ""
   @State private var busy = false
   @State private var error: String?
   @FocusState private var focused: Bool
+
+  /// [initialURL]: a page shared to Perch from another app.
+  init(initialURL: String = "", onAdded: @escaping (Feed) -> Void) {
+    _url = State(initialValue: initialURL)
+    self.onAdded = onAdded
+  }
 
   var body: some View {
     NavigationStack {

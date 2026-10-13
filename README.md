@@ -10,7 +10,7 @@ your device. It comes as:
 - **A browser extension** (Chrome, Edge, Brave, Firefox) with a toolbar popup that finds the
   feeds on the page you're on, and a full-screen reader.
 - **An iPhone and iPad app** with widgets, which fetches feeds on the phone itself.
-- **An Android app**, native too, fetching feeds on the phone.
+- **An Android app** with a widget, native too, fetching feeds on the phone.
 - **A web reader** on any Perch Server you run, which keeps its library in your browser too.
 
 The reader is calm and uncluttered — ink, cream and ember on frosted glass, with a sidebar,
@@ -58,7 +58,12 @@ reports from the account page.
 - **Export / import** subscriptions as OPML, or the extension's full JSON backup.
 - **App lock:** a 6-digit PIN in the extension, and a PIN with Face ID, Touch ID or a fingerprint
   on the phones.
-- **Six app icons** on the iPhone (Settings → App icon), drawn from the same vector mark.
+- **Six app icons** on the phones (Settings → App icon on the iPhone, Settings → Appearance on
+  Android), drawn from the same vector mark.
+- **New-article notifications** after background refresh, off until you turn them on, in every
+  app; the extension asks for the notification permission only then.
+- **Share → Perch** from a browser on the phones adds the page's feed.
+- **Text size and line spacing** for articles, kept on each device.
 - **Recovery codes** instead of password-reset email, saved as a PDF; accounts can be deleted
   from every app.
 

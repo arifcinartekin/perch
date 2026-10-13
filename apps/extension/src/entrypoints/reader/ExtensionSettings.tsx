@@ -20,6 +20,7 @@ import {
   type ImportResult,
 } from '@/lib/backup';
 import { clearPin, isPinEnabled, isValidPin, setPin } from '@/lib/lock';
+import { canNotify, removeNotifications, requestNotifications } from '@/lib/background/notify';
 import { CommunitySection } from './pages/Community';
 import { SyncSection } from './pages/Sync';
 
@@ -30,10 +31,29 @@ export function ExtensionSettings() {
   const { settings, update } = useSettings();
   const toast = useToast();
   const [autoGranted, setAutoGranted] = useState(false);
+  const [notifyGranted, setNotifyGranted] = useState(false);
 
   useEffect(() => {
     void hasAllSites().then(setAutoGranted);
+    void canNotify().then(setNotifyGranted);
   }, []);
+
+  const toggleNotifications = async (next: boolean) => {
+    if (next) {
+      // Asked first, while the click still counts as one.
+      const granted = await requestNotifications();
+      setNotifyGranted(granted);
+      if (!granted) {
+        toast('Permission was not granted', 'error');
+        return;
+      }
+      await update({ notifyNewArticles: true });
+    } else {
+      await update({ notifyNewArticles: false });
+      await removeNotifications();
+      setNotifyGranted(false);
+    }
+  };
 
   const toggleAutoDiscovery = async (next: boolean) => {
     if (next) {
@@ -71,6 +91,19 @@ export function ExtensionSettings() {
             auto-discovery is inactive. Toggle it again to re-request.
           </p>
         )}
+      </Section>
+
+      <Section title="Notifications">
+        <Row
+          label="New articles"
+          hint="A notification when background refresh finds new articles. Asks for permission to
+            show notifications; turning it off gives that back."
+        >
+          <Toggle
+            checked={!!settings.notifyNewArticles && notifyGranted}
+            onChange={toggleNotifications}
+          />
+        </Row>
       </Section>
 
       <SyncSection />

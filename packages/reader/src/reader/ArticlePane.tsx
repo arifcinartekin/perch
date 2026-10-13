@@ -17,6 +17,8 @@ import { bareHost } from '@perch/core/url';
 import { useFullText } from '../hooks/useFullText';
 import { useNotes } from '../hooks/useNotes';
 import { NotePanel } from './NotePanel';
+import { TextStyleMenu } from './TextStyleMenu';
+import { useTextStyle } from '../hooks/useTextStyle';
 import type { Article, Feed } from '@perch/core/types';
 
 interface Props {
@@ -50,6 +52,12 @@ export function ArticlePane({
   };
 
   const fontFamily = readingFont === 'serif' ? 'var(--font-serif)' : 'var(--font-sans)';
+  const { style: textStyle, update: setTextStyle } = useTextStyle();
+  const proseStyle = {
+    fontFamily,
+    fontSize: `${textStyle.size}px`,
+    lineHeight: textStyle.lineHeight,
+  };
 
   // Feed-provided body — shown immediately and as the fallback if extraction
   // can't run or fails.
@@ -80,6 +88,7 @@ export function ArticlePane({
             <IconRefresh size={15} />
           </IconButton>
         )}
+        <TextStyleMenu style={textStyle} onChange={setTextStyle} />
         <IconButton
           label={hasNote ? 'Edit note' : 'Add a note'}
           active={hasNote || editingNote}
@@ -165,13 +174,13 @@ export function ArticlePane({
           {extracted ? (
             <div
               className="prose-perch"
-              style={{ fontFamily }}
+              style={proseStyle}
               dangerouslySetInnerHTML={{ __html: extracted }}
             />
           ) : feedHtml ? (
             <div
               className="prose-perch"
-              style={{ fontFamily }}
+              style={proseStyle}
               dangerouslySetInnerHTML={{ __html: feedHtml }}
             />
           ) : state.status === 'loading' ? (

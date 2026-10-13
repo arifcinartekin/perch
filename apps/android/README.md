@@ -22,9 +22,15 @@ What it does, as the iPhone app does:
 - A Perch account on a Perch Server someone runs, for sharing notes as pages; Argon2id, proof
   of work and recovery codes as in packages/core. Any note can be shared as text.
 - Notes, app lock (PIN with fingerprint or face), background refresh, OPML, Share → Perch.
+- A home-screen widget (Glance) with the unread count and the newest articles, and
+  notifications when background refresh finds new ones (off until turned on; Android 13+ asks
+  for the permission then). Both open the article through a `perch://article/…` link.
+- Settings → Appearance: theme, light and dark colours (background, text, accent, buttons),
+  glass transparency and blur, a background photo with dim and blur, and six launcher icons
+  (activity aliases, drawn by `scripts/brand.mjs`). The article's text size and line spacing
+  stay on the phone.
 
-Not yet: syncing with your own Perch Server's library (personal mode), widgets, background
-pictures and alternate icons.
+Not yet: syncing with your own Perch Server's library (personal mode).
 
 ## Release
 

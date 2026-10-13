@@ -54,6 +54,11 @@ export interface Settings {
   autoDiscovery: boolean;
   /** Reading typeface in the article pane. */
   readingFont: 'sans' | 'serif';
+  /**
+   * A notification when background refresh finds new articles (extension;
+   * asks for the optional "notifications" permission). Stays on this device.
+   */
+  notifyNewArticles?: boolean;
   /** Custom colours, kept separately for the light and the dark theme. */
   appearance: Record<'light' | 'dark', ColorOverrides>;
   /** Panel transparency and blur; unset means DEFAULT_GLASS. */
