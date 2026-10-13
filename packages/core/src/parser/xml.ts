@@ -52,6 +52,8 @@ export function parseXml(xml: string): XmlDoc {
 /** Coerce a fast-xml-parser value to a plain string (handles `{ '#text': ... }`). */
 export function text(value: unknown): string | undefined {
   if (value == null) return undefined;
+  // A repeated element (two <pubDate>s): the first, as the apps read it.
+  if (Array.isArray(value)) return text(value[0]);
   if (typeof value === 'string') return value.trim() || undefined;
   if (typeof value === 'number' || typeof value === 'boolean') return String(value);
   if (typeof value === 'object') {

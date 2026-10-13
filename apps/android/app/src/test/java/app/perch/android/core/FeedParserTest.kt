@@ -78,6 +78,32 @@ class FeedParserTest {
     assertEquals("image/*", item.enclosures.first().type)
   }
 
+  /** The same feeds as core's parser.test.ts ("which date an item gets"). */
+  @Test fun datesPickedAsCoreDoes() {
+    val rss = parse(
+      """<rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/"><channel><title>T</title>
+      <item><title>A</title><pubDate>Fri, 01 Jan 2100 00:00:00 GMT</pubDate><dc:date>2025-06-10T00:00:00Z</dc:date></item>
+      <item><title>B</title><pubDate>Wed, 11 Jun 2025 09:30:00 +0200</pubDate><dc:date>2025-06-10T00:00:00Z</dc:date></item>
+      <item><title>C</title><pubDate>Fri, 01 Jan 2100 00:00:00 GMT</pubDate></item>
+      <item><title>D</title><pubDate>Wed, 11 Jun 2025 09:30:00 +0200</pubDate><pubDate>2025-06-10T00:00:00Z</pubDate></item>
+      </channel></rss>""",
+    )
+    assertEquals(
+      listOf(1749513600000L, 1749627000000L, null, 1749627000000L),
+      rss.items.map { it.published },
+    )
+    val atom = parse(
+      """<feed xmlns="http://www.w3.org/2005/Atom"><title>T</title><entry><title>E</title><id>e</id>
+      <published>2100-01-01T00:00:00Z</published><updated>2025-06-10T04:00:00Z</updated></entry></feed>""",
+    )
+    assertEquals(1749528000000L, atom.items.single().published)
+    val json = parse(
+      """{"version":"https://jsonfeed.org/version/1.1","title":"T",
+      "items":[{"id":"1","date_published":"soon","date_modified":"2025-06-10T04:00:00Z"}]}""",
+    )
+    assertEquals(1749528000000L, json.items.single().published)
+  }
+
   @Test(expected = NotAFeedException::class)
   fun htmlIsNotAFeed() {
     parse("<!doctype html><html><head><title>x</title></head><body>hi</body></html>")

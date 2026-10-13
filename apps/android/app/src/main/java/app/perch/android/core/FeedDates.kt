@@ -10,6 +10,15 @@ import java.util.Locale
  * usual variations found in the wild. Returns epoch milliseconds.
  */
 object FeedDates {
+  /**
+   * resolvePublishedAt in core/parser/dates.ts: the first candidate that
+   * parses and isn't more than a day in the future, or null (undated).
+   */
+  fun pick(candidates: List<String?>, now: Long = System.currentTimeMillis()): Long? {
+    val maxFuture = now + 24 * 60 * 60 * 1000L
+    return candidates.firstNotNullOfOrNull { c -> parse(c)?.takeIf { it <= maxFuture } }
+  }
+
   fun parse(raw: String?): Long? {
     var s = raw?.trim()?.takeIf { it.isNotEmpty() } ?: return null
     iso(s)?.let { return it }

@@ -66,7 +66,7 @@ object FeedParser {
         url = item.str("url") ?: item.str("external_url"),
         title = plainTitle(item.str("title").orEmpty()),
         author = author,
-        published = FeedDates.parse(item.str("date_published") ?: item.str("date_modified")),
+        published = FeedDates.pick(listOf(item.str("date_published"), item.str("date_modified"))),
         summaryHtml = item.str("summary")?.let(HtmlText::escape),
         contentHtml = item.str("content_html")
           ?: item.str("content_text")?.let { "<p>${HtmlText.escape(it)}</p>" },
@@ -89,16 +89,27 @@ object FeedParser {
 
   private enum class Kind { RSS, ATOM }
 
+  /** Date elements core reads: RSS pubDate, published and date; Atom published and updated. */
+  private val DATE_NAMES = setOf("pubDate", "published", "updated", "date")
+
   private class ItemBuilder {
     var guid: String? = null
     var url: String? = null
     var title = ""
     var author: String? = null
-    var published: Long? = null
+    /** Date elements by name, first of each; [build] picks one as core does. */
+    val dates = mutableMapOf<String, String>()
     var summary: String? = null
     var content: String? = null
     val enclosures = mutableListOf<Enclosure>()
-    fun build() = ParsedItem(guid, url, title, author, published, summary, content, enclosures.toList())
+    fun build(atom: Boolean): ParsedItem {
+      // The candidates and their order in core/parser/rss.ts and atom.ts.
+      val order =
+        if (atom) listOf("atom:published", "atom:updated", "dc:date")
+        else listOf("pubDate", "dc:date", "published", "date")
+      val published = FeedDates.pick(order.map { dates[it] })
+      return ParsedItem(guid, url, title, author, published, summary, content, enclosures.toList())
+    }
   }
 
   /**
@@ -203,7 +214,7 @@ object FeedParser {
               if (current != null) {
                 when {
                   (name == "item" && (ns.isEmpty() || ns == NS.RSS1)) || (name == "entry" && ns == NS.ATOM) -> {
-                    items.add(current.build())
+                    items.add(current.build(atom = name == "entry"))
                     item = null
                   }
                   name == "title" && ns != NS.MEDIA -> current.title = plainTitle(value)
@@ -211,11 +222,9 @@ object FeedParser {
                     if (current.url == null && value.isNotEmpty()) current.url = value
                   (name == "guid" && ns.isEmpty()) || (name == "id" && ns == NS.ATOM) ->
                     current.guid = value.ifEmpty { null }
-                  (name == "pubDate" && ns.isEmpty()) || (name == "date" && ns == NS.DC) ||
-                    (name == "published" && ns == NS.ATOM) ->
-                    current.published = FeedDates.parse(value) ?: current.published
-                  (name == "updated" || name == "modified") && ns == NS.ATOM ->
-                    if (current.published == null) current.published = FeedDates.parse(value)
+                  name == "date" && ns == NS.DC -> current.dates.putIfAbsent("dc:date", value)
+                  name in DATE_NAMES && (ns.isEmpty() || ns == NS.RSS1) -> current.dates.putIfAbsent(name, value)
+                  name in DATE_NAMES && ns == NS.ATOM -> current.dates.putIfAbsent("atom:$name", value)
                   (name == "creator" && ns == NS.DC) || (name == "author" && ns.isEmpty()) ->
                     if (current.author == null && value.isNotEmpty()) current.author = value
                   name == "name" && ns == NS.ATOM && parentName() == "author" ->

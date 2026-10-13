@@ -111,7 +111,7 @@ public enum FeedParser {
         guid: item.id?.value, url: item.url ?? item.externalUrl,
         title: plainTitle(item.title ?? ""),
         author: item.authors?.first?.name ?? item.author?.name,
-        published: FeedDates.parse(item.datePublished ?? item.dateModified),
+        published: FeedDates.pick([item.datePublished, item.dateModified]),
         summaryHtml: item.summary.map(escape), contentHtml: item.contentHtml ?? text,
         enclosures: enclosures)
     }
@@ -176,6 +176,8 @@ private final class XMLFeedDelegate: NSObject, XMLParserDelegate {
   private var siteUrl: String?
   private var items: [ParsedItem] = []
   private var item: ParsedItem?
+  /// The current item's date elements by name, first of each; picked as core does when it ends.
+  private var dates: [String: String] = [:]
   /// Atom content type of the element being read (text, html, xhtml).
   private var textType = "text"
   private var xhtmlDepth = 0
@@ -207,6 +209,7 @@ private final class XMLFeedDelegate: NSObject, XMLParserDelegate {
       if kind == nil { kind = .atom }
     case ("item", ""), ("item", NS.rss1), ("entry", NS.atom):
       item = ParsedItem(title: "", enclosures: [])
+      dates = [:]
     default:
       break
     }
@@ -283,6 +286,12 @@ private final class XMLFeedDelegate: NSObject, XMLParserDelegate {
     if var current = item {
       switch (name, ns) {
       case ("item", ""), ("item", NS.rss1), ("entry", NS.atom):
+        // The candidates and their order in core/parser/rss.ts and atom.ts.
+        let order =
+          name == "entry"
+          ? ["atom:published", "atom:updated", "dc:date"]
+          : ["pubDate", "dc:date", "published", "date"]
+        current.published = FeedDates.pick(order.map { dates[$0] })
         items.append(current)
         item = nil
         return
@@ -294,10 +303,13 @@ private final class XMLFeedDelegate: NSObject, XMLParserDelegate {
         current.guid = value.isEmpty ? nil : value
       case ("id", NS.atom):
         current.guid = value.isEmpty ? nil : value
-      case ("pubDate", ""), ("date", NS.dc), ("published", NS.atom):
-        current.published = FeedDates.parse(value) ?? current.published
-      case ("updated", NS.atom), ("modified", NS.atom):
-        if current.published == nil { current.published = FeedDates.parse(value) }
+      case ("date", NS.dc):
+        if dates["dc:date"] == nil { dates["dc:date"] = value }
+      case ("pubDate", ""), ("pubDate", NS.rss1), ("published", ""), ("published", NS.rss1),
+        ("date", ""), ("date", NS.rss1):
+        if dates[name] == nil { dates[name] = value }
+      case ("published", NS.atom), ("updated", NS.atom):
+        if dates["atom:\(name)"] == nil { dates["atom:\(name)"] = value }
       case ("creator", NS.dc), ("author", ""):
         if current.author == nil, !value.isEmpty { current.author = value }
       case ("name", NS.atom) where parent?.name == "author":
@@ -345,6 +357,16 @@ private final class XMLFeedDelegate: NSObject, XMLParserDelegate {
 /// RFC 822 (RSS) and ISO 8601 (Atom, JSON Feed, Dublin Core) dates, with the
 /// usual variations found in the wild.
 public enum FeedDates {
+  /// resolvePublishedAt in core/parser/dates.ts: the first candidate that
+  /// parses and isn't more than a day in the future, or nil (undated).
+  public static func pick(_ candidates: [String?], now: Date = .now) -> Date? {
+    let maxFuture = now.addingTimeInterval(24 * 60 * 60)
+    for c in candidates {
+      if let d = parse(c), d <= maxFuture { return d }
+    }
+    return nil
+  }
+
   public static func parse(_ raw: String?) -> Date? {
     guard var s = raw?.trimmingCharacters(in: .whitespacesAndNewlines), !s.isEmpty else {
       return nil

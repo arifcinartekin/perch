@@ -148,3 +148,45 @@ describe('titles with entities', () => {
     );
   });
 });
+
+// The same feeds and expectations as FeedParserTest.kt and LocalLibraryTests.swift,
+// so every app picks the same date (and so the same article id).
+describe('which date an item gets', () => {
+  it('takes candidates in order, skipping ones more than a day ahead', () => {
+    const rss = parseFeed(
+      `<rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/"><channel><title>T</title>
+        <item><title>A</title><pubDate>Fri, 01 Jan 2100 00:00:00 GMT</pubDate><dc:date>2025-06-10T00:00:00Z</dc:date></item>
+        <item><title>B</title><pubDate>Wed, 11 Jun 2025 09:30:00 +0200</pubDate><dc:date>2025-06-10T00:00:00Z</dc:date></item>
+        <item><title>C</title><pubDate>Fri, 01 Jan 2100 00:00:00 GMT</pubDate></item>
+        <item><title>D</title><pubDate>Wed, 11 Jun 2025 09:30:00 +0200</pubDate><pubDate>2025-06-10T00:00:00Z</pubDate></item>
+      </channel></rss>`,
+      'application/rss+xml',
+      'https://ex.com/feed',
+    ).articles;
+    expect(rss.map((a) => (a.undated ? null : a.publishedAt))).toEqual([
+      1_749_513_600_000,
+      1_749_627_000_000,
+      null,
+      1_749_627_000_000,
+    ]);
+
+    const atom = parseFeed(
+      `<feed xmlns="http://www.w3.org/2005/Atom"><title>T</title><entry><title>E</title><id>e</id>
+        <published>2100-01-01T00:00:00Z</published><updated>2025-06-10T04:00:00Z</updated></entry></feed>`,
+      'application/atom+xml',
+      'https://ex.com/feed',
+    ).articles;
+    expect(atom[0]!.publishedAt).toBe(1_749_528_000_000);
+
+    const json = parseFeed(
+      JSON.stringify({
+        version: 'https://jsonfeed.org/version/1.1',
+        title: 'T',
+        items: [{ id: '1', date_published: 'soon', date_modified: '2025-06-10T04:00:00Z' }],
+      }),
+      'application/feed+json',
+      'https://ex.com/feed',
+    ).articles;
+    expect(json[0]!.publishedAt).toBe(1_749_528_000_000);
+  });
+});

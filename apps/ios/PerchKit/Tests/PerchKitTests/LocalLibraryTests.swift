@@ -92,6 +92,38 @@ import Testing
     #expect(feed.items.first?.published == Date(timeIntervalSince1970: 1_749_513_600))
   }
 
+  // The same feeds as core's parser.test.ts ("which date an item gets"):
+  // candidates in core's order, none more than a day ahead.
+  @Test func datesPickedAsCoreDoes() throws {
+    let rss = """
+      <rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/"><channel><title>T</title>
+        <item><title>A</title><pubDate>Fri, 01 Jan 2100 00:00:00 GMT</pubDate><dc:date>2025-06-10T00:00:00Z</dc:date></item>
+        <item><title>B</title><pubDate>Wed, 11 Jun 2025 09:30:00 +0200</pubDate><dc:date>2025-06-10T00:00:00Z</dc:date></item>
+        <item><title>C</title><pubDate>Fri, 01 Jan 2100 00:00:00 GMT</pubDate></item>
+        <item><title>D</title><pubDate>Wed, 11 Jun 2025 09:30:00 +0200</pubDate><pubDate>2025-06-10T00:00:00Z</pubDate></item>
+      </channel></rss>
+      """
+    #expect(
+      try FeedParser.parse(Data(rss.utf8)).items.map(\.published) == [
+        Date(timeIntervalSince1970: 1_749_513_600), Date(timeIntervalSince1970: 1_749_627_000), nil,
+        Date(timeIntervalSince1970: 1_749_627_000),
+      ])
+    let atom = """
+      <feed xmlns="http://www.w3.org/2005/Atom"><title>T</title><entry><title>E</title><id>e</id>
+        <published>2100-01-01T00:00:00Z</published><updated>2025-06-10T04:00:00Z</updated></entry></feed>
+      """
+    #expect(
+      try FeedParser.parse(Data(atom.utf8)).items.first?.published
+        == Date(timeIntervalSince1970: 1_749_528_000))
+    let json = """
+      {"version":"https://jsonfeed.org/version/1.1","title":"T",
+       "items":[{"id":"1","date_published":"soon","date_modified":"2025-06-10T04:00:00Z"}]}
+      """
+    #expect(
+      try FeedParser.parse(Data(json.utf8)).items.first?.published
+        == Date(timeIntervalSince1970: 1_749_528_000))
+  }
+
   @Test func jsonFeed() throws {
     let json = """
       {"version":"https://jsonfeed.org/version/1.1","title":"JSON Blog",
