@@ -1,5 +1,10 @@
 package app.perch.android.core
 
+import java.io.File
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.contentOrNull
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
@@ -121,5 +126,17 @@ class FeedParserTest {
     assertEquals(1767225600000L, FeedDates.parse("2026-01-01"))
     assertEquals(1767225600000L, FeedDates.parse("2026-01-01 00:00:00"))
     assertNull(FeedDates.parse("soon"))
+  }
+
+  /** The list core's dates.test.ts and the iPhone app read, so every app reads a date the same way. */
+  @Test fun datesMatchCore() {
+    // Unit tests run in apps/android/app.
+    val file = File("../../../packages/core/tests/fixtures/dates.json")
+    val cases = Json.parseToJsonElement(file.readText()) as JsonArray
+    assertTrue(cases.size > 40)
+    for (case in cases) {
+      val (input, expected) = (case as JsonArray).map { it as JsonPrimitive }
+      assertEquals(input.content, expected.contentOrNull?.toLong(), FeedDates.parse(input.content))
+    }
   }
 }

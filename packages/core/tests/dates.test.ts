@@ -1,7 +1,17 @@
 import { describe, expect, it } from 'vitest';
 import { parseDate, resolvePublishedAt } from '../src/parser/dates';
+import { fixture } from './fixtures';
 
 describe('parseDate', () => {
+  // The same list FeedParserTest.kt and LocalLibraryTests.swift read, so every
+  // app reads a feed's dates (and so its article ids) the same way.
+  it.each(JSON.parse(fixture('dates.json')) as [string, number | null][])(
+    'reads %j as %s, like the apps',
+    (input, expected) => {
+      expect(parseDate(input)).toBe(expected);
+    },
+  );
+
   it('parses RFC 822 (RSS)', () => {
     expect(parseDate('Wed, 03 Jan 2024 08:00:00 GMT')).toBe(Date.parse('2024-01-03T08:00:00Z'));
   });
@@ -11,13 +21,12 @@ describe('parseDate', () => {
     expect(parseDate('2024-06-10T15:00:00-04:00')).toBe(Date.parse('2024-06-10T19:00:00Z'));
   });
 
-  it('parses "DD Mon YYYY HH:MM:SS" with no weekday', () => {
-    expect(parseDate('5 Jun 2018 10:00:00')).toBe(new Date(2018, 5, 5, 10, 0, 0).getTime());
+  it('parses "DD Mon YYYY HH:MM:SS" with no weekday or zone, as UTC', () => {
+    expect(parseDate('5 Jun 2018 10:00:00')).toBe(Date.UTC(2018, 5, 5, 10, 0, 0));
   });
 
   it('parses RFC 822 with an alphabetic timezone abbreviation', () => {
-    // "EST" is not always understood by Date.parse; the fallback drops it.
-    expect(parseDate('Tue, 05 Jun 2018 10:00:00 EST')).not.toBeNull();
+    expect(parseDate('Tue, 05 Jun 2018 10:00:00 EST')).toBe(Date.UTC(2018, 5, 5, 15, 0, 0));
   });
 
   it('returns null for junk', () => {

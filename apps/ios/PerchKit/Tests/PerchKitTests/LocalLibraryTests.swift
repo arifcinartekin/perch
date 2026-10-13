@@ -160,6 +160,21 @@ import Testing
     }
     #expect(FeedDates.parse("soon") == nil)
   }
+
+  /// The list core's dates.test.ts and the Android app read, so every app reads a date the same way.
+  @Test func datesMatchCore() throws {
+    var root = URL(fileURLWithPath: #filePath)
+    for _ in 0..<6 { root.deleteLastPathComponent() }
+    let data = try Data(
+      contentsOf: root.appending(path: "packages/core/tests/fixtures/dates.json"))
+    let cases = try #require(try JSONSerialization.jsonObject(with: data) as? [[Any]])
+    #expect(cases.count > 40)
+    for c in cases {
+      let input = try #require(c[0] as? String)
+      let expected = (c[1] as? NSNumber)?.int64Value
+      #expect(FeedDates.parseMillis(input) == expected, "\(input)")
+    }
+  }
 }
 
 @Suite struct FeedIDTests {

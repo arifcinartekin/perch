@@ -356,6 +356,10 @@ private final class XMLFeedDelegate: NSObject, XMLParserDelegate {
 
 /// RFC 822 (RSS) and ISO 8601 (Atom, JSON Feed, Dublin Core) dates, with the
 /// usual variations found in the wild.
+///
+/// parseDate in core/parser/dates.ts, rule for rule: an item keyed on its date
+/// must get the same id on every device. packages/core/tests/fixtures/dates.json
+/// pins the three.
 public enum FeedDates {
   /// resolvePublishedAt in core/parser/dates.ts: the first candidate that
   /// parses and isn't more than a day in the future, or nil (undated).
@@ -368,55 +372,84 @@ public enum FeedDates {
   }
 
   public static func parse(_ raw: String?) -> Date? {
-    guard var s = raw?.trimmingCharacters(in: .whitespacesAndNewlines), !s.isEmpty else {
-      return nil
+    parseMillis(raw).map { Date(timeIntervalSince1970: Double($0) / 1000) }
+  }
+
+  private static let months = [
+    "jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec",
+  ]
+
+  /// RFC 822 zone names, in hours from UTC. Any other name counts as UTC.
+  private static let zones: [String: Int] = [
+    "GMT": 0, "UT": 0, "UTC": 0, "Z": 0, "EST": -5, "EDT": -4,
+    "CST": -6, "CDT": -5, "MST": -7, "MDT": -6, "PST": -8, "PDT": -7,
+  ]
+
+  /// Epoch milliseconds, or nil when the string isn't a date these rules read.
+  static func parseMillis(_ raw: String?) -> Int64? {
+    guard let trimmed = raw?.trimmingCharacters(in: .whitespacesAndNewlines) else { return nil }
+    let s = trimmed.replacing(/\s+/, with: " ")
+    guard !s.isEmpty else { return nil }
+
+    if let m = s.wholeMatch(
+      of: /(\d{4})-(\d{2})-(\d{2})(?:[Tt ](\d{2}):(\d{2})(?::(\d{2})(?:\.(\d+))?)?)?\s*([Zz]|[+-]\d{2}:?\d{2})?/)
+    {
+      let ms = m.7.map { Int(String(($0 + "00").prefix(3)))! } ?? 0
+      return epoch(
+        year: Int(m.1)!, month: Int(m.2)!, day: Int(m.3)!, hour: int(m.4), minute: int(m.5),
+        second: int(m.6), ms: ms, offset: zoneOffset(m.8.map(String.init)))
     }
-    if let d = iso(s) { return d }
-    // "Tue, 10 Jun 2003 04:00:00 GMT", "10 Jun 2003 04:00 +0000", "Tue, 10 Jun 2003 04:00:00 EST".
-    s = s.replacing(/\s+/, with: " ")
-    for (zone, offset) in zones where s.hasSuffix(" " + zone) {
-      s = String(s.dropLast(zone.count)) + offset
-      break
+
+    if let m = s.wholeMatch(
+      of: /(?:[A-Za-z]+,?\s+)?(\d{1,2})\s+([A-Za-z]+)\s+(\d{4}|\d{2})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?)?(?:\s+([A-Za-z]+|[+-]\d{2}:?\d{2}))?/)
+    {
+      guard let index = months.firstIndex(of: m.2.prefix(3).lowercased()) else { return nil }
+      var year = Int(m.3)!
+      if m.3.count == 2 { year += year < 50 ? 2000 : 1900 }
+      return epoch(
+        year: year, month: index + 1, day: Int(m.1)!, hour: int(m.4), minute: int(m.5),
+        second: int(m.6), ms: 0, offset: zoneOffset(m.7.map(String.init)))
     }
-    for format in rfc822Formats {
-      let f = DateFormatter()
-      f.locale = Locale(identifier: "en_US_POSIX")
-      f.timeZone = TimeZone(secondsFromGMT: 0)
-      f.dateFormat = format
-      if let d = f.date(from: s) { return d }
-    }
+
     return nil
   }
 
-  private static func iso(_ s: String) -> Date? {
-    guard s.first?.isNumber == true, s.count >= 10 else { return nil }
-    var text = s.replacing(" ", with: "T", maxReplacements: 1)
-    // Date only.
-    if text.count == 10 { text += "T00:00:00Z" }
-    // No zone: UTC.
-    if text.wholeMatch(of: /\d{4}-\d\d-\d\dT\d\d:\d\d(:\d\d(\.\d+)?)?/) != nil { text += "Z" }
-    // "+0000" → "+00:00".
-    if let m = text.firstMatch(of: /([+-]\d\d)(\d\d)$/) {
-      text = String(text[..<m.range.lowerBound]) + "\(m.1):\(m.2)"
-    }
-    // "12:30Z" → "12:30:00Z".
-    if let m = text.firstMatch(of: /T(\d\d:\d\d)(Z|[+-])/) {
-      text = text.replacingCharacters(in: m.range, with: "T\(m.1):00\(m.2)")
-    }
-    let fractional = Date.ISO8601FormatStyle(includingFractionalSeconds: true)
-    let plain = Date.ISO8601FormatStyle()
-    return (try? plain.parse(text)) ?? (try? fractional.parse(text))
+  private static func int(_ s: Substring?) -> Int { s.flatMap { Int($0) } ?? 0 }
+
+  /// Minutes east of UTC; no zone or an unknown name is UTC, a bad offset nil.
+  private static func zoneOffset(_ zone: String?) -> Int? {
+    guard let zone, !zone.isEmpty else { return 0 }
+    if let hours = zones[zone.uppercased()] { return hours * 60 }
+    guard let m = zone.wholeMatch(of: /([+-])(\d{2}):?(\d{2})/) else { return 0 }
+    let hours = Int(m.2)!
+    let minutes = Int(m.3)!
+    if hours > 23 || minutes > 59 { return nil }
+    return (m.1 == "-" ? -1 : 1) * (hours * 60 + minutes)
   }
 
-  private static let rfc822Formats = [
-    "EEE, d MMM yyyy HH:mm:ss Z", "EEE, d MMM yyyy HH:mm Z", "d MMM yyyy HH:mm:ss Z",
-    "d MMM yyyy HH:mm Z", "EEE, d MMM yy HH:mm:ss Z", "EEE, d MMMM yyyy HH:mm:ss Z",
-    "EEE d MMM yyyy HH:mm:ss Z", "EEE, d MMM yyyy HH:mm:ss", "EEE, d MMM yyyy",
-  ]
+  /// Days from 1970-01-01 to a proleptic Gregorian date (Howard Hinnant's days_from_civil).
+  private static func days(year: Int, month: Int, day: Int) -> Int {
+    let y = month <= 2 ? year - 1 : year
+    let era = (y >= 0 ? y : y - 399) / 400
+    let yoe = y - era * 400
+    let doy = (153 * (month + (month > 2 ? -3 : 9)) + 2) / 5 + day - 1
+    let doe = yoe * 365 + yoe / 4 - yoe / 100 + doy
+    return era * 146097 + doe - 719468
+  }
 
-  private static let zones = [
-    ("GMT", "+0000"), ("UTC", "+0000"), ("UT", "+0000"), ("Z", "+0000"),
-    ("EST", "-0500"), ("EDT", "-0400"), ("CST", "-0600"), ("CDT", "-0500"),
-    ("MST", "-0700"), ("MDT", "-0600"), ("PST", "-0800"), ("PDT", "-0700"),
-  ]
+  private static func daysInMonth(year: Int, month: Int) -> Int {
+    days(year: month == 12 ? year + 1 : year, month: month == 12 ? 1 : month + 1, day: 1)
+      - days(year: year, month: month, day: 1)
+  }
+
+  private static func epoch(
+    year: Int, month: Int, day: Int, hour: Int, minute: Int, second: Int, ms: Int, offset: Int?
+  ) -> Int64? {
+    guard let offset, (1...12).contains(month) else { return nil }
+    guard day >= 1, day <= daysInMonth(year: year, month: month) else { return nil }
+    guard hour <= 23, minute <= 59, second <= 59 else { return nil }
+    let seconds = Int64(days(year: year, month: month, day: day)) * 86400
+      + Int64(hour * 3600 + minute * 60 + second)
+    return seconds * 1000 + Int64(ms) - Int64(offset) * 60_000
+  }
 }
