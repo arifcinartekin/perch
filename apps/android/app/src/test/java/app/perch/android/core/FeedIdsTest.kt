@@ -27,4 +27,12 @@ class FeedIdsTest {
     val item = ParsedItem(guid = "tag:ex.com,2026:1", url = "https://ex.com/1", title = "One")
     assertEquals("5e5c89d0", FeedIds.article(feed, item, 0.0))
   }
+
+  @Test fun articleIdsFallBackToTitleAndDateLikeCore() {
+    val feed = FeedIds.feed("https://ex.com/feed")
+    val item = ParsedItem(guid = null, url = null, title = "One")
+    assertEquals("483ee61f", FeedIds.article(feed, item, 1_767_225_600_000.0))
+    // Undated: the apps pass 0, as core does.
+    assertEquals("ddec0483", FeedIds.article(feed, item, 0.0))
+  }
 }

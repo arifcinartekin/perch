@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import { feedIdFor } from '../src/feeds';
+import { parseFeed } from '../src/parser';
 import { excerptOf, toArticle } from '../src/parser/normalize';
 import type { ParsedArticle } from '../src/types';
 
@@ -26,6 +28,23 @@ describe('toArticle', () => {
     const noGuid = toArticle({ ...base, guid: undefined }, 'f');
     const sameByUrl = toArticle({ ...base, guid: undefined, title: 'different' }, 'f');
     expect(noGuid.id).toBe(sameByUrl.id);
+  });
+
+  it('keys an item without guid or link on its title and date, like the apps', () => {
+    const feedId = feedIdFor('https://ex.com/feed');
+    const item = { ...base, guid: undefined, url: undefined, title: 'One' };
+    // The same values as FeedIdsTest.kt and LocalLibraryTests.swift.
+    expect(toArticle({ ...item, publishedAt: 1_767_225_600_000 }, feedId).id).toBe('483ee61f');
+    expect(toArticle({ ...item, publishedAt: 5, undated: true }, feedId).id).toBe('ddec0483');
+  });
+
+  it('gives an undated item the same id on every fetch', () => {
+    const xml = `<rss version="2.0"><channel><title>T</title>
+      <item><title>No date, no link</title></item></channel></rss>`;
+    const first = parseFeed(xml, 'application/rss+xml', 'https://ex.com/feed').articles[0]!;
+    expect(first.undated).toBe(true);
+    const later = { ...first, publishedAt: first.publishedAt + 60_000 };
+    expect(toArticle(later, 'f').id).toBe(toArticle(first, 'f').id);
   });
 
   it('initialises read/starred to 0', () => {

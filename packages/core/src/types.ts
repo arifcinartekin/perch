@@ -178,7 +178,10 @@ export interface ParsedFeed {
   articles: ParsedArticle[];
 }
 
-export type ParsedArticle = Omit<Article, 'id' | 'feedId' | 'read' | 'starred' | 'fetchedAt'>;
+export type ParsedArticle = Omit<Article, 'id' | 'feedId' | 'read' | 'starred' | 'fetchedAt'> & {
+  /** The feed gave no usable date; publishedAt is when it was fetched. */
+  undated?: boolean;
+};
 
 /** A feed found on a page but not (yet) subscribed to. */
 export interface DiscoveredFeed {

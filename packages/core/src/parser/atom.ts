@@ -1,7 +1,7 @@
 import type { ParsedArticle, ParsedFeed, Enclosure } from '../types';
 import { htmlToText } from './text';
 import { resolveUrl } from '../url';
-import { resolvePublishedAt } from './dates';
+import { findPublishedAt, resolvePublishedAt } from './dates';
 import { asArray, attr, text, type XmlDoc } from './xml';
 
 // Atom 1.0 (`<feed xmlns="http://www.w3.org/2005/Atom">`).
@@ -46,7 +46,7 @@ function parseEntry(
   const contentHtml = richText(entry.content);
   const summaryHtml = richText(entry.summary);
 
-  const publishedAt = resolvePublishedAt([
+  const dated = findPublishedAt([
     text(entry.published),
     text(entry.updated),
     text(entry['dc:date']),
@@ -58,7 +58,8 @@ function parseEntry(
     url,
     title,
     author: authorName(entry.author) ?? feedAuthor,
-    publishedAt,
+    publishedAt: dated ?? Date.now(),
+    ...(dated === undefined && { undated: true }),
     updatedAt: updated ? resolvePublishedAt([updated]) : undefined,
     summaryHtml: summaryHtml === contentHtml ? undefined : summaryHtml,
     contentHtml,

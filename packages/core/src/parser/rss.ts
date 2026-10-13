@@ -1,7 +1,7 @@
 import type { ParsedArticle, ParsedFeed, Enclosure } from '../types';
 import { htmlToText } from './text';
 import { resolveUrl } from '../url';
-import { resolvePublishedAt } from './dates';
+import { findPublishedAt } from './dates';
 import { asArray, attr, text, type XmlDoc } from './xml';
 
 // Handles RSS 2.0 (`<rss><channel>`) and RSS 1.0 / RDF (`<rdf:RDF>`).
@@ -57,7 +57,7 @@ function parseItem(item: Record<string, unknown>, base: string): ParsedArticle |
     text((item['itunes:author'] as unknown) ?? undefined) ??
     undefined;
 
-  const publishedAt = resolvePublishedAt([
+  const dated = findPublishedAt([
     text(item.pubDate),
     text(item['dc:date']),
     text(item.published),
@@ -71,7 +71,8 @@ function parseItem(item: Record<string, unknown>, base: string): ParsedArticle |
     url,
     title,
     author,
-    publishedAt,
+    publishedAt: dated ?? Date.now(),
+    ...(dated === undefined && { undated: true }),
     // If description and content:encoded are identical, keep only the full one.
     summaryHtml: summaryHtml === contentHtml ? undefined : summaryHtml,
     contentHtml,

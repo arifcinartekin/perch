@@ -144,6 +144,16 @@ import Testing
     #expect(FeedIDs.idFrom("Türkçe başlık 🐦") == "9549c7db")
     #expect(FeedIDs.idFrom("Türkçe", "başlık 🐦") == "b1ac9bfb")
   }
+
+  // No guid or link: title and date, as toArticle in core; undated items pass 0.
+  @Test func articleFallsBackToTitleAndDate() {
+    let feed = FeedIDs.feed("https://ex.com/feed")
+    let item = ParsedItem(
+      guid: nil, url: nil, title: "One", author: nil, published: nil, summaryHtml: nil,
+      contentHtml: nil, enclosures: [])
+    #expect(FeedIDs.article(feedId: feed, item, publishedAt: 1_767_225_600_000) == "483ee61f")
+    #expect(FeedIDs.article(feedId: feed, item, publishedAt: 0) == "ddec0483")
+  }
 }
 
 @Suite struct DiscoveryAndOPMLTests {

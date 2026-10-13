@@ -1,6 +1,6 @@
 import type { ParsedArticle, ParsedFeed, Enclosure } from '../types';
 import { resolveUrl } from '../url';
-import { resolvePublishedAt } from './dates';
+import { findPublishedAt, resolvePublishedAt } from './dates';
 
 // JSON Feed 1.0 / 1.1 — https://www.jsonfeed.org/version/1.1/
 
@@ -84,12 +84,15 @@ function parseItem(
     })
     .filter((e): e is Enclosure => e !== null);
 
+  const dated = findPublishedAt([item.date_published, item.date_modified]);
+
   return {
     guid: item.id != null ? String(item.id) : (url ?? undefined),
     url,
     title: item.title?.trim() || '(untitled)',
     author: pickAuthor(item.authors, item.author) ?? feedAuthor,
-    publishedAt: resolvePublishedAt([item.date_published, item.date_modified]),
+    publishedAt: dated ?? Date.now(),
+    ...(dated === undefined && { undated: true }),
     updatedAt: item.date_modified ? resolvePublishedAt([item.date_modified]) : undefined,
     summaryHtml,
     // content_text is plain text; wrap it so the renderer treats it as a block.

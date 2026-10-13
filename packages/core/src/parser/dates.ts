@@ -58,17 +58,25 @@ export function parseDate(input: string | undefined | null): number | null {
 }
 
 /**
- * Resolve an article's timestamp from its candidate fields, never returning a
- * date in the far future (clock-skewed feeds are common). Falls back to `now`.
+ * The first parseable candidate, never a date in the far future
+ * (clock-skewed feeds are common). Undefined when the item has no usable date.
  */
-export function resolvePublishedAt(
+export function findPublishedAt(
   candidates: (string | undefined | null)[],
   now = Date.now(),
-): number {
+): number | undefined {
   const maxFuture = now + 24 * 60 * 60 * 1000; // tolerate 1 day of skew
   for (const c of candidates) {
     const ms = parseDate(c);
     if (ms != null && ms <= maxFuture) return ms;
   }
-  return now;
+  return undefined;
+}
+
+/** Like findPublishedAt, falling back to `now`. */
+export function resolvePublishedAt(
+  candidates: (string | undefined | null)[],
+  now = Date.now(),
+): number {
+  return findPublishedAt(candidates, now) ?? now;
 }
