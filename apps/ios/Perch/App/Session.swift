@@ -142,7 +142,8 @@ final class Session {
       if await devSignIn() { return }
     #endif
     guard let server, let username, let token = Keychain.token(for: server) else {
-      openLocal()
+      // A server left over from a sign-out isn't one the library is on.
+      if server != nil { forget() } else { openLocal() }
       return
     }
     open(server: server, username: username, token: token)
@@ -301,7 +302,9 @@ final class Session {
 
   private func forget() {
     if let server { Keychain.setToken(nil, for: server) }
+    UserDefaults.standard.removeObject(forKey: Self.serverKey)
     UserDefaults.standard.removeObject(forKey: Self.usernameKey)
+    server = nil
     username = nil
     Glance.clear()
     openLocal()
