@@ -9,7 +9,12 @@ import app.perch.android.core.Library
 import app.perch.android.core.StarterPack
 import app.perch.android.core.StarterPacks
 import app.perch.android.core.SyncedSettings
+import app.perch.android.data.AddResult
+import app.perch.android.data.ApiClient
+import app.perch.android.data.ImportResult
 import app.perch.android.data.LocalBackend
+import app.perch.android.data.ReaderBackend
+import app.perch.android.data.ServerBackend
 import java.util.Locale
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
@@ -26,16 +31,30 @@ import kotlinx.coroutines.sync.withPermit
 /**
  * What the screens read and change: the library, unread counts and settings
  * as state, and the actions on them. Article lists load their own pages and
- * reload when [articlesChanged] moves.
+ * reload when [articlesChanged] moves. The library is on the phone (and syncs
+ * by chain) or on a Perch Server ([server], personal mode); a new Reader
+ * opens when that changes.
  */
 class Reader(
   private val context: Context,
-  val backend: LocalBackend,
-  private val scope: CoroutineScope,
+  val backend: ReaderBackend,
+  appScope: CoroutineScope,
   val device: DeviceSettings,
   val chain: ChainLink,
   val community: Community,
 ) {
+  /** The library's server, when it isn't on the phone. */
+  val server: ServerBackend? = backend as? ServerBackend
+  val isLocal: Boolean get() = server == null
+  private val job = kotlinx.coroutines.SupervisorJob(appScope.coroutineContext[kotlinx.coroutines.Job])
+  private val scope = CoroutineScope(appScope.coroutineContext + job)
+
+  /** Another library opened: stop listening and close this one's files. */
+  fun close() {
+    job.cancel()
+    server?.store?.close()
+  }
+
   private val _library = MutableStateFlow(Library())
   val library: StateFlow<Library> = _library.asStateFlow()
   private val _unread = MutableStateFlow<Map<String, Int>>(emptyMap())
@@ -77,21 +96,77 @@ class Reader(
 
   fun start() {
     scope.launch {
-      chain.prepare()
-      _settings.value = backend.settings()
-      reloadLibrary()
-      reloadNotes()
+      if (isLocal) chain.prepare()
+      runCatching {
+        _settings.value = backend.settings()
+        reloadLibrary()
+        reloadNotes()
+      }
       _loaded.value = true
-      if (chain.account.value != null) syncChain()
-      if (_library.value.feeds.isNotEmpty()) refresh()
+      if (isLocal && chain.account.value != null) syncChain()
+      if (_library.value.feeds.isNotEmpty()) runCatching { refresh() }
     }
+    if (server != null) scope.launch { listen(server) }
+  }
+
+  /**
+   * Follows the server's event stream while the app runs: the account changed
+   * somewhere (library, read state, settings, notes) or new articles arrived.
+   * Reconnects with a growing pause when the connection drops.
+   */
+  private suspend fun listen(server: ServerBackend) {
+    var pause = 1_000L
+    var last: String? = null
+    while (true) {
+      try {
+        server.client.events().collect { event ->
+          pause = 1_000L
+          when (event) {
+            is ApiClient.Event.Cursor -> {
+              // The first cursor only says where we are; later ones mean a change.
+              if (last != null && last != event.value) reloadFromServer()
+              last = event.value
+            }
+            ApiClient.Event.Articles -> {
+              reloadCounts()
+              _articlesChanged.value++
+              keepOffline()
+            }
+          }
+        }
+      } catch (e: kotlinx.coroutines.CancellationException) {
+        throw e
+      } catch (e: app.perch.android.data.ApiError) {
+        if (e.status == 401) {
+          server.onUnauthorized?.invoke()
+          return
+        }
+      } catch (_: Exception) {
+      }
+      kotlinx.coroutines.delay(pause)
+      pause = minOf(pause * 2, 60_000L)
+    }
+  }
+
+  private suspend fun reloadFromServer() = runCatching {
+    _settings.value = backend.settings()
+    reloadLibrary()
+    reloadNotes()
+    _articlesChanged.value++
+  }
+
+  /** With the library on a server: the newest unread and every starred article stay on the phone. */
+  private fun keepOffline() {
+    val server = server ?: return
+    if (!device.offlineEnabled.value) return
+    scope.launch { runCatching { server.downloadForOffline(device.offlineLimit.value) } }
   }
 
   private var pendingSync: kotlinx.coroutines.Job? = null
 
   /** A change here: send it to the chain shortly, a burst of changes in one round. */
   private fun changed() {
-    if (chain.account.value == null) return
+    if (!isLocal || chain.account.value == null) return
     pendingSync?.cancel()
     pendingSync = scope.launch {
       kotlinx.coroutines.delay(1500)
@@ -101,6 +176,7 @@ class Reader(
 
   /** One chain round; feeds added on another device are fetched right away. */
   suspend fun syncChain() {
+    if (!isLocal) return
     val result = chain.sync() ?: return
     _settings.value = backend.settings()
     if (result.pulled > 0) {
@@ -157,10 +233,11 @@ class Reader(
       _refreshing.value = false
     }
     // Read state and new feeds from the other devices.
-    if (ids == null && chain.account.value != null) syncChain()
+    if (isLocal && ids == null && chain.account.value != null) syncChain()
+    if (ids == null) keepOffline()
   }
 
-  suspend fun addFeed(url: String, categoryId: String?): LocalBackend.AddResult {
+  suspend fun addFeed(url: String, categoryId: String?): AddResult {
     val result = backend.addFeed(url, categoryId)
     reloadLibrary()
     _articlesChanged.value++
@@ -243,7 +320,7 @@ class Reader(
   }
 
   suspend fun fullText(article: Article, force: Boolean = false): FullText =
-    (if (force) null else backend.cachedFullText(article)) ?: backend.fullText(article)
+    (if (force) null else backend.cachedFullText(article)) ?: backend.fullText(article, force)
 
   suspend fun saveSettings(change: (SyncedSettings) -> SyncedSettings) {
     _settings.value = backend.saveSettings(change)
@@ -264,14 +341,15 @@ class Reader(
     val note = backend.saveNote(article, feed(article.feedId)?.displayTitle, body)
     reloadNotes()
     changed()
-    if (note.sharedUrl != null) scope.launch { runCatching { community.client()?.shareNote(note) } }
+    // A shared note's public page follows it (a server holding the library updates its own).
+    if (isLocal && note.sharedUrl != null) scope.launch { runCatching { community.client()?.shareNote(note) } }
     return note
   }
 
   /** Deletes a note, taking its public page down first. */
   suspend fun deleteNote(id: String) {
     val note = backend.note(id)
-    if (note?.sharedUrl != null) runCatching { pageClient(note.sharedUrl)?.unshareNote(id) }
+    if (note?.sharedUrl != null) runCatching { (server?.client ?: pageClient(note.sharedUrl))?.unshareNote(id) }
     backend.deleteNote(id)
     reloadNotes()
     changed()
@@ -279,10 +357,17 @@ class Reader(
 
   /** Publishes the note as a public page through the Perch account; returns its address. */
   suspend fun shareNote(id: String): String {
+    // A library on a server shares through that server, which records the link.
+    server?.let {
+      val url = it.client.shareStoredNote(id)
+      reloadNotes()
+      return url
+    }
+    val local = backend as LocalBackend
     val note = backend.note(id) ?: error("Save the note before sharing it.")
     val client = community.client() ?: throw IllegalStateException("no-account")
     val url = client.shareNote(note)
-    backend.setSharedUrl(id, url)
+    local.setSharedUrl(id, url)
     reloadNotes()
     changed()
     return url
@@ -291,8 +376,13 @@ class Reader(
   suspend fun unshareNote(id: String) {
     val note = backend.note(id) ?: return
     val url = note.sharedUrl ?: return
+    server?.let {
+      it.client.unshareNote(id)
+      reloadNotes()
+      return
+    }
     (pageClient(url) ?: throw IllegalStateException("other-account")).unshareNote(id)
-    backend.setSharedUrl(id, null)
+    (backend as LocalBackend).setSharedUrl(id, null)
     reloadNotes()
     changed()
   }
@@ -305,7 +395,7 @@ class Reader(
     return if (host == mine) community.client() else null
   }
 
-  suspend fun importOpml(data: ByteArray): LocalBackend.ImportResult {
+  suspend fun importOpml(data: ByteArray): ImportResult {
     val result = backend.importOpml(data)
     reloadLibrary()
     scope.launch { refresh() }

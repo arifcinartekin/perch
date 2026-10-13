@@ -57,13 +57,14 @@ class MainActivity : FragmentActivity() {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    val reader = perch.reader
     if (savedInstanceState == null) {
-      reader.start()
+      perch.reader.start()
       handle(intent)
     }
     enableEdgeToEdge()
     setContent {
+      // A new Reader when the library moves between the phone and a server.
+      val reader by perch.readers.collectAsState()
       val settings by reader.settings.collectAsState()
       val photo by reader.device.wallpaper.collectAsState()
       val dim by reader.device.wallpaperDim.collectAsState()
@@ -83,7 +84,7 @@ class MainActivity : FragmentActivity() {
           // Locked, the library underneath isn't read out by accessibility services either.
           androidx.compose.foundation.layout.Box(
             if (locked) androidx.compose.ui.Modifier.clearAndSetSemantics {} else androidx.compose.ui.Modifier,
-          ) { PerchRoot(reader) }
+          ) { androidx.compose.runtime.key(reader) { PerchRoot(reader) } }
           if (locked) app.perch.android.ui.LockScreen(perch.lock)
         }
       }

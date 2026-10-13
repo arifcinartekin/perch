@@ -64,7 +64,7 @@ import androidx.compose.ui.unit.sp
 import app.perch.android.R
 import app.perch.android.Reader
 import app.perch.android.core.Article
-import app.perch.android.data.LocalBackend
+import app.perch.android.data.ReaderBackend
 import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
@@ -98,7 +98,7 @@ private class ArticlePages(private val reader: Reader, private val spec: ListSpe
   suspend fun more(unreadOnly: Boolean) {
     if (loading || end) return
     loading = true
-    val page = load(unreadOnly, items.lastOrNull()?.publishedAt)
+    val page = load(unreadOnly, items.lastOrNull())
     items.addAll(page.filter { a -> items.none { it.id == a.id } })
     end = page.size < PAGE
     loading = false
@@ -109,12 +109,12 @@ private class ArticlePages(private val reader: Reader, private val spec: ListSpe
     if (i >= 0) items[i] = article
   }
 
-  private suspend fun load(unreadOnly: Boolean, before: Double?): List<Article> = when (spec) {
-    ListSpec.Unread -> reader.backend.articles(LocalBackend.Scope.ALL, unreadOnly = true, before = before, limit = PAGE)
-    ListSpec.Starred -> reader.backend.articles(LocalBackend.Scope.STARRED, before = before, limit = PAGE)
-    ListSpec.All -> reader.backend.articles(LocalBackend.Scope.ALL, unreadOnly = unreadOnly, before = before, limit = PAGE)
-    is ListSpec.Feed -> reader.backend.articles(LocalBackend.Scope.ALL, feed = spec.id, unreadOnly = unreadOnly, before = before, limit = PAGE)
-    is ListSpec.Category -> reader.backend.articles(LocalBackend.Scope.ALL, category = spec.id, unreadOnly = unreadOnly, before = before, limit = PAGE)
+  private suspend fun load(unreadOnly: Boolean, before: Article?): List<Article> = when (spec) {
+    ListSpec.Unread -> reader.backend.articles(ReaderBackend.Scope.ALL, unreadOnly = true, before = before, limit = PAGE)
+    ListSpec.Starred -> reader.backend.articles(ReaderBackend.Scope.STARRED, before = before, limit = PAGE)
+    ListSpec.All -> reader.backend.articles(ReaderBackend.Scope.ALL, unreadOnly = unreadOnly, before = before, limit = PAGE)
+    is ListSpec.Feed -> reader.backend.articles(ReaderBackend.Scope.ALL, feed = spec.id, unreadOnly = unreadOnly, before = before, limit = PAGE)
+    is ListSpec.Category -> reader.backend.articles(ReaderBackend.Scope.ALL, category = spec.id, unreadOnly = unreadOnly, before = before, limit = PAGE)
   }
 
   companion object {
@@ -276,6 +276,8 @@ private fun subtitleFor(reader: Reader, spec: ListSpec): String? {
     }
     is ListSpec.Category -> library.feeds.filter { it.categoryId == spec.id }.sumOf { unread[it.id] ?: 0 }
   }
+  val offline = reader.server?.offline?.collectAsState()?.value == true
+  if (offline) return stringResource(R.string.offline_now)
   return if (n > 0) stringResource(R.string.n_unread, n) else null
 }
 

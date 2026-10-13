@@ -76,6 +76,7 @@ class Nav(private val controller: NavHostController) {
   fun search() = controller.navigate("search")
   fun chain() = controller.navigate("chain")
   fun account() = controller.navigate("account")
+  fun server() = controller.navigate("server")
   fun notes() = controller.navigate("notes")
   fun appearance() = controller.navigate("appearance")
   fun joinChain(server: String, code: String) = controller.navigate("chain?server=${enc(server)}&code=${enc(code)}")
@@ -139,6 +140,7 @@ fun PerchRoot(reader: Reader) {
     composable("explore") { ExploreScreen(reader, nav) }
     composable("search") { SearchScreen(reader, nav) }
     composable("account") { AccountScreen(reader, nav) }
+    composable("server") { AccountScreen(reader, nav, AccountPurpose.LIBRARY) }
     composable("notes") { NotesScreen(reader, nav) }
     composable("appearance") { AppearanceScreen(reader, nav) }
     composable(

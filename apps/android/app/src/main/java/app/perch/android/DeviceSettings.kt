@@ -26,6 +26,15 @@ class DeviceSettings(private val context: Context) {
   private val _refreshMinutes = MutableStateFlow(prefs.getInt("refreshMinutes", 60))
   val refreshMinutes: StateFlow<Int> = _refreshMinutes.asStateFlow()
 
+  /**
+   * With the library on a Perch Server: keep the newest unread articles (this
+   * many) and every starred one on the phone for reading offline.
+   */
+  private val _offlineEnabled = MutableStateFlow(prefs.getBoolean("offlineEnabled", true))
+  val offlineEnabled: StateFlow<Boolean> = _offlineEnabled.asStateFlow()
+  private val _offlineLimit = MutableStateFlow(prefs.getInt("offlineLimit", 300))
+  val offlineLimit: StateFlow<Int> = _offlineLimit.asStateFlow()
+
   /** A notification when background refresh finds new articles. */
   private val _notifyNew = MutableStateFlow(prefs.getBoolean("notifyNew", false))
   val notifyNew: StateFlow<Boolean> = _notifyNew.asStateFlow()
@@ -58,6 +67,16 @@ class DeviceSettings(private val context: Context) {
   fun setRefreshMinutes(minutes: Int) {
     prefs.edit().putInt("refreshMinutes", minutes).apply()
     _refreshMinutes.value = minutes
+  }
+
+  fun setOfflineEnabled(on: Boolean) {
+    prefs.edit().putBoolean("offlineEnabled", on).apply()
+    _offlineEnabled.value = on
+  }
+
+  fun setOfflineLimit(limit: Int) {
+    prefs.edit().putInt("offlineLimit", limit).apply()
+    _offlineLimit.value = limit
   }
 
   fun setNotifyNew(on: Boolean) {
@@ -120,5 +139,7 @@ class DeviceSettings(private val context: Context) {
     /** Tight, normal and loose, as on the iPhone. */
     val LINE_HEIGHTS = listOf(1.4f, 1.6f, 1.85f)
     private const val MAX_WALLPAPER = 2400
+    /** How many unread articles to keep offline, as on the iPhone. */
+    val OFFLINE_LIMITS = listOf(100, 300, 1000, 3000)
   }
 }

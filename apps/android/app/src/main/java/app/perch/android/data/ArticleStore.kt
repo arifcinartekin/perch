@@ -124,6 +124,33 @@ class ArticleStore(context: Context, name: String? = "articles.db") :
     }
   }
 
+  /**
+   * Stores articles as a server sent them, read and star state included (the
+   * offline copy of a library on a Perch Server).
+   */
+  fun upsert(articles: List<Article>) {
+    val db = writableDatabase
+    db.beginTransaction()
+    try {
+      for (a in articles) {
+        db.insertWithOnConflict(
+          "articles", null,
+          ContentValues().apply {
+            put("id", a.id); put("feed_id", a.feedId); put("article_id", a.articleId)
+            put("url", a.url); put("title", a.title); put("author", a.author)
+            put("published_at", a.publishedAt); put("summary", a.summaryHtml); put("content", a.contentHtml)
+            put("enclosures", Json.encodeToString(enclosuresJson, a.enclosures))
+            put("read", if (a.read) 1 else 0); put("starred", if (a.starred) 1 else 0)
+          },
+          SQLiteDatabase.CONFLICT_REPLACE,
+        )
+      }
+      db.setTransactionSuccessful()
+    } finally {
+      db.endTransaction()
+    }
+  }
+
   /** Newest first; [before] is the last page's oldest `publishedAt`. */
   fun articles(q: Query, before: Double?, limit: Int): List<Article> {
     val where = mutableListOf<String>()
@@ -246,4 +273,21 @@ class ArticleStore(context: Context, name: String? = "articles.db") :
       starred = getInt(getColumnIndexOrThrow("starred")) != 0,
     )
   }
+}
+
+/** A list's page from the store: the feeds a [library] follows, narrowed like ReaderBackend.articles. */
+internal fun ArticleStore.list(
+  library: app.perch.android.core.Library,
+  scope: ReaderBackend.Scope,
+  feed: String?,
+  category: String?,
+  unreadOnly: Boolean,
+  search: String,
+  before: Article?,
+  limit: Int,
+): List<Article> {
+  var feedIds: Set<String>? = if (scope == ReaderBackend.Scope.STARRED) null else library.feeds.map { it.id }.toSet()
+  if (feed != null) feedIds = setOf(feed)
+  if (category != null) feedIds = library.feeds.filter { it.categoryId == category }.map { it.id }.toSet()
+  return articles(ArticleStore.Query(feedIds, unreadOnly, scope == ReaderBackend.Scope.STARRED, search), before?.publishedAt, limit)
 }

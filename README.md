@@ -34,7 +34,9 @@ Perch keeps these apart on purpose, so you can tell exactly what goes where.
      `PERCH_CHAIN` on) can order the records but not read them, and doesn't even see feed addresses. The devices in a chain list each
      other, sealed like everything else.
    - **Your own Perch Server.** Self-hosters and organisations can run a server that keeps each
-     account's library and fetches its feeds ([apps/server](./apps/server/README.md)).
+     account's library and fetches its feeds ([apps/server](./apps/server/README.md)). The
+     extension, the web reader, the iPhone and the Android app all sign in to it, keep recent
+     and starred articles for reading offline, and follow its changes live.
 3. **A Perch account is only a name for sharing,** on a Perch Server someone runs (Perch itself
    hosts none): a username, a password and a recovery code — no email. You need it only to
    **share a note** as a public page; it doesn't sync anything. Passwords never leave the device:
@@ -243,7 +245,7 @@ apps/
 │  │  ├─ backend.ts        the reader's data layer (ReaderBackend over local storage).
 │  │  └─ backup.ts …       JSON backup, messaging, badge, PIN lock.
 │  └─ tests/              Vitest: storage (fake-indexeddb), backup, and a jsdom smoke test.
-├─ android/                The Android app, local-first (Kotlin, Compose, Liquid Glass via Haze). See apps/android/README.md.
+├─ android/                The Android app with a widget, local or synced (Kotlin, Compose, Liquid Glass via Haze). See apps/android/README.md.
 ├─ ios/                    The iPhone and iPad app with widgets, local or synced (SwiftUI, iOS 26+). See apps/ios/README.md.
 │  ├─ Perch/               tabs and screens, sessions (Keychain), sync chain, Perch account,
 │  │                       app lock, QR scanning, offline sync and image cache, background

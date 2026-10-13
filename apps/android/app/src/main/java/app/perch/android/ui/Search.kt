@@ -48,7 +48,7 @@ import androidx.compose.ui.unit.sp
 import app.perch.android.R
 import app.perch.android.Reader
 import app.perch.android.core.Article
-import app.perch.android.data.LocalBackend
+import app.perch.android.data.ReaderBackend
 import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.delay
 
@@ -68,7 +68,7 @@ fun SearchScreen(reader: Reader, nav: Nav) {
       return@LaunchedEffect
     }
     delay(250)
-    results = reader.backend.articles(LocalBackend.Scope.ALL, search = query, limit = 100)
+    results = reader.backend.articles(ReaderBackend.Scope.ALL, search = query, limit = 100)
   }
   LaunchedEffect(Unit) { reader.updates.collect { u -> results = results.map { if (it.id == u.id) u else it } } }
   LaunchedEffect(Unit) { runCatching { focus.requestFocus() } }

@@ -44,7 +44,7 @@ class LocalBackend(
   internal val store: ArticleStore,
   private val file: File,
   client: OkHttpClient? = null,
-) {
+) : ReaderBackend {
   sealed class Failure(message: String) : Exception(message) {
     /** The address gave neither a feed nor a page that names one. */
     class NoFeed : Failure("No feed found at that address")
@@ -67,12 +67,8 @@ class LocalBackend(
     val notes: Map<String, Note> = emptyMap(),
   )
 
-  data class AddResult(val feed: Feed, val created: Boolean)
-  data class ImportResult(val added: Int, val existing: Int, val categories: Int)
-
   companion object {
-    /** Longest note, in characters (NOTE_MAX in core). */
-    const val NOTE_MAX = 10_000
+    const val NOTE_MAX = ReaderBackend.NOTE_MAX
     /** Articles older than this are dropped (starred ones stay). */
     const val KEEP_DAYS = 60.0
     private const val DAY_MS = 86_400_000.0
@@ -123,45 +119,38 @@ class LocalBackend(
 
   // Library
 
-  suspend fun library(): Library = load().library
-  suspend fun settings(): SyncedSettings = load().settings
+  override suspend fun library(): Library = load().library
+  override suspend fun settings(): SyncedSettings = load().settings
 
-  suspend fun saveSettings(change: (SyncedSettings) -> SyncedSettings): SyncedSettings =
+  override suspend fun saveSettings(change: (SyncedSettings) -> SyncedSettings): SyncedSettings =
     update { it.copy(settings = change(it.settings)) }.settings
 
-  suspend fun unreadCounts(): Map<String, Int> {
+  override suspend fun unreadCounts(): Map<String, Int> {
     val feeds = library().feeds.map { it.id }.toSet()
     return withContext(Dispatchers.IO) { store.unreadCounts().filterKeys { it in feeds } }
   }
 
-  suspend fun starredCount(): Int = withContext(Dispatchers.IO) { store.starredCount() }
+  override suspend fun starredCount(): Int = withContext(Dispatchers.IO) { store.starredCount() }
 
   // Articles
 
-  enum class Scope { ALL, STARRED }
-
   /** Lists show the feeds you follow; starred articles stay after their feed is removed. */
-  suspend fun articles(
-    scope: Scope,
-    feed: String? = null,
-    category: String? = null,
-    unreadOnly: Boolean = false,
-    search: String = "",
-    before: Double? = null,
-    limit: Int = 50,
+  override suspend fun articles(
+    scope: ReaderBackend.Scope,
+    feed: String?,
+    category: String?,
+    unreadOnly: Boolean,
+    search: String,
+    before: Article?,
+    limit: Int,
   ): List<Article> {
     val library = library()
-    var feedIds: Set<String>? = if (scope == Scope.STARRED) null else library.feeds.map { it.id }.toSet()
-    if (feed != null) feedIds = setOf(feed)
-    if (category != null) feedIds = library.feeds.filter { it.categoryId == category }.map { it.id }.toSet()
-    return withContext(Dispatchers.IO) {
-      store.articles(ArticleStore.Query(feedIds, unreadOnly, scope == Scope.STARRED, search), before, limit)
-    }
+    return withContext(Dispatchers.IO) { store.list(library, scope, feed, category, unreadOnly, search, before, limit) }
   }
 
-  suspend fun article(id: String): Article? = withContext(Dispatchers.IO) { store.article(id) }
+  override suspend fun article(id: String): Article? = withContext(Dispatchers.IO) { store.article(id) }
 
-  suspend fun setState(ids: List<String>, read: Boolean? = null, starred: Boolean? = null) =
+  override suspend fun setState(ids: List<String>, read: Boolean?, starred: Boolean?) =
     withContext(Dispatchers.IO) {
       ids.forEach {
         store.setState(it, read, starred)
@@ -169,7 +158,7 @@ class LocalBackend(
       }
     }
 
-  suspend fun markAllRead(feed: String? = null, category: String? = null) {
+  override suspend fun markAllRead(feed: String?, category: String?) {
     var ids: Set<String>? = null
     if (feed != null) ids = setOf(feed)
     if (category != null) ids = library().feeds.filter { it.categoryId == category }.map { it.id }.toSet()
@@ -179,9 +168,9 @@ class LocalBackend(
     }
   }
 
-  suspend fun cachedFullText(article: Article): FullText? = withContext(Dispatchers.IO) { store.fullText(article.id) }
+  override suspend fun cachedFullText(article: Article): FullText? = withContext(Dispatchers.IO) { store.fullText(article.id) }
 
-  suspend fun fullText(article: Article): FullText {
+  override suspend fun fullText(article: Article, force: Boolean): FullText {
     val url = article.url?.takeIf { it.startsWith("http") } ?: throw Failure.NoArticleText()
     val text = withContext(Dispatchers.IO) {
       get(url).use { Readability.extract(decode(it.body.bytes())) }
@@ -193,7 +182,7 @@ class LocalBackend(
   // Fetching
 
   /** Fetches feeds a few at a time and adds new articles. A feed that fails keeps its articles. */
-  suspend fun refresh(ids: Collection<String>? = null) {
+  override suspend fun refresh(ids: Collection<String>?) {
     val s = load()
     val feeds = s.library.feeds.filter { ids == null || it.id in ids }
     val gate = Semaphore(6)
@@ -279,7 +268,7 @@ class LocalBackend(
   // Library management
 
   /** Takes a feed's address or a site's (finding the feed it names, or one at a usual place). */
-  suspend fun addFeed(input: String, categoryId: String? = null): AddResult {
+  override suspend fun addFeed(input: String, categoryId: String?): AddResult {
     var text = input.trim()
     if (!text.contains("://")) text = "https://$text"
     val url = text.toHttpUrlOrNull() ?: throw Failure.BadAddress()
@@ -324,14 +313,14 @@ class LocalBackend(
     throw Failure.NoFeed()
   }
 
-  suspend fun removeFeed(id: String) {
+  override suspend fun removeFeed(id: String) {
     update { s ->
       s.copy(library = s.library.copy(feeds = s.library.feeds.filterNot { it.id == id }), validators = s.validators - id)
     }
     withContext(Dispatchers.IO) { store.deleteArticles(id, keepStarred = true) }
   }
 
-  suspend fun updateFeed(id: String, categoryId: String? = null, customTitle: String? = null) {
+  override suspend fun updateFeed(id: String, categoryId: String?, customTitle: String?) {
     update { s ->
       s.copy(
         library = s.library.copy(
@@ -346,7 +335,7 @@ class LocalBackend(
     }
   }
 
-  suspend fun addCategory(name: String): Category {
+  override suspend fun addCategory(name: String): Category {
     val trimmed = name.trim()
     library().categories.firstOrNull { it.name.equals(trimmed, ignoreCase = true) }?.let { return it }
     val order = (library().categories.map { it.order }.filter { it < 1000 }.maxOrNull() ?: 0.0) + 10
@@ -355,7 +344,7 @@ class LocalBackend(
     return category
   }
 
-  suspend fun setCategoryCollapsed(id: String, collapsed: Boolean) {
+  override suspend fun setCategoryCollapsed(id: String, collapsed: Boolean) {
     update { s ->
       var categories = s.library.categories
       if (categories.none { it.id == id } && id == UNCATEGORIZED_ID) {
@@ -365,7 +354,7 @@ class LocalBackend(
     }
   }
 
-  suspend fun deleteCategory(id: String) {
+  override suspend fun deleteCategory(id: String) {
     if (id == UNCATEGORIZED_ID) return
     update { s ->
       s.copy(
@@ -379,11 +368,11 @@ class LocalBackend(
 
   // Notes
 
-  suspend fun notes(): List<Note> = load().notes.values.sortedByDescending { it.updatedAt }
+  override suspend fun notes(): List<Note> = load().notes.values.sortedByDescending { it.updatedAt }
 
-  suspend fun note(id: String): Note? = load().notes[id]
+  override suspend fun note(id: String): Note? = load().notes[id]
 
-  suspend fun saveNote(article: Article, feedTitle: String?, body: String): Note {
+  override suspend fun saveNote(article: Article, feedTitle: String?, body: String): Note {
     val now = System.currentTimeMillis().toDouble()
     var saved: Note? = null
     update { s ->
@@ -399,7 +388,7 @@ class LocalBackend(
     return saved!!
   }
 
-  suspend fun deleteNote(id: String) {
+  override suspend fun deleteNote(id: String) {
     update { s -> s.copy(notes = s.notes - id) }
   }
 
@@ -410,10 +399,10 @@ class LocalBackend(
 
   // OPML
 
-  suspend fun exportOpml(): String = Opml.build(library())
+  override suspend fun exportOpml(): String = Opml.build(library())
 
   /** Adds the list's feeds (fetched by the next refresh) and their categories. */
-  suspend fun importOpml(data: ByteArray): ImportResult {
+  override suspend fun importOpml(data: ByteArray): ImportResult {
     var added = 0
     var existing = 0
     var categories = 0

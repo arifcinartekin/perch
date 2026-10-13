@@ -144,7 +144,7 @@ fun SettingsScreen(reader: Reader, nav: Nav) {
           }
         }
         item { LockSection() }
-        item {
+        if (reader.isLocal) item {
           val community by reader.community.account.collectAsState()
           Section(stringResource(R.string.perch_account), footer = stringResource(R.string.account_settings_hint)) {
             Row(
@@ -169,20 +169,20 @@ fun SettingsScreen(reader: Reader, nav: Nav) {
         item {
           val chainAccount by reader.chain.account.collectAsState()
           val chainSynced by reader.chain.lastSyncAt.collectAsState()
-          Section(stringResource(R.string.sync), footer = stringResource(R.string.sync_hint)) {
-            Row(
-              Modifier.fillMaxWidth().clickable { nav.chain() }.padding(horizontal = 16.dp, vertical = 14.dp),
-              verticalAlignment = Alignment.CenterVertically,
-            ) {
-              Column(Modifier.weight(1f)) {
-                Text(stringResource(R.string.sync_chain), color = look.text, fontSize = 16.sp)
-                Text(
-                  if (chainAccount == null) stringResource(R.string.chain_off_hint)
-                  else chainSynced?.let { stringResource(R.string.synced_ago, relativeTime(it)) } ?: stringResource(R.string.chain_on),
-                  color = look.muted, fontSize = 13.sp,
-                )
-              }
-              Text("›", color = look.faint, fontSize = 22.sp)
+          val library by (context.applicationContext as app.perch.android.PerchApplication).session.account.collectAsState()
+          Section(stringResource(R.string.sync), footer = if (reader.isLocal) stringResource(R.string.sync_hint) else null) {
+            val lib = library
+            if (lib != null) {
+              // The library is on a Perch Server; the chain is for the phone's own library.
+              NavRow("@${lib.username}", lib.server.substringAfter("://")) { nav.server() }
+            } else {
+              NavRow(
+                stringResource(R.string.sync_chain),
+                if (chainAccount == null) stringResource(R.string.chain_off_hint)
+                else chainSynced?.let { stringResource(R.string.synced_ago, relativeTime(it)) } ?: stringResource(R.string.chain_on),
+              ) { nav.chain() }
+              Divider()
+              NavRow(stringResource(R.string.sync_with_server), stringResource(R.string.sync_with_server_hint)) { nav.server() }
             }
           }
         }

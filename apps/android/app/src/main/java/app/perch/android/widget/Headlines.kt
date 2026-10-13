@@ -15,7 +15,7 @@ import app.perch.android.MainActivity
 import app.perch.android.R
 import app.perch.android.core.ColorMode
 import app.perch.android.core.Theme
-import app.perch.android.data.LocalBackend
+import app.perch.android.data.ReaderBackend
 import app.perch.android.perch
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -55,7 +55,7 @@ object Headlines {
   suspend fun update(context: Context, notify: Boolean) {
     val reader = context.perch.reader
     val backend = reader.backend
-    val page = runCatching { backend.articles(LocalBackend.Scope.ALL, unreadOnly = true, limit = ITEM_COUNT) }.getOrNull() ?: return
+    val page = runCatching { backend.articles(ReaderBackend.Scope.ALL, unreadOnly = true, limit = ITEM_COUNT) }.getOrNull() ?: return
     val titles = backend.library().feeds.associate { it.id to it.displayTitle }
     val appearance = backend.settings().appearance
     val snapshot = Snapshot(
@@ -78,6 +78,11 @@ object Headlines {
     prefs.edit().putString("seen", (unseen.map { it.id } + seenList.orEmpty()).take(400).joinToString("\n")).apply()
     // The first time, everything is "new"; that's not news.
     if (notify && seenList != null && fresh.isNotEmpty() && reader.device.notifyNew.value) post(context, fresh)
+  }
+
+  /** Another library: its articles are new to the widget, but not news. */
+  fun forget(context: Context) {
+    prefs(context).edit().clear().apply()
   }
 
   /** perch://article/<id>, or perch://unread: opened by the widget and notifications. */

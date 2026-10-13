@@ -30,7 +30,13 @@ What it does, as the iPhone app does:
   (activity aliases, drawn by `scripts/brand.mjs`). The article's text size and line spacing
   stay on the phone.
 
-Not yet: syncing with your own Perch Server's library (personal mode).
+- Or the library on a Perch Server of your own (personal mode), as on the iPhone: Settings →
+  Sync → Sync with a Perch Server signs in or creates an account (with an invite, an emailed code
+  or, on a new server, as its admin) and adds the phone's feeds to it. `data/ServerBackend.kt`
+  talks to the reader API and follows `/sync/events` for live changes; the newest unread and
+  every starred article stay on the phone for reading offline, and read and star changes made
+  offline wait in a queue. The account screen lists devices, invites (for the admin) and the
+  email address. `data/ReaderBackend.kt` is the interface both libraries share.
 
 ## Release
 
